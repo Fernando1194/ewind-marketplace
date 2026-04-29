@@ -11,9 +11,10 @@ import HostDashboard from './pages/HostDashboard'
 import SpaceFormPage from './pages/SpaceFormPage'
 import MyQuotesPage from './pages/MyQuotesPage'
 import HostQuotesPage from './pages/HostQuotesPage'
+import HowItWorksPage from './pages/HowItWorksPage'
 import './App.css'
 
-export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'edit-space' | 'my-quotes' | 'host-quotes'
+export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'edit-space' | 'my-quotes' | 'host-quotes' | 'how-it-works'
 
 function App() {
   const [page, setPage] = useState<Page>('home')
@@ -87,7 +88,7 @@ function App() {
       }
     }
     if (p === 'new-space') {
-      setEditingSpace(null) // Limpa quando vai criar novo
+      setEditingSpace(null)
     }
     window.scrollTo(0, 0)
     if (user) loadUserRole(user.id)
@@ -119,7 +120,7 @@ function App() {
               Orçamentos {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
             </a>
           )}
-          <a>Como funciona</a>
+          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
           <a onClick={() => user ? goToPage('host-dashboard') : goToPage('signup')}>Anuncie</a>
         </div>
         <div className="nav-right">
@@ -152,6 +153,7 @@ function App() {
       {page === 'edit-space' && user && editingSpace && <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />}
       {page === 'my-quotes' && user && <MyQuotesPage user={user} goToPage={goToPage} />}
       {page === 'host-quotes' && user && <HostQuotesPage user={user} goToPage={goToPage} />}
+      {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
     </div>
   )
 }
