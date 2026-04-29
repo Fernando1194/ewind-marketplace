@@ -67,3 +67,58 @@ export const QUOTE_STATUS_LABELS: Record<string, { label: string; bg: string; co
   rejected: { label: 'Recusado', bg: '#fef2f2', color: '#991b1b' },
   closed: { label: 'Fechado', bg: '#f3f4f6', color: '#4b5563' }
 }
+
+export interface Supplier {
+  id: string
+  owner_id: string
+  name: string
+  description: string | null
+  category: string
+  subcategory: string | null
+  cities: string[]
+  state: string
+  whatsapp: string | null
+  instagram: string | null
+  email: string | null
+  website: string | null
+  price_info: string | null
+  media_urls: string[]
+  attributes: string[]
+  event_types: string[]
+  status: 'active' | 'paused' | 'pending'
+  created_at: string
+  updated_at: string
+}
+
+export const SUPPLIER_CATEGORIES = [
+  { name: 'Fotografia', icon: '📸', bg: '#fff8e1' },
+  { name: 'Filmagem / Video Maker', icon: '🎬', bg: '#f0f8ff' },
+  { name: 'Cerimonialista', icon: '💍', bg: '#fdf4ff' },
+  { name: 'Maquiagem', icon: '💄', bg: '#fff1f9' },
+  { name: 'Cabelo', icon: '💇', bg: '#f0fdf4' },
+  { name: 'Bar & Coquetéis', icon: '🍹', bg: '#fff7ed' },
+  { name: 'Buffet / Catering', icon: '🍽', bg: '#fff0f0' },
+  { name: 'Decoração', icon: '🌸', bg: '#fdf4ff' },
+  { name: 'Música / DJ', icon: '🎵', bg: '#f0fdf4' },
+  { name: 'Iluminação', icon: '💡', bg: '#fffbeb' },
+  { name: 'Bolo & Confeitaria', icon: '🎂', bg: '#fff1f9' },
+  { name: 'Segurança', icon: '🔒', bg: '#f1f5f9' },
+  { name: 'Convites & Papelaria', icon: '📋', bg: '#fef9c3' },
+  { name: 'Lembranças & Bem-casados', icon: '🎁', bg: '#f0fdf4' },
+  { name: 'Entretenimento', icon: '🎪', bg: '#fdf4ff' }
+]
+
+export const SUPPLIER_ATTRIBUTES = [
+  'Viaja para outros estados',
+  'Atende fins de semana',
+  'Atende feriados',
+  'Aceita pacotes',
+  'Trabalha com assistente',
+  'Entrega álbum físico',
+  'Emite nota fiscal',
+  'Possui equipamento backup',
+  'Faz degustação',
+  'Atende eventos corporativos',
+  'Bilíngue (inglês)',
+  'Acessibilidade'
+]
