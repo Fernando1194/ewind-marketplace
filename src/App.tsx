@@ -15,8 +15,9 @@ const MyQuotesPage = lazy(() => import('./pages/MyQuotesPage'))
 const HostQuotesPage = lazy(() => import('./pages/HostQuotesPage'))
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'))
 const ComparisonPage = lazy(() => import('./pages/ComparisonPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
 
-export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'edit-space' | 'my-quotes' | 'host-quotes' | 'how-it-works' | 'comparison'
+export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'edit-space' | 'my-quotes' | 'host-quotes' | 'how-it-works' | 'comparison' | 'about'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -147,6 +148,7 @@ function App() {
             </a>
           )}
           <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
+          <a onClick={() => goToPage('about')}>Quem somos</a>
           <a onClick={() => user ? goToPage('host-dashboard') : goToPage('signup')}>Anuncie</a>
         </div>
         <div className="nav-right">
@@ -204,6 +206,7 @@ function App() {
         {page === 'my-quotes' && user && <MyQuotesPage user={user} goToPage={goToPage} />}
         {page === 'host-quotes' && user && <HostQuotesPage user={user} goToPage={goToPage} />}
         {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
+        {page === 'about' && <AboutPage goToPage={goToPage} />}
         {page === 'comparison' && (
           <ComparisonPage
             spaces={compareSpaces}

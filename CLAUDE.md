@@ -68,7 +68,8 @@ ewind/
 │       ├── MyQuotesPage.tsx     ← Orçamentos enviados (guest)
 │       ├── HostQuotesPage.tsx   ← Orçamentos recebidos (host)
 │       ├── HowItWorksPage.tsx   ← Página explicativa com tabs + FAQ
-│       └── ComparisonPage.tsx   ← Comparação de espaços lado a lado
+│       ├── ComparisonPage.tsx
+│       └── AboutPage.tsx       ← Quem somos + missão   ← Comparação de espaços lado a lado
 ├── index.html
 ├── package.json
 ├── vite.config.ts
