@@ -4,7 +4,6 @@ import type { User } from '@supabase/supabase-js'
 import type { Space } from './types'
 import './App.css'
 
-// Lazy load de todas as páginas — só carrega quando necessário
 const HomePage = lazy(() => import('./pages/HomePage'))
 const ListingPage = lazy(() => import('./pages/ListingPage'))
 const DetailPage = lazy(() => import('./pages/DetailPage'))
@@ -15,10 +14,10 @@ const SpaceFormPage = lazy(() => import('./pages/SpaceFormPage'))
 const MyQuotesPage = lazy(() => import('./pages/MyQuotesPage'))
 const HostQuotesPage = lazy(() => import('./pages/HostQuotesPage'))
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'))
+const ComparisonPage = lazy(() => import('./pages/ComparisonPage'))
 
-export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'edit-space' | 'my-quotes' | 'host-quotes' | 'how-it-works'
+export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'edit-space' | 'my-quotes' | 'host-quotes' | 'how-it-works' | 'comparison'
 
-// Loading simples para Suspense
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
     <div style={{ fontSize: 14, color: '#6b7280' }}>Carregando...</div>
@@ -29,12 +28,12 @@ function App() {
   const [page, setPage] = useState<Page>('home')
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
   const [editingSpace, setEditingSpace] = useState<Space | null>(null)
+  const [compareSpaces, setCompareSpaces] = useState<Space[]>([])
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
   const [loading, setLoading] = useState(true)
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
 
-  // useCallback: evita recriar função em todo render
   const loadUserRole = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
@@ -44,7 +43,6 @@ function App() {
 
     if (data) {
       setUserRole(data.role)
-      // Busca contagem de orçamentos pendentes
       if (data.role === 'host') {
         const { count } = await supabase
           .from('quotes')
@@ -60,7 +58,7 @@ function App() {
         setPendingQuotesCount(count || 0)
       }
     }
-  }, []) // deps vazias: função nunca muda
+  }, [])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -87,7 +85,6 @@ function App() {
     setPage('home')
   }, [])
 
-  // goToPage: sem query ao banco a cada navegação
   const goToPage = useCallback((p: Page, space?: Space) => {
     setPage(p)
     if (space) {
@@ -98,10 +95,30 @@ function App() {
     window.scrollTo(0, 0)
   }, [])
 
-  // Função separada para atualizar badge (chamada só quando necessário)
   const refreshQuoteCount = useCallback(() => {
     if (user) loadUserRole(user.id)
   }, [user, loadUserRole])
+
+  // Comparação: adiciona/remove espaço (máximo 3)
+  const handleCompareToggle = useCallback((space: Space) => {
+    setCompareSpaces(prev => {
+      const exists = prev.find(s => s.id === space.id)
+      if (exists) return prev.filter(s => s.id !== space.id)
+      if (prev.length >= 3) {
+        alert('Você já selecionou 3 espaços para comparar. Remova um antes de adicionar outro.')
+        return prev
+      }
+      return [...prev, space]
+    })
+  }, [])
+
+  const handleClearCompare = useCallback(() => {
+    setCompareSpaces([])
+  }, [])
+
+  const handleRemoveFromCompare = useCallback((id: string) => {
+    setCompareSpaces(prev => prev.filter(s => s.id !== id))
+  }, [])
 
   if (loading) {
     return (
@@ -133,6 +150,20 @@ function App() {
           <a onClick={() => user ? goToPage('host-dashboard') : goToPage('signup')}>Anuncie</a>
         </div>
         <div className="nav-right">
+          {/* Badge de comparação no nav */}
+          {compareSpaces.length > 0 && (
+            <button
+              onClick={() => goToPage('comparison')}
+              style={{
+                padding: '8px 14px', fontSize: 13, fontWeight: 700,
+                background: '#f0fdf4', border: '1.5px solid #a3e635',
+                borderRadius: 8, cursor: 'pointer', color: '#1a2e05',
+                display: 'flex', alignItems: 'center', gap: 6
+              }}
+            >
+              📊 Comparar <span className="badge-count" style={{ background: '#a3e635', color: '#1a2e05' }}>{compareSpaces.length}</span>
+            </button>
+          )}
           {user ? (
             <>
               {userRole === 'host' && (
@@ -154,10 +185,16 @@ function App() {
         </div>
       </nav>
 
-      {/* Suspense envolve tudo: lazy pages precisam de fallback */}
       <Suspense fallback={<PageLoader />}>
         {page === 'home' && <HomePage goToPage={goToPage} />}
-        {page === 'listing' && <ListingPage goToPage={goToPage} />}
+        {page === 'listing' && (
+          <ListingPage
+            goToPage={goToPage}
+            compareSpaces={compareSpaces}
+            onCompareToggle={handleCompareToggle}
+            onClearCompare={handleClearCompare}
+          />
+        )}
         {page === 'detail' && selectedSpace && <DetailPage space={selectedSpace} goToPage={goToPage} user={user} />}
         {page === 'login' && <LoginPage goToPage={goToPage} />}
         {page === 'signup' && <SignupPage goToPage={goToPage} />}
@@ -167,6 +204,13 @@ function App() {
         {page === 'my-quotes' && user && <MyQuotesPage user={user} goToPage={goToPage} />}
         {page === 'host-quotes' && user && <HostQuotesPage user={user} goToPage={goToPage} />}
         {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
+        {page === 'comparison' && (
+          <ComparisonPage
+            spaces={compareSpaces}
+            goToPage={goToPage}
+            onRemove={handleRemoveFromCompare}
+          />
+        )}
       </Suspense>
     </div>
   )
