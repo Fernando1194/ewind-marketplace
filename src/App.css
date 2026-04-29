@@ -601,3 +601,19 @@
   .search-btn { width: 100%; padding: 14px; }
   .user-greeting { display: none; }
 }
+
+/* BADGE COUNT (notificações no nav) */
+.badge-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 100px;
+  margin-left: 4px;
+}

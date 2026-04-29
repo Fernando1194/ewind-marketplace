@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
-import { CATEGORIES } from './types'
 import type { Space } from './types'
 import HomePage from './pages/HomePage'
 import ListingPage from './pages/ListingPage'
@@ -10,9 +9,11 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import HostDashboard from './pages/HostDashboard'
 import NewSpacePage from './pages/NewSpacePage'
+import MyQuotesPage from './pages/MyQuotesPage'
+import HostQuotesPage from './pages/HostQuotesPage'
 import './App.css'
 
-export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space'
+export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'my-quotes' | 'host-quotes'
 
 function App() {
   const [page, setPage] = useState<Page>('home')
@@ -20,9 +21,9 @@ function App() {
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
   const [loading, setLoading] = useState(true)
+  const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
 
   useEffect(() => {
-    // Verifica sessão atual
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
       if (session?.user) {
@@ -31,13 +32,13 @@ function App() {
       setLoading(false)
     })
 
-    // Escuta mudanças de auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
         loadUserRole(session.user.id)
       } else {
         setUserRole('guest')
+        setPendingQuotesCount(0)
       }
     })
 
@@ -53,6 +54,21 @@ function App() {
 
     if (data) {
       setUserRole(data.role)
+      // Carrega contagem de orçamentos pendentes
+      if (data.role === 'host') {
+        const { count } = await supabase
+          .from('quotes')
+          .select('*', { count: 'exact', head: true })
+          .eq('host_id', userId)
+          .eq('status', 'pending')
+        setPendingQuotesCount(count || 0)
+      } else {
+        const { count } = await supabase
+          .from('quotes')
+          .select('*', { count: 'exact', head: true })
+          .eq('guest_id', userId)
+        setPendingQuotesCount(count || 0)
+      }
     }
   }
 
@@ -65,6 +81,8 @@ function App() {
     setPage(p)
     if (space) setSelectedSpace(space)
     window.scrollTo(0, 0)
+    // Recarrega contagem ao navegar
+    if (user) loadUserRole(user.id)
   }
 
   if (loading) {
@@ -83,7 +101,16 @@ function App() {
         </div>
         <div className="nav-center">
           <a onClick={() => goToPage('listing')}>Espaços</a>
-          <a>Fornecedores</a>
+          {user && userRole === 'guest' && (
+            <a onClick={() => goToPage('my-quotes')}>
+              Meus orçamentos {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
+            </a>
+          )}
+          {user && userRole === 'host' && (
+            <a onClick={() => goToPage('host-quotes')}>
+              Orçamentos {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
+            </a>
+          )}
           <a>Como funciona</a>
           <a onClick={() => user ? goToPage('host-dashboard') : goToPage('signup')}>Anuncie</a>
         </div>
@@ -114,6 +141,8 @@ function App() {
       {page === 'signup' && <SignupPage goToPage={goToPage} />}
       {page === 'host-dashboard' && user && <HostDashboard user={user} goToPage={goToPage} />}
       {page === 'new-space' && user && <NewSpacePage user={user} goToPage={goToPage} />}
+      {page === 'my-quotes' && user && <MyQuotesPage user={user} goToPage={goToPage} />}
+      {page === 'host-quotes' && user && <HostQuotesPage user={user} goToPage={goToPage} />}
     </div>
   )
 }
