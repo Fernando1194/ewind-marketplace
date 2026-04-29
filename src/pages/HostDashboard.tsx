@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Space } from '../types'
@@ -13,48 +13,44 @@ export default function HostDashboard({ user, goToPage }: Props) {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadMySpaces()
-  }, [])
-
-  const loadMySpaces = async () => {
+  const loadMySpaces = useCallback(async () => {
     setLoading(true)
     const { data } = await supabase
       .from('spaces')
-      .select('*')
+      .select('id, host_id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, status, event_types, attributes, min_hours, address, description, created_at, updated_at')
       .eq('host_id', user.id)
       .order('created_at', { ascending: false })
-
     if (data) setSpaces(data)
     setLoading(false)
-  }
+  }, [user.id])
 
-  const deleteSpace = async (id: string) => {
+  useEffect(() => {
+    loadMySpaces()
+  }, [loadMySpaces])
+
+  const deleteSpace = useCallback(async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este espaço? Esta ação não pode ser desfeita.')) return
     const { error } = await supabase.from('spaces').delete().eq('id', id)
-    if (!error) {
-      setSpaces(spaces.filter(s => s.id !== id))
-    }
-  }
+    if (!error) setSpaces(prev => prev.filter(s => s.id !== id))
+  }, [])
 
-  const togglePause = async (space: Space) => {
+  const togglePause = useCallback(async (space: Space) => {
     const newStatus = space.status === 'active' ? 'paused' : 'active'
     const { error } = await supabase
       .from('spaces')
       .update({ status: newStatus })
       .eq('id', space.id)
-    
     if (!error) {
-      setSpaces(spaces.map(s => s.id === space.id ? { ...s, status: newStatus as any } : s))
+      setSpaces(prev => prev.map(s => s.id === space.id ? { ...s, status: newStatus as any } : s))
     }
-  }
+  }, [])
 
-  const stats = {
+  const stats = useMemo(() => ({
     total: spaces.length,
     active: spaces.filter(s => s.status === 'active').length,
     pending: spaces.filter(s => s.status === 'pending').length,
     paused: spaces.filter(s => s.status === 'paused').length,
-  }
+  }), [spaces])
 
   const statusBadge = (status: string) => {
     const config: Record<string, { bg: string; color: string; label: string }> = {
