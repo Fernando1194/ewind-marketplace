@@ -43,7 +43,9 @@ export const CATEGORIES = [
   { name: 'Salão de Eventos', icon: '🏛', bg: '#f0fdf4' },
   { name: 'Restaurante', icon: '🍽', bg: '#fff0f0' },
   { name: 'Pousada', icon: '🏡', bg: '#f0f8ff' },
-  { name: 'Espaço Corporativo', icon: '🏢', bg: '#f5f0ff' }
+  { name: 'Espaço Corporativo', icon: '🏢', bg: '#f5f0ff' },
+  { name: 'Hotel', icon: '🏨', bg: '#fdf4ff' },
+  { name: 'Buffet Infantil', icon: '🎈', bg: '#fff1f9' }
 ]
 
 export const EVENT_TYPES = [

@@ -98,7 +98,7 @@ id             UUID PK
 host_id        UUID FK auth.users
 name           TEXT NOT NULL
 description    TEXT
-category       TEXT ('Chácara' | 'Salão de Eventos' | 'Restaurante' | 'Pousada' | 'Espaço Corporativo')
+category       TEXT ('Chácara' | 'Salão de Eventos' | 'Restaurante' | 'Pousada' | 'Espaço Corporativo' | 'Hotel' | 'Buffet Infantil')
 event_types    TEXT[]
 city           TEXT NOT NULL
 state          TEXT DEFAULT 'PR'
