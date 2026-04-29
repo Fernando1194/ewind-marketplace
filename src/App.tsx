@@ -8,16 +8,17 @@ import DetailPage from './pages/DetailPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import HostDashboard from './pages/HostDashboard'
-import NewSpacePage from './pages/NewSpacePage'
+import SpaceFormPage from './pages/SpaceFormPage'
 import MyQuotesPage from './pages/MyQuotesPage'
 import HostQuotesPage from './pages/HostQuotesPage'
 import './App.css'
 
-export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'my-quotes' | 'host-quotes'
+export type Page = 'home' | 'listing' | 'detail' | 'login' | 'signup' | 'host-dashboard' | 'new-space' | 'edit-space' | 'my-quotes' | 'host-quotes'
 
 function App() {
   const [page, setPage] = useState<Page>('home')
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+  const [editingSpace, setEditingSpace] = useState<Space | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
   const [loading, setLoading] = useState(true)
@@ -54,7 +55,6 @@ function App() {
 
     if (data) {
       setUserRole(data.role)
-      // Carrega contagem de orçamentos pendentes
       if (data.role === 'host') {
         const { count } = await supabase
           .from('quotes')
@@ -79,9 +79,17 @@ function App() {
 
   const goToPage = (p: Page, space?: Space) => {
     setPage(p)
-    if (space) setSelectedSpace(space)
+    if (space) {
+      if (p === 'edit-space') {
+        setEditingSpace(space)
+      } else {
+        setSelectedSpace(space)
+      }
+    }
+    if (p === 'new-space') {
+      setEditingSpace(null) // Limpa quando vai criar novo
+    }
     window.scrollTo(0, 0)
-    // Recarrega contagem ao navegar
     if (user) loadUserRole(user.id)
   }
 
@@ -140,7 +148,8 @@ function App() {
       {page === 'login' && <LoginPage goToPage={goToPage} />}
       {page === 'signup' && <SignupPage goToPage={goToPage} />}
       {page === 'host-dashboard' && user && <HostDashboard user={user} goToPage={goToPage} />}
-      {page === 'new-space' && user && <NewSpacePage user={user} goToPage={goToPage} />}
+      {page === 'new-space' && user && <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />}
+      {page === 'edit-space' && user && editingSpace && <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />}
       {page === 'my-quotes' && user && <MyQuotesPage user={user} goToPage={goToPage} />}
       {page === 'host-quotes' && user && <HostQuotesPage user={user} goToPage={goToPage} />}
     </div>

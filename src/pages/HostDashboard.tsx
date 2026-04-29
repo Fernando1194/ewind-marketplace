@@ -30,10 +30,22 @@ export default function HostDashboard({ user, goToPage }: Props) {
   }
 
   const deleteSpace = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este espaço?')) return
+    if (!confirm('Tem certeza que deseja excluir este espaço? Esta ação não pode ser desfeita.')) return
     const { error } = await supabase.from('spaces').delete().eq('id', id)
     if (!error) {
       setSpaces(spaces.filter(s => s.id !== id))
+    }
+  }
+
+  const togglePause = async (space: Space) => {
+    const newStatus = space.status === 'active' ? 'paused' : 'active'
+    const { error } = await supabase
+      .from('spaces')
+      .update({ status: newStatus })
+      .eq('id', space.id)
+    
+    if (!error) {
+      setSpaces(spaces.map(s => s.id === space.id ? { ...s, status: newStatus as any } : s))
     }
   }
 
@@ -130,16 +142,40 @@ export default function HostDashboard({ user, goToPage }: Props) {
                 </span>
                 <span className="card-cap">👥 {s.capacity}</span>
               </div>
-              <div style={{ display: 'flex', gap: 6, marginTop: 12 }}>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
                 <button
                   onClick={() => goToPage('detail', s)}
+                  style={{
+                    flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #e8e8e8',
+                    borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
+                  }}
+                >
+                  👁 Ver
+                </button>
+                <button
+                  onClick={() => goToPage('edit-space', s)}
+                  style={{
+                    flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #a3e635',
+                    borderRadius: 8, cursor: 'pointer', color: '#5aa800'
+                  }}
+                >
+                  ✏️ Editar
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <button
+                  onClick={() => togglePause(s)}
                   style={{
                     flex: 1, padding: 7, fontSize: 12, fontWeight: 600,
                     background: '#fff', border: '1.5px solid #e8e8e8',
                     borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
                   }}
                 >
-                  Ver
+                  {s.status === 'active' ? '⏸ Pausar' : '▶ Ativar'}
                 </button>
                 <button
                   onClick={() => deleteSpace(s.id)}
