@@ -9,13 +9,24 @@ interface Props {
 }
 
 const HERO_IMAGES = [
+  // Casal dançando no casamento — momento mágico
+  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1600&h=800&fit=crop&q=90',
+  // Noiva com buquê — sorriso e emoção
+  'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1600&h=800&fit=crop&q=90',
+  // Mesa de casamento decorada com flores e velas
   'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&h=800&fit=crop&q=90',
-  'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1600&h=800&fit=crop&q=90',
-  'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=1600&h=800&fit=crop&q=90',
+  // Festa de aniversário com confetes e celebração
   'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1600&h=800&fit=crop&q=90',
-  'https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=1600&h=800&fit=crop&q=90',
-  'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=1600&h=800&fit=crop&q=90',
-  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1600&h=800&fit=crop&q=90',
+  // Fotógrafo capturando o momento perfeito
+  'https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1600&h=800&fit=crop&q=90',
+  // Maquiagem artística — making of da noiva
+  'https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=1600&h=800&fit=crop&q=90',
+  // Festa com luzes, música e alegria
+  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=800&fit=crop&q=90',
+  // Convidados brindando e celebrando
+  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&h=800&fit=crop&q=90',
+  // Bolo de casamento decorado com flores
+  'https://images.unsplash.com/photo-1464349095431-e9a21285b19a?w=1600&h=800&fit=crop&q=90',
 ]
 
 export default function HomePage({ goToPage }: Props) {
