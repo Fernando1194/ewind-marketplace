@@ -330,12 +330,12 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             )}
 
             <label style={{ display: 'block', border: '2px dashed #e8e8e8', borderRadius: 12, padding: 32, textAlign: 'center', cursor: 'pointer', background: '#fafafa' }}>
-              <input type="file" multiple accept="image/*" onChange={e => e.target.files && setFiles(Array.from(e.target.files).slice(0, 8))} style={{ display: 'none' }} />
+              <input type="file" multiple accept="image/*,video/*" onChange={e => e.target.files && setFiles(Array.from(e.target.files).slice(0, 8))} style={{ display: 'none' }} />
               <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
-                {files.length > 0 ? `${files.length} foto(s) selecionada(s)` : 'Clique para escolher fotos do portfólio'}
+                {files.length > 0 ? `${files.length} arquivo(s) selecionado(s)` : 'Clique para adicionar fotos e vídeos e vídeos do portfólio'}
               </div>
-              <div style={{ fontSize: 12, color: '#6b7280' }}>JPG, PNG até 50MB cada</div>
+              <div style={{ fontSize: 12, color: '#6b7280' }}>Fotos (JPG, PNG) e vídeos (MP4, MOV) · até 50MB cada</div>
             </label>
 
             {files.length > 0 && (

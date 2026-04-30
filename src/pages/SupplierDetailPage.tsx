@@ -1,4 +1,5 @@
 import type { Supplier } from '../types'
+import MediaCarousel from '../components/MediaCarousel'
 import { SUPPLIER_CATEGORIES } from '../types'
 import type { Page } from '../App'
 
@@ -31,23 +32,7 @@ export default function SupplierDetailPage({ supplier, goToPage }: Props) {
       <div className="det-layout">
         <div>
           {/* Galeria */}
-          <img
-            src={supplier.media_urls[0] || 'https://via.placeholder.com/800x400?text=Sem+foto'}
-            className="det-main-img"
-            alt={supplier.name}
-          />
-          {supplier.media_urls.length > 1 && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 18, overflowX: 'auto' }}>
-              {supplier.media_urls.map((url, i) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt=""
-                  style={{ width: 90, height: 65, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
-                />
-              ))}
-            </div>
-          )}
+          <MediaCarousel urls={supplier.media_urls} alt={supplier.name} height={340} />
 
           {/* Badge categoria */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../supabase'
+import MediaCarousel from '../components/MediaCarousel'
 import type { User } from '@supabase/supabase-js'
 import type { Space } from '../types'
 import { EVENT_TYPES } from '../types'
@@ -69,18 +70,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
       </div>
       <div className="det-layout">
         <div>
-          <img
-            src={space.media_urls[0] || 'https://via.placeholder.com/800x450?text=Sem+foto'}
-            className="det-main-img"
-            alt={space.name}
-          />
-          {space.media_urls.length > 1 && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 18, overflowX: 'auto' }}>
-              {space.media_urls.map((url, i) => (
-                <img key={i} src={url} alt="" style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 8 }} />
-              ))}
-            </div>
-          )}
+          <MediaCarousel urls={space.media_urls} alt={space.name} height={380} />
           <div className="card-tags" style={{ marginBottom: 10 }}>
             {space.event_types.map(t => <span key={t} className="tag">{t}</span>)}
           </div>
