@@ -123,6 +123,39 @@ export default function HomePage({ goToPage }: Props) {
         </div>
       </section>
 
+      {/* CTA FORNECEDOR */}
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          borderRadius: 16, padding: '36px 40px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 24, flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ fontSize: 48 }}>🛠️</div>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#a3e635', marginBottom: 8 }}>
+                É fotógrafo, DJ, decorador ou fornecedor de serviços?
+              </div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', maxWidth: 480, lineHeight: 1.6 }}>
+                Crie seu perfil na área exclusiva de fornecedores do Ewind, monte seu portfólio e conecte-se com quem está organizando eventos.
+              </div>
+            </div>
+          </div>
+          <button
+            style={{
+              padding: '14px 28px', fontSize: 15, fontWeight: 700,
+              background: '#a3e635', border: 'none', borderRadius: 10,
+              color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit',
+              whiteSpace: 'nowrap', flexShrink: 0
+            }}
+            onClick={() => goToPage('supplier-signup')}
+          >
+            Sou fornecedor →
+          </button>
+        </div>
+      </section>
+
       <footer className="footer">
         <div className="logo-box-sm">EWIND</div>
         <span>© 2025 Ewind — Marketplace de Espaços para Eventos</span>
