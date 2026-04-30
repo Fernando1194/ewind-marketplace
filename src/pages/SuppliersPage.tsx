@@ -22,7 +22,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
         <div style={{
           position: 'absolute', top: 10, left: 10,
           background: cat?.bg || '#f0fdf4', borderRadius: 20,
-          padding: '4px 10px', fontSize: 12, fontWeight: 700,
+          padding: '4px 10px', fontSize: 11, fontWeight: 700,
           display: 'flex', alignItems: 'center', gap: 4
         }}>
           {cat?.icon} {supplier.category}
@@ -39,7 +39,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
           📍 {supplier.cities.slice(0, 2).join(', ')}{supplier.cities.length > 2 ? ` +${supplier.cities.length - 2}` : ''}, {supplier.state}
         </div>
         {supplier.price_info && (
-          <div style={{ fontSize: 13, color: '#6b7280', marginTop: 6 }}>
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
             💰 {supplier.price_info}
           </div>
         )}
@@ -54,7 +54,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
 export default function SuppliersPage({ goToPage }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
-  const [filterCategory, setFilterCategory] = useState<string>('')
+  const [filterCategories, setFilterCategories] = useState<string[]>([])
   const [filterCity, setFilterCity] = useState('')
 
   useEffect(() => {
@@ -73,18 +73,24 @@ export default function SuppliersPage({ goToPage }: Props) {
     return () => { cancelled = true }
   }, [])
 
+  const toggleCategory = useCallback((cat: string) => {
+    setFilterCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    )
+  }, [])
+
+  const clearFilters = useCallback(() => {
+    setFilterCategories([])
+    setFilterCity('')
+  }, [])
+
   const filtered = useMemo(() => {
     return suppliers.filter(s => {
-      if (filterCategory && s.category !== filterCategory) return false
+      if (filterCategories.length > 0 && !filterCategories.includes(s.category)) return false
       if (filterCity && !s.cities.some(c => c.toLowerCase().includes(filterCity.toLowerCase()))) return false
       return true
     })
-  }, [suppliers, filterCategory, filterCity])
-
-  const clearFilters = useCallback(() => {
-    setFilterCategory('')
-    setFilterCity('')
-  }, [])
+  }, [suppliers, filterCategories, filterCity])
 
   return (
     <>
@@ -95,22 +101,14 @@ export default function SuppliersPage({ goToPage }: Props) {
           value={filterCity}
           onChange={e => setFilterCity(e.target.value)}
         />
-        <select
-          value={filterCategory}
-          onChange={e => setFilterCategory(e.target.value)}
-          style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}
-        >
-          <option value="">Todas as categorias</option>
-          {SUPPLIER_CATEGORIES.map(c => (
-            <option key={c.name} value={c.name}>{c.icon} {c.name}</option>
-          ))}
-        </select>
         <button className="btn-primary">Buscar</button>
       </div>
 
       <div className="listing-wrap">
         {/* Sidebar */}
         <aside className="filters-sidebar">
+
+          {/* Cidade */}
           <div className="sf-group">
             <div className="sf-group-title">Cidade</div>
             <input
@@ -120,30 +118,72 @@ export default function SuppliersPage({ goToPage }: Props) {
               onChange={e => setFilterCity(e.target.value)}
             />
           </div>
+
+          {/* Categorias como checkboxes alinhados */}
           <div className="sf-group">
             <div className="sf-group-title">Categoria</div>
-            <label className="chk-row">
-              <input
-                type="radio"
-                name="cat"
-                checked={filterCategory === ''}
-                onChange={() => setFilterCategory('')}
-              />
-              <span>Todas</span>
-            </label>
             {SUPPLIER_CATEGORIES.map(c => (
-              <label key={c.name} className="chk-row">
+              <label
+                key={c.name}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 8,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  color: filterCategories.includes(c.name) ? '#1a2e05' : '#6b7280',
+                  fontWeight: filterCategories.includes(c.name) ? 600 : 400,
+                  padding: '6px 8px',
+                  borderRadius: 8,
+                  background: filterCategories.includes(c.name) ? '#f0fdf4' : 'transparent',
+                  border: filterCategories.includes(c.name) ? '1px solid #a3e635' : '1px solid transparent',
+                  transition: 'all 0.15s'
+                }}
+              >
                 <input
-                  type="radio"
-                  name="cat"
-                  checked={filterCategory === c.name}
-                  onChange={() => setFilterCategory(c.name)}
+                  type="checkbox"
+                  checked={filterCategories.includes(c.name)}
+                  onChange={() => toggleCategory(c.name)}
+                  style={{ accentColor: '#a3e635', width: 14, height: 14, flexShrink: 0 }}
                 />
-                <span>{c.icon} {c.name}</span>
+                <span style={{ fontSize: 15, flexShrink: 0 }}>{c.icon}</span>
+                <span style={{ lineHeight: 1.3 }}>{c.name}</span>
               </label>
             ))}
           </div>
-          <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
+
+          {/* Chips selecionados */}
+          {filterCategories.length > 0 && (
+            <div style={{ marginBottom: 12 }}>
+              <div className="sf-group-title">Filtros ativos</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {filterCategories.map(cat => {
+                  const c = SUPPLIER_CATEGORIES.find(x => x.name === cat)
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => toggleCategory(cat)}
+                      style={{
+                        fontSize: 11, fontWeight: 600, padding: '3px 8px',
+                        background: '#a3e635', border: 'none', borderRadius: 100,
+                        cursor: 'pointer', color: '#1a2e05', display: 'flex',
+                        alignItems: 'center', gap: 4, fontFamily: 'inherit'
+                      }}
+                    >
+                      {c?.icon} {cat} ×
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          <button
+            className="btn-primary"
+            style={{ width: '100%' }}
+            onClick={clearFilters}
+          >
             Limpar filtros
           </button>
         </aside>
@@ -155,24 +195,30 @@ export default function SuppliersPage({ goToPage }: Props) {
             <button
               className="btn-primary"
               style={{ fontSize: 13, padding: '8px 16px' }}
-              onClick={() => goToPage('new-supplier')}
+              onClick={() => goToPage('supplier-signup')}
             >
               + Anunciar serviço
             </button>
           </div>
 
-          {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando fornecedores...</p>}
+          {loading && (
+            <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando fornecedores...</p>
+          )}
 
           {!loading && filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: 48, background: '#f9fafb', borderRadius: 14 }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Nenhum fornecedor encontrado</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
+                {filterCategories.length > 0 || filterCity
+                  ? 'Nenhum fornecedor encontrado'
+                  : 'Seja o primeiro a anunciar!'}
+              </h3>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
-                {suppliers.length === 0
-                  ? 'Seja o primeiro a anunciar seus serviços!'
-                  : 'Tente ajustar os filtros.'}
+                {filterCategories.length > 0 || filterCity
+                  ? 'Tente ajustar os filtros.'
+                  : 'Cadastre seus serviços e apareça para quem está organizando eventos.'}
               </p>
-              <button className="btn-primary" onClick={() => goToPage('new-supplier')}>
+              <button className="btn-primary" onClick={() => goToPage('supplier-signup')}>
                 + Anunciar meu serviço
               </button>
             </div>
@@ -183,7 +229,7 @@ export default function SuppliersPage({ goToPage }: Props) {
               <SupplierCard
                 key={s.id}
                 supplier={s}
-                onClick={() => goToPage('supplier-detail', s as any)}
+                onClick={() => goToPage('supplier-detail', s)}
               />
             ))}
           </div>
