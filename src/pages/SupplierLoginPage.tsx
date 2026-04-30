@@ -6,7 +6,10 @@ interface Props {
   goToPage: (page: Page) => void
 }
 
+type Mode = 'login' | 'forgot' | 'forgot-sent'
+
 export default function SupplierLoginPage({ goToPage }: Props) {
+  const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -29,16 +32,42 @@ export default function SupplierLoginPage({ goToPage }: Props) {
     }
   }
 
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin
+      })
+      if (error) throw error
+      setMode('forgot-sent')
+    } catch (err: any) {
+      setError(err.message || 'Erro ao enviar email')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div style={{ minHeight: 'calc(100vh - 64px)', background: '#f9fafb', display: 'flex' }}>
 
       {/* Lado esquerdo — visual */}
       <div style={{
-        width: '42%', background: 'linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 100%)',
-        padding: '60px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center'
+        width: '42%',
+        background: 'linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 100%)',
+        padding: '60px 48px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
       }} className="supplier-side">
-        <div className="logo-box" style={{ display: 'inline-block', marginBottom: 28 }}>EWIND</div>
-        <h2 style={{ fontSize: 30, fontWeight: 800, color: '#a3e635', lineHeight: 1.2, marginBottom: 16 }}>
+        <div
+          onClick={() => goToPage('home')}
+          style={{ cursor: 'pointer', display: 'inline-block', marginBottom: 28 }}
+        >
+          <div className="logo-box">EWIND</div>
+        </div>
+        <h2 style={{ fontSize: 28, fontWeight: 800, color: '#a3e635', lineHeight: 1.25, marginBottom: 16 }}>
           Bem-vindo de volta, profissional!
         </h2>
         <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 36 }}>
@@ -60,7 +89,9 @@ export default function SupplierLoginPage({ goToPage }: Props) {
         </div>
 
         <div style={{ marginTop: 40, paddingTop: 28, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Ainda não tem conta?</div>
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 10 }}>
+            Ainda não tem conta?
+          </p>
           <button
             onClick={() => goToPage('supplier-signup')}
             style={{
@@ -75,64 +106,180 @@ export default function SupplierLoginPage({ goToPage }: Props) {
       </div>
 
       {/* Lado direito — formulário */}
-      <div style={{ flex: 1, padding: '48px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <div style={{ maxWidth: 400 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Entrar na área do fornecedor</h1>
-          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 32 }}>
-            Acesse seu painel de serviços.
-          </p>
+      <div style={{
+        flex: 1,
+        padding: '48px 56px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}>
+        <div style={{ maxWidth: 420 }}>
 
-          <form onSubmit={handleLogin}>
-            <div className="fg">
-              <label>Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="contato@email.com"
-                autoFocus
-              />
+          {/* ===== LOGIN ===== */}
+          {mode === 'login' && (
+            <>
+              <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>
+                Entrar na área do fornecedor
+              </h1>
+              <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 28 }}>
+                Acesse seu painel de serviços.
+              </p>
+
+              <form onSubmit={handleLogin}>
+                <div className="fg">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="contato@email.com"
+                  />
+                </div>
+                <div className="fg">
+                  <label>Senha</label>
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="Sua senha"
+                  />
+                </div>
+
+                {error && <div className="auth-error">⚠️ {error}</div>}
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ width: '100%', padding: 14, marginTop: 8, fontSize: 15 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Entrando...' : '🛠️ Entrar no painel'}
+                </button>
+              </form>
+
+              {/* Links fluidos */}
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <button
+                  onClick={() => { setMode('forgot'); setError('') }}
+                  style={{ background: 'none', border: 'none', fontSize: 13, color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}
+                >
+                  Esqueci minha senha
+                </button>
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => goToPage('supplier-signup')}
+                    style={{
+                      flex: 1, padding: '10px 12px', fontSize: 13, fontWeight: 600,
+                      background: '#f0fdf4', border: '1.5px solid #a3e635',
+                      borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#1a2e05'
+                    }}
+                  >
+                    Criar conta →
+                  </button>
+                  <button
+                    onClick={() => goToPage('login')}
+                    style={{
+                      flex: 1, padding: '10px 12px', fontSize: 13, fontWeight: 600,
+                      background: '#f9fafb', border: '1.5px solid #e8e8e8',
+                      borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280'
+                    }}
+                  >
+                    Login geral
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => goToPage('home')}
+                  style={{ background: 'none', border: 'none', fontSize: 12, color: '#9ca3af', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}
+                >
+                  ← Voltar para a home
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ===== ESQUECI SENHA ===== */}
+          {mode === 'forgot' && (
+            <>
+              <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>
+                Redefinir senha
+              </h1>
+              <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 28 }}>
+                Digite seu email e enviaremos um link para criar uma nova senha.
+              </p>
+
+              <form onSubmit={handleForgot}>
+                <div className="fg">
+                  <label>Email cadastrado</label>
+                  <input
+                    type="email"
+                    required
+                    autoFocus
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="contato@email.com"
+                  />
+                </div>
+
+                {error && <div className="auth-error">⚠️ {error}</div>}
+
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{ width: '100%', padding: 14, marginTop: 8, fontSize: 15 }}
+                  disabled={loading}
+                >
+                  {loading ? 'Enviando...' : 'Enviar link de redefinição'}
+                </button>
+              </form>
+
+              <div style={{ marginTop: 16 }}>
+                <button
+                  onClick={() => { setMode('login'); setError('') }}
+                  style={{ background: 'none', border: 'none', fontSize: 13, color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  ← Voltar ao login
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ===== EMAIL ENVIADO ===== */}
+          {mode === 'forgot-sent' && (
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 56, marginBottom: 20 }}>✉️</div>
+              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 10 }}>Email enviado!</h1>
+              <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 6 }}>
+                Enviamos um link para <strong>{email}</strong>.
+              </p>
+              <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.6, marginBottom: 28 }}>
+                Verifique sua caixa de entrada e spam. O link expira em 1 hora.
+              </p>
+
+              <button
+                onClick={() => { setMode('login'); setError(''); setEmail('') }}
+                className="btn-primary"
+                style={{ width: '100%', padding: 13 }}
+              >
+                Voltar ao login
+              </button>
+
+              <div style={{ marginTop: 12, fontSize: 13, color: '#9ca3af' }}>
+                Não recebeu?{' '}
+                <button
+                  onClick={() => setMode('forgot')}
+                  style={{ background: 'none', border: 'none', color: '#5aa800', fontWeight: 600, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}
+                >
+                  Reenviar
+                </button>
+              </div>
             </div>
-            <div className="fg">
-              <label>Senha</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Sua senha"
-              />
-            </div>
+          )}
 
-            {error && <div className="auth-error">⚠️ {error}</div>}
-
-            <button
-              type="submit"
-              className="btn-primary"
-              style={{ width: '100%', padding: 14, marginTop: 10, fontSize: 15 }}
-              disabled={loading}
-            >
-              {loading ? 'Entrando...' : '🛠️ Entrar no painel'}
-            </button>
-          </form>
-
-          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-            Não tem conta ainda?{' '}
-            <a onClick={() => goToPage('supplier-signup')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>
-              Cadastrar gratuitamente →
-            </a>
-          </div>
-          <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-            <a onClick={() => goToPage('login')} style={{ color: '#9ca3af', cursor: 'pointer' }}>
-              Login como host ou guest →
-            </a>
-          </div>
-          <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-            <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>
-              ← Voltar para a home
-            </a>
-          </div>
         </div>
       </div>
     </div>
