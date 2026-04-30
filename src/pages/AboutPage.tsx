@@ -271,15 +271,18 @@ export default function AboutPage({ goToPage }: Props) {
                 Anunciar espaço →
               </button>
             </div>
-            <div style={{ background: '#f9fafb', borderRadius: 14, padding: 28, border: '1px dashed #d1d5db' }}>
+            <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>🛠️</div>
-              <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: '#9ca3af' }}>Fornecedores de serviços</h4>
-              <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.6 }}>
-                Buffet, decoração, fotografia, música, segurança e muito mais. Em breve, fornecedores de serviços também terão seu espaço no Ewind.
+              <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>Fornecedores de serviços</h4>
+              <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>
+                Fotografia, filmagem, decoração, buffet, DJ, maquiagem, cerimonialista e muito mais. Encontre os melhores profissionais para o seu evento.
               </p>
-              <div style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: '#d1d5db' }}>
-                Em breve ✨
-              </div>
+              <button
+                onClick={() => goToPage('suppliers')}
+                style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Ver fornecedores →
+              </button>
             </div>
           </div>
         </div>

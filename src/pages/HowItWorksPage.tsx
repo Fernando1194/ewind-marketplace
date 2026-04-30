@@ -69,24 +69,29 @@ export default function HowItWorksPage({ goToPage }: Props) {
 
   const supplierSteps = [
     {
-      icon: '🚧',
-      title: 'Em breve!',
-      desc: 'Estamos preparando uma área especial para fornecedores de serviços para eventos: buffet, decoração, fotografia, música, segurança e muito mais.'
-    },
-    {
-      icon: '🤝',
-      title: 'Conexão direta',
-      desc: 'Conecte-se com pessoas que estão organizando eventos e estão prontas para contratar serviços.'
+      icon: '✍️',
+      title: 'Crie sua conta de fornecedor',
+      desc: 'Cadastre-se gratuitamente como fornecedor. É rápido e não precisa de cartão de crédito.'
     },
     {
       icon: '📋',
-      title: 'Vitrine personalizada',
-      desc: 'Crie um perfil profissional com seus serviços, fotos de trabalhos anteriores e portfólio.'
+      title: 'Monte seu portfólio',
+      desc: 'Adicione fotos do seu trabalho, descreva seus serviços, informe cidades de atendimento e faixa de preço.'
     },
     {
-      icon: '⭐',
-      title: 'Construa reputação',
-      desc: 'Receba avaliações dos clientes que contrataram seus serviços e construa credibilidade no mercado.'
+      icon: '🌐',
+      title: 'Apareça nos resultados',
+      desc: 'Seu perfil fica visível para pessoas que estão organizando eventos e buscam profissionais como você na região.'
+    },
+    {
+      icon: '💬',
+      title: 'Receba contatos diretos',
+      desc: 'Clientes entram em contato via WhatsApp, Instagram ou email direto no seu perfil — sem intermediários.'
+    },
+    {
+      icon: '📈',
+      title: 'Gerencie seu perfil',
+      desc: 'Atualize fotos, preços e informações a qualquer momento. Pause quando precisar e reative quando quiser.'
     }
   ]
 
@@ -232,7 +237,7 @@ export default function HowItWorksPage({ goToPage }: Props) {
             <p style={{ fontSize: 14, color: '#6b7280' }}>
               {audience === 'guest' && 'Em poucos passos você encontra e fecha o evento perfeito'}
               {audience === 'host' && 'Anuncie seu espaço e receba mais clientes qualificados'}
-              {audience === 'supplier' && 'Conecte-se com pessoas que precisam dos seus serviços'}
+              {audience === 'supplier' && 'Crie seu perfil, exiba seu portfólio e seja encontrado por quem organiza eventos'}
             </p>
           </div>
 
@@ -274,7 +279,7 @@ export default function HowItWorksPage({ goToPage }: Props) {
                       borderRadius: 100,
                       letterSpacing: '0.05em'
                     }}>
-                      {audience === 'supplier' && i === 0 ? 'EM BREVE' : `PASSO ${i + 1}`}
+                      {`PASSO ${i + 1}`}
                     </span>
                   </div>
                   <h4 style={{ fontSize: 17, fontWeight: 700, marginBottom: 6 }}>{step.title}</h4>
@@ -306,20 +311,11 @@ export default function HowItWorksPage({ goToPage }: Props) {
             )}
             {audience === 'supplier' && (
               <button
-                style={{
-                  fontSize: 15,
-                  padding: '14px 32px',
-                  background: '#fff',
-                  border: '2px solid #a3e635',
-                  borderRadius: 8,
-                  color: '#5aa800',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit'
-                }}
-                onClick={() => alert('Em breve! Cadastre-se na newsletter para ser avisado quando lançarmos.')}
+                className="btn-primary"
+                style={{ fontSize: 15, padding: '14px 32px' }}
+                onClick={() => goToPage('supplier-signup')}
               >
-                🔔 Avise-me quando lançar
+                🛠️ Cadastrar como fornecedor
               </button>
             )}
           </div>

@@ -64,11 +64,39 @@ export default function HomePage({ goToPage }: Props) {
 
       <section className="section">
         <h2 className="sec-title">Explore por categoria</h2>
-        <div className="cat-grid">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: 10
+        }}>
           {CATEGORIES.map(c => (
-            <div key={c.name} className="cat-card" onClick={() => goToPage('listing')}>
-              <div className="cat-icon" style={{ background: c.bg }}>{c.icon}</div>
-              <div className="cat-name">{c.name}</div>
+            <div
+              key={c.name}
+              onClick={() => goToPage('listing')}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: 8, padding: '16px 8px', borderRadius: 12,
+                border: '1.5px solid #e8e8e8', cursor: 'pointer',
+                background: '#fff', transition: 'all 0.2s',
+                textAlign: 'center'
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = '#a3e635'
+                ;(e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'
+                ;(e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(163,230,53,0.15)'
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = '#e8e8e8'
+                ;(e.currentTarget as HTMLElement).style.transform = 'translateY(0)'
+                ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
+              }}
+            >
+              <div style={{
+                width: 44, height: 44, borderRadius: 12,
+                background: c.bg, display: 'flex',
+                alignItems: 'center', justifyContent: 'center', fontSize: 22
+              }}>{c.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#2d2d2d', lineHeight: 1.3 }}>{c.name}</div>
             </div>
           ))}
         </div>
