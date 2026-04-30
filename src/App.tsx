@@ -22,3 +22,6 @@ const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
 const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
 const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
+}
+
+export default App
