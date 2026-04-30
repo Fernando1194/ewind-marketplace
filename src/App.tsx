@@ -149,6 +149,7 @@ function App() {
         </div>
 
         <div className="nav-center">
+          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
           <a onClick={() => goToPage('listing')}>Espaços</a>
           <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
 

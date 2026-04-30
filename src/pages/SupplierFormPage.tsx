@@ -29,6 +29,10 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
   const [instagram, setInstagram] = useState(editingSupplier?.instagram || '')
   const [email, setEmail] = useState(editingSupplier?.email || '')
   const [website, setWebsite] = useState(editingSupplier?.website || '')
+  const [facebook, setFacebook] = useState((editingSupplier as any)?.facebook || '')
+  const [youtube, setYoutube] = useState((editingSupplier as any)?.youtube || '')
+  const [tiktok, setTiktok] = useState((editingSupplier as any)?.tiktok || '')
+  const [portfolioUrl, setPortfolioUrl] = useState((editingSupplier as any)?.portfolio_url || '')
   const [priceInfo, setPriceInfo] = useState(editingSupplier?.price_info || '')
   const [eventTypes, setEventTypes] = useState<string[]>(editingSupplier?.event_types || [])
   const [attributes, setAttributes] = useState<string[]>(editingSupplier?.attributes || [])
@@ -251,11 +255,27 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
               <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="contato@email.com" />
             </div>
             <div className="fg">
-              <label>Site (opcional)</label>
+              <label>🌐 Site próprio</label>
               <input type="text" value={website} onChange={e => setWebsite(e.target.value)} placeholder="www.seusite.com.br" />
             </div>
             <div className="fg">
-              <label>Faixa de preço (opcional)</label>
+              <label>📘 Facebook</label>
+              <input type="text" value={facebook} onChange={e => setFacebook(e.target.value)} placeholder="facebook.com/seuperfil" />
+            </div>
+            <div className="fg">
+              <label>🎬 YouTube</label>
+              <input type="text" value={youtube} onChange={e => setYoutube(e.target.value)} placeholder="youtube.com/@seucanal" />
+            </div>
+            <div className="fg">
+              <label>🎵 TikTok</label>
+              <input type="text" value={tiktok} onChange={e => setTiktok(e.target.value)} placeholder="@seutikok" />
+            </div>
+            <div className="fg">
+              <label>💼 Portfólio / Behance / Website</label>
+              <input type="text" value={portfolioUrl} onChange={e => setPortfolioUrl(e.target.value)} placeholder="Ex: behance.net/seuperfil ou portfolio.com" />
+            </div>
+            <div className="fg">
+              <label>💰 Faixa de preço (opcional)</label>
               <input type="text" value={priceInfo} onChange={e => setPriceInfo(e.target.value)} placeholder="Ex: A partir de R$ 800 · Pacotes a partir de R$ 2.500" />
             </div>
           </>

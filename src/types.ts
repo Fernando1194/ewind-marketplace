@@ -14,6 +14,11 @@ export interface Space {
   price_per_day: number | null
   attributes: string[]
   media_urls: string[]
+  whatsapp: string | null
+  instagram: string | null
+  facebook: string | null
+  website: string | null
+  cardapio_url: string | null
   status: 'pending' | 'active' | 'paused' | 'rejected'
   created_at: string
   updated_at: string
@@ -85,6 +90,10 @@ export interface Supplier {
   media_urls: string[]
   attributes: string[]
   event_types: string[]
+  facebook: string | null
+  youtube: string | null
+  tiktok: string | null
+  portfolio_url: string | null
   status: 'active' | 'paused' | 'pending'
   created_at: string
   updated_at: string

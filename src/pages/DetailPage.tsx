@@ -223,6 +223,42 @@ export default function DetailPage({ space, user, goToPage }: Props) {
               </form>
             )}
 
+            {/* Links do espaço */}
+            {((space as any).whatsapp || (space as any).instagram || (space as any).facebook || (space as any).website || (space as any).cardapio_url) && (
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#2d2d2d', marginBottom: 4 }}>🔗 Links e contatos</div>
+                {(space as any).whatsapp && (
+                  <a href={`https://wa.me/55${(space as any).whatsapp.replace(/\D/g, '')}?text=Olá! Vi seu espaço no Ewind e gostaria de mais informações.`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#f0fdf4', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#166534', textDecoration: 'none' }}>
+                    💬 WhatsApp
+                  </a>
+                )}
+                {(space as any).instagram && (
+                  <a href={`https://instagram.com/${(space as any).instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#fdf4ff', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#6b21a8', textDecoration: 'none' }}>
+                    📸 Instagram
+                  </a>
+                )}
+                {(space as any).facebook && (
+                  <a href={(space as any).facebook.startsWith('http') ? (space as any).facebook : `https://${(space as any).facebook}`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#eff6ff', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#1d4ed8', textDecoration: 'none' }}>
+                    📘 Facebook
+                  </a>
+                )}
+                {(space as any).website && (
+                  <a href={(space as any).website.startsWith('http') ? (space as any).website : `https://${(space as any).website}`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#f9fafb', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#2d2d2d', textDecoration: 'none' }}>
+                    🌐 Site próprio
+                  </a>
+                )}
+                {(space as any).cardapio_url && (
+                  <a href={(space as any).cardapio_url.startsWith('http') ? (space as any).cardapio_url : `https://${(space as any).cardapio_url}`} target="_blank" rel="noopener noreferrer"
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#fff7ed', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#c05621', textDecoration: 'none' }}>
+                    🍽️ Ver cardápio
+                  </a>
+                )}
+              </div>
+            )}
             <div className="qb-sec">🔒 Seus dados são protegidos. Compartilhados apenas com o fornecedor.</div>
           </div>
         </aside>
