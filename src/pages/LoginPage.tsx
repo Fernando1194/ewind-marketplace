@@ -50,6 +50,12 @@ export default function LoginPage({ goToPage }: Props) {
         <div className="auth-switch">
           Não tem conta? <a onClick={() => goToPage('signup')}>Cadastre-se</a>
         </div>
+        <div className="auth-switch" style={{ marginTop: 8 }}>
+          É fornecedor de serviços? <a onClick={() => goToPage('supplier-signup')} style={{ color: '#5aa800', fontWeight: 600 }}>Cadastre-se aqui →</a>
+        </div>
+        <div className="auth-switch" style={{ marginTop: 8 }}>
+          Já tem conta de fornecedor? <a onClick={() => goToPage('supplier-login')} style={{ color: '#5aa800', fontWeight: 600 }}>Entrar →</a>
+        </div>
       </div>
     </div>
   )
