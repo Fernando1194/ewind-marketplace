@@ -25,6 +25,7 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
   const [cityInput, setCityInput] = useState('')
   const [cities, setCities] = useState<string[]>(editingSupplier?.cities || [])
   const [state, setState] = useState(editingSupplier?.state || 'PR')
+  const [neighborhood, setNeighborhood] = useState((editingSupplier as any)?.neighborhood || '')
   const [whatsapp, setWhatsapp] = useState(editingSupplier?.whatsapp || '')
   const [instagram, setInstagram] = useState(editingSupplier?.instagram || '')
   const [email, setEmail] = useState(editingSupplier?.email || '')
@@ -219,6 +220,10 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             <div className="fg">
               <label>Estado principal</label>
               <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="PR" maxLength={2} />
+            </div>
+            <div className="fg">
+              <label>Bairro principal de atuação (opcional)</label>
+              <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Ex: Batel, Centro" />
             </div>
             <div className="fg">
               <label>Tipos de evento que atende</label>

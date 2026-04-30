@@ -105,6 +105,26 @@ export default function DetailPage({ space, user, goToPage }: Props) {
               {space.description}
             </p>
           )}
+          {/* Metragem */}
+          {((space as any).area_covered || (space as any).area_uncovered) && (
+            <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+              {(space as any).area_covered && (
+                <div style={{ background: '#f0fdf4', border: '1px solid #d9f99d', borderRadius: 10, padding: '12px 18px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 22, marginBottom: 4 }}>🏠</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>{(space as any).area_covered} m²</div>
+                  <div style={{ fontSize: 11, color: '#6b7280' }}>Área coberta</div>
+                </div>
+              )}
+              {(space as any).area_uncovered && (
+                <div style={{ background: '#f0fdf4', border: '1px solid #d9f99d', borderRadius: 10, padding: '12px 18px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 22, marginBottom: 4 }}>🌤️</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>{(space as any).area_uncovered} m²</div>
+                  <div style={{ fontSize: 11, color: '#6b7280' }}>Área descoberta</div>
+                </div>
+              )}
+            </div>
+          )}
+
           {space.attributes.length > 0 && (
             <>
               <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, marginTop: 20 }}>O que o local oferece</h3>
@@ -114,6 +134,34 @@ export default function DetailPage({ space, user, goToPage }: Props) {
                 ))}
               </div>
             </>
+          )}
+
+          {/* Mapa */}
+          {((space as any).address || (space as any).neighborhood || space.city) && (
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>📍 Localização</h3>
+              {(space as any).neighborhood && (
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 10 }}>
+                  Bairro: <strong>{(space as any).neighborhood}</strong> · {space.city}, {space.state}
+                </p>
+              )}
+              <div style={{ borderRadius: 12, overflow: 'hidden', border: '1.5px solid #e8e8e8' }}>
+                <iframe
+                  title="Mapa do espaço"
+                  width="100%"
+                  height="280"
+                  style={{ border: 0, display: 'block' }}
+                  loading="lazy"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                    [(space as any).address, (space as any).neighborhood, space.city, space.state, 'Brasil']
+                      .filter(Boolean).join(', ')
+                  )}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                />
+              </div>
+              <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
+                📌 Endereço completo compartilhado após confirmação do orçamento.
+              </p>
+            </div>
           )}
         </div>
 

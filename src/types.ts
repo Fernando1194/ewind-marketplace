@@ -59,9 +59,19 @@ export const EVENT_TYPES = [
 ]
 
 export const ATTRIBUTES = [
-  'Estacionamento', 'Wi-Fi', 'Buffet/Catering', 'Área externa',
-  'Palco', 'Piscina', 'Acessibilidade', 'Ar-condicionado',
-  'Som profissional', 'Cozinha equipada', 'Pet friendly'
+  // Infraestrutura
+  'Estacionamento', 'Wi-Fi', 'Ar-condicionado', 'Gerador de energia',
+  'Tomadas 220V', 'Iluminação profissional',
+  // Áreas e ambientes
+  'Área externa', 'Piscina', 'Lago / Lagoa', 'Churrasqueira',
+  'Pista de dança', 'Palco', 'Área VIP', 'Salão de jogos',
+  'Campo de futebol', 'Quadra poliesportiva',
+  // Serviços
+  'Buffet/Catering', 'Cozinha industrial', 'Cozinha equipada',
+  'Som profissional', 'Tenda inclusa',
+  // Comodidades
+  'Quarto para noivos', 'Camarim', 'Vestiários',
+  'Banheiro acessível', 'Pet friendly', 'Acessibilidade'
 ]
 
 export const QUOTE_STATUS_LABELS: Record<string, { label: string; bg: string; color: string }> = {

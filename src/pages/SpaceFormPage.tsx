@@ -30,6 +30,9 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   const [city, setCity] = useState(editingSpace?.city || '')
   const [state, setState] = useState(editingSpace?.state || 'PR')
   const [address, setAddress] = useState(editingSpace?.address || '')
+  const [neighborhood, setNeighborhood] = useState((editingSpace as any)?.neighborhood || '')
+  const [areaCovered, setAreaCovered] = useState((editingSpace as any)?.area_covered?.toString() || '')
+  const [areaUncovered, setAreaUncovered] = useState((editingSpace as any)?.area_uncovered?.toString() || '')
 
   // Etapa 3 — Capacidade e preços
   const [capacity, setCapacity] = useState(editingSpace?.capacity?.toString() || '')
@@ -93,6 +96,9 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
         name, description: description || null,
         category, event_types: eventTypes,
         city, state, address: address || null,
+        neighborhood: neighborhood || null,
+        area_covered: areaCovered ? parseInt(areaCovered) : null,
+        area_uncovered: areaUncovered ? parseInt(areaUncovered) : null,
         capacity: parseInt(capacity),
         min_hours: parseInt(minHours) || 3,
         price_per_hour: pricePerHour ? parseFloat(pricePerHour) : null,
@@ -201,8 +207,12 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
               <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="PR" maxLength={2} />
             </div>
             <div className="fg">
-              <label>Endereço (opcional)</label>
-              <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="Rua, número, bairro" />
+              <label>Bairro (opcional)</label>
+              <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Ex: Batel, Água Verde" />
+            </div>
+            <div className="fg">
+              <label>Endereço completo (opcional)</label>
+              <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="Rua, número" />
               <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>💡 Compartilhado apenas com clientes que fecharem negócio.</p>
             </div>
           </>
@@ -228,6 +238,19 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
               <div className="fg">
                 <label>💰 Preço por dia (R$)</label>
                 <input type="number" value={pricePerDay} onChange={e => setPricePerDay(e.target.value)} placeholder="Ex: 5000" min={0} step={0.01} />
+              </div>
+            </div>
+            <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #f3f4f6', paddingTop: 12, marginTop: 4 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: '#2d2d2d' }}>📐 Metragem do espaço (opcional)</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="fg">
+                  <label>🏠 Área coberta (m²)</label>
+                  <input type="number" value={areaCovered} onChange={e => setAreaCovered(e.target.value)} placeholder="Ex: 500" min={0} />
+                </div>
+                <div className="fg">
+                  <label>🌤️ Área descoberta (m²)</label>
+                  <input type="number" value={areaUncovered} onChange={e => setAreaUncovered(e.target.value)} placeholder="Ex: 1200" min={0} />
+                </div>
               </div>
             </div>
             <p style={{ fontSize: 12, color: '#6b7280' }}>💡 Preencha pelo menos um dos preços.</p>

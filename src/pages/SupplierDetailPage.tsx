@@ -67,6 +67,9 @@ export default function SupplierDetailPage({ supplier, goToPage }: Props) {
           <h1 className="det-title">{supplier.name}</h1>
           <div className="det-loc">
             📍 {supplier.cities.join(', ')}, {supplier.state}
+            {(supplier as any).neighborhood && (
+              <span style={{ marginLeft: 6, color: '#9ca3af' }}>· {(supplier as any).neighborhood}</span>
+            )}
           </div>
 
           {/* Stats */}
