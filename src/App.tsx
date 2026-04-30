@@ -145,7 +145,7 @@ function App() {
     <div className="app">
       <nav className="nav">
         <div className="nav-logo" onClick={() => goToPage('home')}>
-          <div className="logo-box">EWIND</div>
+          <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
 
         <div className="nav-center">

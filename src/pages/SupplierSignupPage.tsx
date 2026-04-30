@@ -45,7 +45,7 @@ export default function SupplierSignupPage({ goToPage }: Props) {
       {/* Lado esquerdo */}
       <div style={{ width: '42%', background: 'linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 100%)', padding: '60px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }} className="supplier-side">
         <div onClick={() => goToPage('home')} style={{ cursor: 'pointer', display: 'inline-block', marginBottom: 28 }}>
-          <div className="logo-box">EWIND</div>
+          <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
         <h2 style={{ fontSize: 26, fontWeight: 800, color: '#a3e635', lineHeight: 1.25, marginBottom: 14 }}>
           Seja encontrado por quem está organizando o evento perfeito

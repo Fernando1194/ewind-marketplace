@@ -617,3 +617,35 @@
   border-radius: 100px;
   margin-left: 4px;
 }
+
+/* SUPPLIER AUTH PAGES */
+@media (max-width: 768px) {
+  .supplier-side {
+    display: none !important;
+  }
+}
+
+/* LOGO IMAGEM */
+.logo-img {
+  height: 38px;
+  width: auto;
+  display: block;
+  cursor: pointer;
+}
+.logo-img-sm {
+  height: 28px;
+  width: auto;
+  display: block;
+}
+.logo-img-md {
+  height: 48px;
+  width: auto;
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Remove fundo verde do nav-logo agora que usamos imagem */
+.nav-logo {
+  display: flex;
+  align-items: center;
+}

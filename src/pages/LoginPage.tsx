@@ -55,7 +55,7 @@ export default function LoginPage({ goToPage }: Props) {
 
         {/* Logo */}
         <div onClick={() => goToPage('home')} style={{ cursor: 'pointer', display: 'inline-block', marginBottom: 24 }}>
-          <div className="logo-box">EWIND</div>
+          <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
 
         {/* ===== LOGIN ===== */}

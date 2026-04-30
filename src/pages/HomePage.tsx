@@ -238,7 +238,7 @@ export default function HomePage({ goToPage }: Props) {
       </section>
 
       <footer className="footer">
-        <div className="logo-box-sm">EWIND</div>
+        <img src="/logo.png" alt="Ewind" className="logo-img-sm" />
         <span>© 2025 Ewind — O marketplace de espaços e serviços para eventos</span>
       </footer>
     </>

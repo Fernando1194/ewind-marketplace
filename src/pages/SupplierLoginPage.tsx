@@ -65,7 +65,7 @@ export default function SupplierLoginPage({ goToPage }: Props) {
           onClick={() => goToPage('home')}
           style={{ cursor: 'pointer', display: 'inline-block', marginBottom: 28 }}
         >
-          <div className="logo-box">EWIND</div>
+          <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
         <h2 style={{ fontSize: 28, fontWeight: 800, color: '#a3e635', lineHeight: 1.25, marginBottom: 16 }}>
           Bem-vindo de volta, profissional!
