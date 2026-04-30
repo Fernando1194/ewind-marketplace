@@ -30,9 +30,9 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   const [city, setCity] = useState(editingSpace?.city || '')
   const [state, setState] = useState(editingSpace?.state || 'PR')
   const [address, setAddress] = useState(editingSpace?.address || '')
-  const [neighborhood, setNeighborhood] = useState((editingSpace as any)?.neighborhood || '')
-  const [areaCovered, setAreaCovered] = useState((editingSpace as any)?.area_covered?.toString() || '')
-  const [areaUncovered, setAreaUncovered] = useState((editingSpace as any)?.area_uncovered?.toString() || '')
+  const [neighborhood, setNeighborhood] = useState(editingSpace?.neighborhood || '')
+  const [areaCovered, setAreaCovered] = useState(editingSpace?.area_covered?.toString() || '')
+  const [areaUncovered, setAreaUncovered] = useState(editingSpace?.area_uncovered?.toString() || '')
 
   // Etapa 3 — Capacidade e preços
   const [capacity, setCapacity] = useState(editingSpace?.capacity?.toString() || '')
@@ -44,11 +44,11 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   const [attributes, setAttributes] = useState<string[]>(editingSpace?.attributes || [])
 
   // Etapa 5 — Links e redes sociais
-  const [whatsapp, setWhatsapp] = useState((editingSpace as any)?.whatsapp || '')
-  const [instagram, setInstagram] = useState((editingSpace as any)?.instagram || '')
-  const [facebook, setFacebook] = useState((editingSpace as any)?.facebook || '')
-  const [website, setWebsite] = useState((editingSpace as any)?.website || '')
-  const [cardapioUrl, setCardapioUrl] = useState((editingSpace as any)?.cardapio_url || '')
+  const [whatsapp, setWhatsapp] = useState(editingSpace?.whatsapp || '')
+  const [instagram, setInstagram] = useState(editingSpace?.instagram || '')
+  const [facebook, setFacebook] = useState(editingSpace?.facebook || '')
+  const [website, setWebsite] = useState(editingSpace?.website || '')
+  const [cardapioUrl, setCardapioUrl] = useState(editingSpace?.cardapio_url || '')
 
   // Etapa 6 — Fotos
   const [files, setFiles] = useState<File[]>([])

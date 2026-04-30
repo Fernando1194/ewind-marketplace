@@ -96,19 +96,19 @@ export default function DetailPage({ space, user, goToPage }: Props) {
             </p>
           )}
           {/* Metragem */}
-          {((space as any).area_covered || (space as any).area_uncovered) && (
+          {(space.area_covered || space.area_uncovered) && (
             <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
-              {(space as any).area_covered && (
+              {space.area_covered && (
                 <div style={{ background: '#f0fdf4', border: '1px solid #d9f99d', borderRadius: 10, padding: '12px 18px', textAlign: 'center' }}>
                   <div style={{ fontSize: 22, marginBottom: 4 }}>🏠</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>{(space as any).area_covered} m²</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>{space.area_covered} m²</div>
                   <div style={{ fontSize: 11, color: '#6b7280' }}>Área coberta</div>
                 </div>
               )}
-              {(space as any).area_uncovered && (
+              {space.area_uncovered && (
                 <div style={{ background: '#f0fdf4', border: '1px solid #d9f99d', borderRadius: 10, padding: '12px 18px', textAlign: 'center' }}>
                   <div style={{ fontSize: 22, marginBottom: 4 }}>🌤️</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>{(space as any).area_uncovered} m²</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>{space.area_uncovered} m²</div>
                   <div style={{ fontSize: 11, color: '#6b7280' }}>Área descoberta</div>
                 </div>
               )}
@@ -127,12 +127,12 @@ export default function DetailPage({ space, user, goToPage }: Props) {
           )}
 
           {/* Mapa */}
-          {((space as any).address || (space as any).neighborhood || space.city) && (
+          {(space.address || space.neighborhood || space.city) && (
             <div style={{ marginTop: 24 }}>
               <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>📍 Localização</h3>
-              {(space as any).neighborhood && (
+              {space.neighborhood && (
                 <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 10 }}>
-                  Bairro: <strong>{(space as any).neighborhood}</strong> · {space.city}, {space.state}
+                  Bairro: <strong>{space.neighborhood}</strong> · {space.city}, {space.state}
                 </p>
               )}
               <div style={{ borderRadius: 12, overflow: 'hidden', border: '1.5px solid #e8e8e8' }}>
@@ -143,7 +143,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
                   style={{ border: 0, display: 'block' }}
                   loading="lazy"
                   src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                    [(space as any).address, (space as any).neighborhood, space.city, space.state, 'Brasil']
+                    [space.address, space.neighborhood, space.city, space.state, 'Brasil']
                       .filter(Boolean).join(', ')
                   )}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
                 />
@@ -262,35 +262,35 @@ export default function DetailPage({ space, user, goToPage }: Props) {
             )}
 
             {/* Links do espaço */}
-            {((space as any).whatsapp || (space as any).instagram || (space as any).facebook || (space as any).website || (space as any).cardapio_url) && (
+            {(space.whatsapp || space.instagram || space.facebook || space.website || space.cardapio_url) && (
               <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#2d2d2d', marginBottom: 4 }}>🔗 Links e contatos</div>
-                {(space as any).whatsapp && (
-                  <a href={`https://wa.me/55${(space as any).whatsapp.replace(/\D/g, '')}?text=Olá! Vi seu espaço no Ewind e gostaria de mais informações.`} target="_blank" rel="noopener noreferrer"
+                {space.whatsapp && (
+                  <a href={`https://wa.me/55${space.whatsapp.replace(/\D/g, '')}?text=Olá! Vi seu espaço no Ewind e gostaria de mais informações.`} target="_blank" rel="noopener noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#f0fdf4', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#166534', textDecoration: 'none' }}>
                     💬 WhatsApp
                   </a>
                 )}
-                {(space as any).instagram && (
-                  <a href={`https://instagram.com/${(space as any).instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
+                {space.instagram && (
+                  <a href={`https://instagram.com/${space.instagram.replace('@','')}`} target="_blank" rel="noopener noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#fdf4ff', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#6b21a8', textDecoration: 'none' }}>
                     📸 Instagram
                   </a>
                 )}
-                {(space as any).facebook && (
-                  <a href={(space as any).facebook.startsWith('http') ? (space as any).facebook : `https://${(space as any).facebook}`} target="_blank" rel="noopener noreferrer"
+                {space.facebook && (
+                  <a href={space.facebook.startsWith('http') ? space.facebook : `https://${space.facebook}`} target="_blank" rel="noopener noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#eff6ff', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#1d4ed8', textDecoration: 'none' }}>
                     📘 Facebook
                   </a>
                 )}
-                {(space as any).website && (
-                  <a href={(space as any).website.startsWith('http') ? (space as any).website : `https://${(space as any).website}`} target="_blank" rel="noopener noreferrer"
+                {space.website && (
+                  <a href={space.website.startsWith('http') ? space.website : `https://${space.website}`} target="_blank" rel="noopener noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#f9fafb', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#2d2d2d', textDecoration: 'none' }}>
                     🌐 Site próprio
                   </a>
                 )}
-                {(space as any).cardapio_url && (
-                  <a href={(space as any).cardapio_url.startsWith('http') ? (space as any).cardapio_url : `https://${(space as any).cardapio_url}`} target="_blank" rel="noopener noreferrer"
+                {space.cardapio_url && (
+                  <a href={space.cardapio_url.startsWith('http') ? space.cardapio_url : `https://${space.cardapio_url}`} target="_blank" rel="noopener noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#fff7ed', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#c05621', textDecoration: 'none' }}>
                     🍽️ Ver cardápio
                   </a>

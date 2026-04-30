@@ -60,7 +60,7 @@ export default function SuppliersPage({ goToPage }: Props) {
       setLoading(true)
       const { data } = await supabase
         .from('suppliers')
-        .select('id, owner_id, name, description, category, subcategory, cities, state, price_info, media_urls, event_types, attributes, whatsapp, instagram, email, website, status, created_at, updated_at')
+        .select('id, owner_id, name, description, category, subcategory, cities, state, neighborhood, price_info, media_urls, event_types, attributes, whatsapp, instagram, email, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
       if (!cancelled && data) setSuppliers(data)

@@ -14,6 +14,9 @@ export interface Space {
   price_per_day: number | null
   attributes: string[]
   media_urls: string[]
+  neighborhood: string | null
+  area_covered: number | null
+  area_uncovered: number | null
   whatsapp: string | null
   instagram: string | null
   facebook: string | null
@@ -100,6 +103,7 @@ export interface Supplier {
   media_urls: string[]
   attributes: string[]
   event_types: string[]
+  neighborhood: string | null
   facebook: string | null
   youtube: string | null
   tiktok: string | null

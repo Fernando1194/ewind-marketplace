@@ -17,7 +17,7 @@ export default function HostDashboard({ user, goToPage }: Props) {
     setLoading(true)
     const { data } = await supabase
       .from('spaces')
-      .select('id, host_id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, status, event_types, attributes, min_hours, address, description, created_at, updated_at')
+      .select('id, host_id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, status, event_types, attributes, min_hours, address, description, neighborhood, area_covered, area_uncovered, whatsapp, instagram, facebook, website, cardapio_url, created_at, updated_at')
       .eq('host_id', user.id)
       .order('created_at', { ascending: false })
     if (data) setSpaces(data)
