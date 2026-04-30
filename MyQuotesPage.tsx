@@ -1,171 +1,165 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
+import { CATEGORIES } from '../types'
+import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  goToPage: (page: Page) => void
+  goToPage: (page: Page, space?: Space) => void
 }
 
-type Role = 'guest' | 'host' | 'supplier'
+export default function HomePage({ goToPage }: Props) {
+  const [filterCity, setFilterCity] = useState('')
+  const [filterDate, setFilterDate] = useState('')
+  const [filterGuests, setFilterGuests] = useState('')
+  const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
 
-const ROLES: { value: Role; icon: string; label: string; desc: string }[] = [
-  {
-    value: 'guest',
-    icon: '🎉',
-    label: 'Busco um espaço',
-    desc: 'Quero encontrar e contratar espaços para meus eventos'
-  },
-  {
-    value: 'host',
-    icon: '🏢',
-    label: 'Tenho um espaço',
-    desc: 'Quero anunciar meu espaço e receber orçamentos'
-  },
-  {
-    value: 'supplier',
-    icon: '🛠️',
-    label: 'Sou fornecedor',
-    desc: 'Ofereço serviços para eventos: foto, buffet, DJ, decoração e mais'
-  }
-]
+  useEffect(() => {
+    loadFeaturedSpaces()
+  }, [])
 
-export default function SignupPage({ goToPage }: Props) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [name, setName] = useState('')
-  const [role, setRole] = useState<Role>('guest')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
+  const loadFeaturedSpaces = async () => {
+    const { data } = await supabase
+      .from('spaces')
+      .select('*')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(3)
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-    setLoading(true)
-
-    if (password.length < 6) {
-      setError('A senha precisa ter pelo menos 6 caracteres')
-      setLoading(false)
-      return
-    }
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: name, role } }
-      })
-      if (error) throw error
-      if (data.user) {
-        setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
-        setEmail('')
-        setPassword('')
-        setName('')
-      }
-    } catch (err: any) {
-      setError(err.message || 'Erro ao cadastrar')
-    } finally {
-      setLoading(false)
+    if (data && data.length > 0) {
+      setFeaturedSpaces(data)
     }
   }
 
   return (
-    <div className="auth-wrap">
-      <div className="auth-card" style={{ maxWidth: 500 }}>
-        <div className="logo-box" style={{ display: 'inline-block', marginBottom: 20 }}>EWIND</div>
-        <h1 className="auth-title">Criar conta</h1>
-        <p className="auth-sub">Cadastre-se gratuitamente</p>
+    <>
+      <section className="hero">
+        <img className="hero-bg" src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1400&h=600&fit=crop&q=80" alt="" />
+        <div className="hero-overlay"></div>
+        <div className="hero-content">
+          <h1>Compare espaços e solicite <span>orçamentos</span></h1>
+          <p>Descubra chácaras, salões, restaurantes e pousadas ideais para seu evento. Compare opções e peça orçamentos de forma rápida e gratuita.</p>
+          <div className="search-pill">
+            <div className="sf">
+              <div className="sf-label">Onde</div>
+              <input placeholder="Cidade ou região" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+            </div>
+            <div className="sf">
+              <div className="sf-label">Quando</div>
+              <input type="date" value={filterDate} onChange={e => setFilterDate(e.target.value)} />
+            </div>
+            <div className="sf">
+              <div className="sf-label">Convidados</div>
+              <input type="number" placeholder="Quantidade" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
+            </div>
+            <button className="search-btn" onClick={() => goToPage('listing')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
 
-        <form onSubmit={handleSignUp}>
-          {/* Seleção de papel */}
-          <div className="fg">
-            <label>Você é...</label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {ROLES.map(r => (
-                <button
-                  key={r.value}
-                  type="button"
-                  onClick={() => setRole(r.value)}
-                  style={{
-                    padding: '12px 16px',
-                    border: role === r.value ? '2px solid #a3e635' : '1.5px solid #e8e8e8',
-                    borderRadius: 10,
-                    background: role === r.value ? '#f0fdf4' : '#fff',
-                    color: role === r.value ? '#1a2e05' : '#2d2d2d',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    textAlign: 'left',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 12,
-                    transition: 'all 0.2s'
-                  }}
-                >
-                  <span style={{ fontSize: 24 }}>{r.icon}</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>{r.label}</div>
-                    <div style={{ fontSize: 12, color: role === r.value ? '#365314' : '#6b7280', fontWeight: 400 }}>
-                      {r.desc}
-                    </div>
+      <section className="section">
+        <h2 className="sec-title">Explore por categoria</h2>
+        <div className="cat-grid">
+          {CATEGORIES.map(c => (
+            <div key={c.name} className="cat-card" onClick={() => goToPage('listing')}>
+              <div className="cat-icon" style={{ background: c.bg }}>{c.icon}</div>
+              <div className="cat-name">{c.name}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {featuredSpaces.length > 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <h2 className="sec-title">Espaços em destaque</h2>
+          <div className="cards-3col">
+            {featuredSpaces.map(s => (
+              <div key={s.id} className="card" onClick={() => goToPage('detail', s)}>
+                <img src={s.media_urls[0] || 'https://via.placeholder.com/400x220?text=Sem+foto'} alt={s.name} />
+                <div className="card-body">
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">📍 {s.city}, {s.state}</div>
+                  <div className="card-tags">
+                    {s.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
                   </div>
-                  {role === r.value && (
-                    <span style={{ marginLeft: 'auto', color: '#5aa800', fontSize: 18 }}>✓</span>
-                  )}
-                </button>
-              ))}
+                  <div className="card-foot">
+                    <span className="card-price">
+                      {s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}
+                    </span>
+                    <span className="card-cap">👥 até {s.capacity}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {featuredSpaces.length === 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ background: '#f9fafb', borderRadius: 14, padding: 40, textAlign: 'center' }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Em breve, espaços incríveis!</h3>
+            <p style={{ fontSize: 14, color: '#6b7280' }}>Estamos aceitando os primeiros cadastros. Quer ser um dos primeiros?</p>
+            <button className="btn-primary" style={{ marginTop: 16 }} onClick={() => goToPage('signup')}>
+              Cadastrar meu espaço
+            </button>
+          </div>
+        </section>
+      )}
+
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div className="cta-host">
+          <div>
+            <div className="cta-title">Tem um espaço para eventos?</div>
+            <div className="cta-desc">Anuncie no Ewind e receba solicitações de orçamento de clientes que buscam exatamente o que você oferece.</div>
+          </div>
+          <button className="btn-primary" onClick={() => goToPage('signup')}>Cadastrar meu espaço →</button>
+        </div>
+      </section>
+
+      {/* CTA FORNECEDOR */}
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+          borderRadius: 16, padding: '36px 40px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: 24, flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ fontSize: 48 }}>🛠️</div>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#a3e635', marginBottom: 8 }}>
+                É fotógrafo, DJ, decorador ou fornecedor de serviços?
+              </div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', maxWidth: 480, lineHeight: 1.6 }}>
+                Crie seu perfil na área exclusiva de fornecedores do Ewind, monte seu portfólio e conecte-se com quem está organizando eventos.
+              </div>
             </div>
           </div>
-
-          <div className="fg">
-            <label>Nome completo</label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="Seu nome"
-            />
-          </div>
-          <div className="fg">
-            <label>Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-            />
-          </div>
-          <div className="fg">
-            <label>Senha</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres"
-              minLength={6}
-            />
-          </div>
-
-          {error && <div className="auth-error">⚠️ {error}</div>}
-          {success && <div className="auth-success">✅ {success}</div>}
-
           <button
-            type="submit"
-            className="btn-primary"
-            style={{ width: '100%', padding: 13, marginTop: 10 }}
-            disabled={loading}
+            style={{
+              padding: '14px 28px', fontSize: 15, fontWeight: 700,
+              background: '#a3e635', border: 'none', borderRadius: 10,
+              color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit',
+              whiteSpace: 'nowrap', flexShrink: 0
+            }}
+            onClick={() => goToPage('supplier-signup')}
           >
-            {loading ? 'Cadastrando...' : 'Criar conta'}
+            Sou fornecedor →
           </button>
-        </form>
-
-        <div className="auth-switch">
-          Já tem conta? <a onClick={() => goToPage('login')}>Entrar</a>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <footer className="footer">
+        <div className="logo-box-sm">EWIND</div>
+        <span>© 2025 Ewind — Marketplace de Espaços para Eventos</span>
+      </footer>
+    </>
   )
 }

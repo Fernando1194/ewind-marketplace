@@ -1,232 +1,189 @@
-import { memo } from 'react'
-import type { Space } from '../types'
+import { useState } from 'react'
+import { supabase } from '../supabase'
+import { SUPPLIER_CATEGORIES } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  spaces: Space[]
-  goToPage: (page: Page, space?: Space) => void
-  onRemove: (id: string) => void
+  goToPage: (page: Page) => void
 }
 
-const Row = memo(({ label, values }: { label: string; values: (string | number | boolean | null)[] }) => (
-  <tr style={{ borderBottom: '1px solid #f3f4f6' }}>
-    <td style={{
-      padding: '12px 16px', fontSize: 13, fontWeight: 600,
-      color: '#6b7280', background: '#f9fafb', whiteSpace: 'nowrap',
-      borderRight: '1px solid #e8e8e8', minWidth: 160
-    }}>
-      {label}
-    </td>
-    {values.map((v, i) => (
-      <td key={i} style={{
-        padding: '12px 16px', fontSize: 14, textAlign: 'center',
-        color: v ? '#2d2d2d' : '#d1d5db', fontWeight: v ? 500 : 400
-      }}>
-        {v === true ? '✅' : v === false ? '—' : v || '—'}
-      </td>
-    ))}
-    {/* Colunas vazias se menos de 3 espaços */}
-    {Array.from({ length: 3 - values.length }).map((_, i) => (
-      <td key={`empty-${i}`} style={{ padding: '12px 16px', textAlign: 'center', color: '#e5e7eb' }}>—</td>
-    ))}
-  </tr>
-))
+export default function SupplierSignupPage({ goToPage }: Props) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [category, setCategory] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(false)
 
-export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
-  const hasAttr = (space: Space, attr: string) => space.attributes.includes(attr)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setSuccess('')
 
-  const allAttrs = Array.from(
-    new Set(spaces.flatMap(s => s.attributes))
-  ).sort()
+    if (password.length < 6) {
+      setError('A senha precisa ter pelo menos 6 caracteres')
+      return
+    }
+    if (!category) {
+      setError('Selecione sua categoria de serviço')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name, role: 'supplier', supplier_category: category }
+        }
+      })
+      if (error) throw error
+      if (data.user) {
+        setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
+        setName(''); setEmail(''); setPassword(''); setCategory('')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Erro ao cadastrar')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Comparar espaços</h1>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>
-            {spaces.length} de 3 espaços selecionados
+    <div style={{ minHeight: 'calc(100vh - 64px)', background: '#f9fafb', display: 'flex' }}>
+
+      {/* Lado esquerdo — visual */}
+      <div style={{
+        width: '42%', background: 'linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 100%)',
+        padding: '60px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center'
+      }} className="supplier-side">
+        <div style={{ marginBottom: 32 }}>
+          <div className="logo-box" style={{ display: 'inline-block', marginBottom: 24 }}>EWIND</div>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#a3e635', lineHeight: 1.2, marginBottom: 14 }}>
+            Mostre seu talento para quem está planejando o evento perfeito
+          </h2>
+          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7 }}>
+            Cadastre seus serviços, monte seu portfólio e conecte-se diretamente com clientes que precisam do que você oferece.
           </p>
         </div>
-        <button
-          onClick={() => goToPage('listing')}
-          style={{
-            padding: '10px 20px', fontSize: 14, fontWeight: 600,
-            background: '#fff', border: '1.5px solid #e8e8e8',
-            borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
-          }}
-        >
-          ← Voltar à listagem
-        </button>
-      </div>
 
-      {spaces.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 80, background: '#f9fafb', borderRadius: 16 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📊</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Nenhum espaço selecionado</h3>
-          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
-            Volte à listagem e clique em "+ Comparar" nos espaços que deseja comparar.
-          </p>
-          <button className="btn-primary" onClick={() => goToPage('listing')}>
-            Explorar espaços
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[
+            { icon: '📸', text: 'Portfólio com fotos do seu trabalho' },
+            { icon: '💬', text: 'Contato direto via WhatsApp e Instagram' },
+            { icon: '🎯', text: 'Apareça para clientes da sua região' },
+            { icon: '💸', text: '100% gratuito para começar' }
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ fontSize: 22 }}>{item.icon}</div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.85)' }}>{item.text}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 40, paddingTop: 28, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Já tem conta?</div>
+          <button
+            onClick={() => goToPage('supplier-login')}
+            style={{
+              padding: '10px 20px', fontSize: 14, fontWeight: 600,
+              background: 'transparent', border: '1.5px solid rgba(163,230,53,0.5)',
+              borderRadius: 8, color: '#a3e635', cursor: 'pointer', fontFamily: 'inherit'
+            }}
+          >
+            Entrar na minha conta →
           </button>
         </div>
-      )}
+      </div>
 
-      {spaces.length > 0 && (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', border: '1.5px solid #e8e8e8', borderRadius: 14, overflow: 'hidden' }}>
-            {/* Fotos e nome dos espaços */}
-            <thead>
-              <tr style={{ background: '#fff' }}>
-                <th style={{
-                  padding: '16px', background: '#f9fafb',
-                  borderRight: '1px solid #e8e8e8', minWidth: 160
-                }} />
-                {spaces.map(s => (
-                  <th key={s.id} style={{ padding: '16px', textAlign: 'center', borderRight: '1px solid #f3f4f6', minWidth: 220 }}>
-                    <div style={{ position: 'relative' }}>
-                      <button
-                        onClick={() => onRemove(s.id)}
-                        style={{
-                          position: 'absolute', top: -8, right: -8,
-                          background: '#ef4444', color: '#fff', border: 'none',
-                          borderRadius: '50%', width: 22, height: 22,
-                          cursor: 'pointer', fontSize: 12, fontWeight: 700,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center'
-                        }}
-                      >×</button>
-                      <img
-                        src={s.media_urls[0] || 'https://via.placeholder.com/200x120?text=Sem+foto'}
-                        alt={s.name}
-                        style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 10, marginBottom: 10 }}
-                      />
-                      <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 4 }}>{s.name}</div>
-                      <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}>
-                        📍 {s.city}, {s.state}
-                      </div>
-                      <button
-                        className="btn-primary"
-                        style={{ fontSize: 12, padding: '7px 14px' }}
-                        onClick={() => goToPage('detail', s)}
-                      >
-                        Ver detalhes
-                      </button>
-                    </div>
-                  </th>
+      {/* Lado direito — formulário */}
+      <div style={{ flex: 1, padding: '48px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflowY: 'auto' }}>
+        <div style={{ maxWidth: 480 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Criar conta de fornecedor</h1>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 28 }}>
+            Junte-se a outros profissionais de eventos no Ewind.
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            <div className="fg">
+              <label>Nome profissional / empresa *</label>
+              <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="Ex: João Silva Fotografia" />
+            </div>
+
+            <div className="fg">
+              <label>Categoria principal *</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 }}>
+                {SUPPLIER_CATEGORIES.map(c => (
+                  <button
+                    key={c.name}
+                    type="button"
+                    onClick={() => setCategory(c.name)}
+                    style={{
+                      padding: '8px 10px', fontSize: 12, fontWeight: 600,
+                      border: category === c.name ? '2px solid #a3e635' : '1.5px solid #e8e8e8',
+                      borderRadius: 8, background: category === c.name ? '#f0fdf4' : '#fff',
+                      color: category === c.name ? '#1a2e05' : '#4b5563',
+                      cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left'
+                    }}
+                  >
+                    {c.icon} {c.name}
+                  </button>
                 ))}
-                {/* Colunas vazias */}
-                {Array.from({ length: 3 - spaces.length }).map((_, i) => (
-                  <th key={`empty-${i}`} style={{ padding: '16px', minWidth: 220, borderRight: '1px solid #f3f4f6' }}>
-                    <div style={{
-                      height: 130, borderRadius: 10, border: '2px dashed #e8e8e8',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      marginBottom: 10, color: '#d1d5db', fontSize: 13
-                    }}>
-                      + Espaço {spaces.length + i + 1}
-                    </div>
-                    <div style={{ fontSize: 12, color: '#d1d5db' }}>
-                      Volte à listagem para adicionar
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
+              </div>
+            </div>
 
-            <tbody>
-              {/* SEÇÃO: INFORMAÇÕES GERAIS */}
-              <tr style={{ background: '#f0fdf4' }}>
-                <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  📋 Informações gerais
-                </td>
-              </tr>
+            <div className="fg">
+              <label>Email *</label>
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="contato@email.com" />
+            </div>
 
-              <Row
-                label="Categoria"
-                values={spaces.map(s => s.category)}
-              />
-              <Row
-                label="Cidade"
-                values={spaces.map(s => `${s.city}, ${s.state}`)}
-              />
-              <Row
-                label="Tipos de evento"
-                values={spaces.map(s => s.event_types.join(', '))}
-              />
+            <div className="fg">
+              <label>Senha *</label>
+              <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" minLength={6} />
+            </div>
 
-              {/* SEÇÃO: CAPACIDADE */}
-              <tr style={{ background: '#f0fdf4' }}>
-                <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  👥 Capacidade e tempo
-                </td>
-              </tr>
+            {error && <div className="auth-error">⚠️ {error}</div>}
+            {success && (
+              <div className="auth-success">
+                ✅ {success}
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ fontSize: 13, padding: '8px 16px' }}
+                    onClick={() => goToPage('supplier-login')}
+                  >
+                    Ir para o login →
+                  </button>
+                </div>
+              </div>
+            )}
 
-              <Row
-                label="Capacidade máxima"
-                values={spaces.map(s => `${s.capacity} pessoas`)}
-              />
-              <Row
-                label="Mínimo de horas"
-                values={spaces.map(s => `${s.min_hours}h`)}
-              />
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ width: '100%', padding: 14, marginTop: 12, fontSize: 15 }}
+              disabled={loading}
+            >
+              {loading ? 'Cadastrando...' : '🛠️ Criar minha conta de fornecedor'}
+            </button>
+          </form>
 
-              {/* SEÇÃO: PREÇOS */}
-              <tr style={{ background: '#f0fdf4' }}>
-                <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  💰 Preços orientativos
-                </td>
-              </tr>
-
-              <Row
-                label="Preço por hora"
-                values={spaces.map(s => s.price_per_hour ? `R$ ${s.price_per_hour.toLocaleString('pt-BR')}` : null)}
-              />
-              <Row
-                label="Preço por dia"
-                values={spaces.map(s => s.price_per_day ? `R$ ${s.price_per_day.toLocaleString('pt-BR')}` : null)}
-              />
-
-              {/* SEÇÃO: ATRIBUTOS */}
-              {allAttrs.length > 0 && (
-                <>
-                  <tr style={{ background: '#f0fdf4' }}>
-                    <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      ✨ Atributos e comodidades
-                    </td>
-                  </tr>
-                  {allAttrs.map(attr => (
-                    <Row
-                      key={attr}
-                      label={attr}
-                      values={spaces.map(s => hasAttr(s, attr) ? true : false)}
-                    />
-                  ))}
-                </>
-              )}
-
-              {/* SEÇÃO: AÇÃO */}
-              <tr style={{ background: '#fff' }}>
-                <td style={{ padding: '16px', background: '#f9fafb', borderRight: '1px solid #e8e8e8' }} />
-                {spaces.map(s => (
-                  <td key={s.id} style={{ padding: '16px', textAlign: 'center', borderRight: '1px solid #f3f4f6' }}>
-                    <button
-                      className="btn-primary"
-                      style={{ width: '100%', padding: 12, fontSize: 14 }}
-                      onClick={() => goToPage('detail', s)}
-                    >
-                      Solicitar orçamento
-                    </button>
-                  </td>
-                ))}
-                {Array.from({ length: 3 - spaces.length }).map((_, i) => (
-                  <td key={`empty-btn-${i}`} style={{ padding: '16px' }} />
-                ))}
-              </tr>
-            </tbody>
-          </table>
+          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
+            Quer anunciar um espaço?{' '}
+            <a onClick={() => goToPage('signup')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>
+              Cadastro de host →
+            </a>
+          </div>
+          <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
+            <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>
+              ← Voltar para a home
+            </a>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

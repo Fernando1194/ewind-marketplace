@@ -1,124 +1,193 @@
-export interface Space {
-  id: string
-  host_id: string
-  name: string
-  description: string | null
-  category: string
-  event_types: string[]
-  city: string
-  state: string
-  address: string | null
-  capacity: number
-  min_hours: number
-  price_per_hour: number | null
-  price_per_day: number | null
-  attributes: string[]
-  media_urls: string[]
-  status: 'pending' | 'active' | 'paused' | 'rejected'
-  created_at: string
-  updated_at: string
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { supabase } from '../supabase'
+import type { User } from '@supabase/supabase-js'
+import type { Space } from '../types'
+import type { Page } from '../App'
+
+interface Props {
+  user: User
+  goToPage: (page: Page, space?: Space) => void
 }
 
-export interface Quote {
-  id: string
-  space_id: string
-  guest_id: string
-  host_id: string
-  event_type: string
-  event_date: string
-  guests_count: number
-  duration_hours: number
-  message: string | null
-  host_response: string | null
-  proposed_price: number | null
-  status: 'pending' | 'viewed' | 'responded' | 'accepted' | 'rejected' | 'closed'
-  created_at: string
-  updated_at: string
-  responded_at: string | null
-  spaces?: Space
+export default function HostDashboard({ user, goToPage }: Props) {
+  const [spaces, setSpaces] = useState<Space[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const loadMySpaces = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('spaces')
+      .select('id, host_id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, status, event_types, attributes, min_hours, address, description, created_at, updated_at')
+      .eq('host_id', user.id)
+      .order('created_at', { ascending: false })
+    if (data) setSpaces(data)
+    setLoading(false)
+  }, [user.id])
+
+  useEffect(() => {
+    loadMySpaces()
+  }, [loadMySpaces])
+
+  const deleteSpace = useCallback(async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este espaço? Esta ação não pode ser desfeita.')) return
+    const { error } = await supabase.from('spaces').delete().eq('id', id)
+    if (!error) setSpaces(prev => prev.filter(s => s.id !== id))
+  }, [])
+
+  const togglePause = useCallback(async (space: Space) => {
+    const newStatus = space.status === 'active' ? 'paused' : 'active'
+    const { error } = await supabase
+      .from('spaces')
+      .update({ status: newStatus })
+      .eq('id', space.id)
+    if (!error) {
+      setSpaces(prev => prev.map(s => s.id === space.id ? { ...s, status: newStatus as any } : s))
+    }
+  }, [])
+
+  const stats = useMemo(() => ({
+    total: spaces.length,
+    active: spaces.filter(s => s.status === 'active').length,
+    pending: spaces.filter(s => s.status === 'pending').length,
+    paused: spaces.filter(s => s.status === 'paused').length,
+  }), [spaces])
+
+  const statusBadge = (status: string) => {
+    const config: Record<string, { bg: string; color: string; label: string }> = {
+      active: { bg: '#f0fdf4', color: '#166534', label: 'Ativo' },
+      pending: { bg: '#fff7ed', color: '#c05621', label: 'Em revisão' },
+      paused: { bg: '#f3f4f6', color: '#4b5563', label: 'Pausado' },
+      rejected: { bg: '#fef2f2', color: '#991b1b', label: 'Rejeitado' }
+    }
+    const c = config[status] || config.pending
+    return (
+      <span style={{
+        fontSize: 11, fontWeight: 600, padding: '3px 10px',
+        borderRadius: 100, background: c.bg, color: c.color
+      }}>{c.label}</span>
+    )
+  }
+
+  return (
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
+            Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]} 👋
+          </h1>
+          <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus espaços</p>
+        </div>
+        <button className="btn-primary" onClick={() => goToPage('new-space')}>
+          + Cadastrar novo espaço
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+        <div className="stat-card">
+          <div className="stat-num">{stats.total}</div>
+          <div className="stat-lab2">Total</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div>
+          <div className="stat-lab2">Ativos</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-num" style={{ color: '#c05621' }}>{stats.pending}</div>
+          <div className="stat-lab2">Em revisão</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-num" style={{ color: '#6b7280' }}>{stats.paused}</div>
+          <div className="stat-lab2">Pausados</div>
+        </div>
+      </div>
+
+      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Meus espaços</h2>
+
+      {loading && <p>Carregando...</p>}
+
+      {!loading && spaces.length === 0 && (
+        <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🏢</div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Você ainda não cadastrou nenhum espaço</h3>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>Cadastre seu primeiro espaço e comece a receber orçamentos!</p>
+          <button className="btn-primary" onClick={() => goToPage('new-space')}>
+            + Cadastrar primeiro espaço
+          </button>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        {spaces.map(s => (
+          <div key={s.id} className="card">
+            <img
+              src={s.media_urls[0] || 'https://via.placeholder.com/400x180?text=Sem+foto'}
+              alt={s.name}
+              style={{ height: 160, width: '100%', objectFit: 'cover' }}
+            />
+            <div className="card-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <div>
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">📍 {s.city}, {s.state}</div>
+                </div>
+                {statusBadge(s.status)}
+              </div>
+              <div className="card-foot" style={{ marginTop: 8 }}>
+                <span className="card-price">
+                  {s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}
+                </span>
+                <span className="card-cap">👥 {s.capacity}</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => goToPage('detail', s)}
+                  style={{
+                    flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #e8e8e8',
+                    borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
+                  }}
+                >
+                  👁 Ver
+                </button>
+                <button
+                  onClick={() => goToPage('edit-space', s)}
+                  style={{
+                    flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #a3e635',
+                    borderRadius: 8, cursor: 'pointer', color: '#5aa800'
+                  }}
+                >
+                  ✏️ Editar
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <button
+                  onClick={() => togglePause(s)}
+                  style={{
+                    flex: 1, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #e8e8e8',
+                    borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
+                  }}
+                >
+                  {s.status === 'active' ? '⏸ Pausar' : '▶ Ativar'}
+                </button>
+                <button
+                  onClick={() => deleteSpace(s.id)}
+                  style={{
+                    padding: '7px 12px', fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #fecaca',
+                    borderRadius: 8, cursor: 'pointer', color: '#991b1b'
+                  }}
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
-
-export const CATEGORIES = [
-  { name: 'Chácara', icon: '🌿', bg: '#fff8e1' },
-  { name: 'Salão de Eventos', icon: '🏛', bg: '#f0fdf4' },
-  { name: 'Restaurante', icon: '🍽', bg: '#fff0f0' },
-  { name: 'Pousada', icon: '🏡', bg: '#f0f8ff' },
-  { name: 'Espaço Corporativo', icon: '🏢', bg: '#f5f0ff' },
-  { name: 'Hotel', icon: '🏨', bg: '#fdf4ff' },
-  { name: 'Buffet Infantil', icon: '🎈', bg: '#fff1f9' }
-]
-
-export const EVENT_TYPES = [
-  'Casamento', 'Corporativo', 'Aniversário', 'Formatura',
-  'Debutante', 'Show', 'Festa Infantil', 'Confraternização'
-]
-
-export const ATTRIBUTES = [
-  'Estacionamento', 'Wi-Fi', 'Buffet/Catering', 'Área externa',
-  'Palco', 'Piscina', 'Acessibilidade', 'Ar-condicionado',
-  'Som profissional', 'Cozinha equipada', 'Pet friendly'
-]
-
-export const QUOTE_STATUS_LABELS: Record<string, { label: string; bg: string; color: string }> = {
-  pending: { label: 'Aguardando', bg: '#fff7ed', color: '#c05621' },
-  viewed: { label: 'Visualizado', bg: '#eff6ff', color: '#1e40af' },
-  responded: { label: 'Respondido', bg: '#f0fdf4', color: '#166534' },
-  accepted: { label: 'Aceito', bg: '#d1fae5', color: '#065f46' },
-  rejected: { label: 'Recusado', bg: '#fef2f2', color: '#991b1b' },
-  closed: { label: 'Fechado', bg: '#f3f4f6', color: '#4b5563' }
-}
-
-export interface Supplier {
-  id: string
-  owner_id: string
-  name: string
-  description: string | null
-  category: string
-  subcategory: string | null
-  cities: string[]
-  state: string
-  whatsapp: string | null
-  instagram: string | null
-  email: string | null
-  website: string | null
-  price_info: string | null
-  media_urls: string[]
-  attributes: string[]
-  event_types: string[]
-  status: 'active' | 'paused' | 'pending'
-  created_at: string
-  updated_at: string
-}
-
-export const SUPPLIER_CATEGORIES = [
-  { name: 'Fotografia', icon: '📸', bg: '#fff8e1' },
-  { name: 'Filmagem / Video Maker', icon: '🎬', bg: '#f0f8ff' },
-  { name: 'Cerimonialista', icon: '💍', bg: '#fdf4ff' },
-  { name: 'Maquiagem', icon: '💄', bg: '#fff1f9' },
-  { name: 'Cabelo', icon: '💇', bg: '#f0fdf4' },
-  { name: 'Bar & Coquetéis', icon: '🍹', bg: '#fff7ed' },
-  { name: 'Buffet / Catering', icon: '🍽', bg: '#fff0f0' },
-  { name: 'Decoração', icon: '🌸', bg: '#fdf4ff' },
-  { name: 'Música / DJ', icon: '🎵', bg: '#f0fdf4' },
-  { name: 'Iluminação', icon: '💡', bg: '#fffbeb' },
-  { name: 'Bolo & Confeitaria', icon: '🎂', bg: '#fff1f9' },
-  { name: 'Segurança', icon: '🔒', bg: '#f1f5f9' },
-  { name: 'Convites & Papelaria', icon: '📋', bg: '#fef9c3' },
-  { name: 'Lembranças & Bem-casados', icon: '🎁', bg: '#f0fdf4' },
-  { name: 'Entretenimento', icon: '🎪', bg: '#fdf4ff' }
-]
-
-export const SUPPLIER_ATTRIBUTES = [
-  'Viaja para outros estados',
-  'Atende fins de semana',
-  'Atende feriados',
-  'Aceita pacotes',
-  'Trabalha com assistente',
-  'Entrega álbum físico',
-  'Emite nota fiscal',
-  'Possui equipamento backup',
-  'Faz degustação',
-  'Atende eventos corporativos',
-  'Bilíngue (inglês)',
-  'Acessibilidade'
-]

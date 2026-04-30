@@ -1,232 +1,140 @@
 import { useState } from 'react'
 import { supabase } from '../supabase'
-import type { User } from '@supabase/supabase-js'
-import type { Space } from '../types'
-import { EVENT_TYPES } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  space: Space
-  user: User | null
   goToPage: (page: Page) => void
 }
 
-export default function DetailPage({ space, user, goToPage }: Props) {
-  const [showForm, setShowForm] = useState(false)
-  const [eventType, setEventType] = useState(space.event_types[0] || 'Casamento')
-  const [eventDate, setEventDate] = useState('')
-  const [guestsCount, setGuestsCount] = useState('')
-  const [duration, setDuration] = useState('4')
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(false)
+export default function SupplierLoginPage({ goToPage }: Props) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-
-    if (!user) {
-      goToPage('login')
-      return
-    }
-
-    if (parseInt(guestsCount) > space.capacity) {
-      setError(`Este espaço comporta no máximo ${space.capacity} pessoas`)
-      setLoading(false)
-      return
-    }
-
     try {
-      const { error: insertError } = await supabase.from('quotes').insert({
-        space_id: space.id,
-        guest_id: user.id,
-        host_id: space.host_id,
-        event_type: eventType,
-        event_date: eventDate,
-        guests_count: parseInt(guestsCount),
-        duration_hours: parseInt(duration),
-        message: message || null,
-        status: 'pending'
-      })
-
-      if (insertError) throw insertError
-
-      setSuccess(true)
-      setShowForm(false)
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      goToPage('supplier-dashboard')
     } catch (err: any) {
-      setError(err.message || 'Erro ao enviar orçamento')
+      setError(err.message === 'Invalid login credentials'
+        ? 'Email ou senha incorretos'
+        : (err.message || 'Erro ao entrar'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <>
-      <div className="back-bar">
-        <a onClick={() => goToPage('listing')}>← Voltar à listagem</a>
-      </div>
-      <div className="det-layout">
-        <div>
-          <img
-            src={space.media_urls[0] || 'https://via.placeholder.com/800x450?text=Sem+foto'}
-            className="det-main-img"
-            alt={space.name}
-          />
-          {space.media_urls.length > 1 && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 18, overflowX: 'auto' }}>
-              {space.media_urls.map((url, i) => (
-                <img key={i} src={url} alt="" style={{ width: 80, height: 60, objectFit: 'cover', borderRadius: 8 }} />
-              ))}
+    <div style={{ minHeight: 'calc(100vh - 64px)', background: '#f9fafb', display: 'flex' }}>
+
+      {/* Lado esquerdo — visual */}
+      <div style={{
+        width: '42%', background: 'linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 100%)',
+        padding: '60px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center'
+      }} className="supplier-side">
+        <div className="logo-box" style={{ display: 'inline-block', marginBottom: 28 }}>EWIND</div>
+        <h2 style={{ fontSize: 30, fontWeight: 800, color: '#a3e635', lineHeight: 1.2, marginBottom: 16 }}>
+          Bem-vindo de volta, profissional!
+        </h2>
+        <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 36 }}>
+          Acesse seu painel, gerencie seus serviços e veja os clientes que entraram em contato.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {[
+            { icon: '📊', text: 'Painel com seus serviços ativos' },
+            { icon: '✏️', text: 'Editar e atualizar portfólio' },
+            { icon: '⏸', text: 'Pausar quando precisar' },
+            { icon: '🆓', text: 'Sempre gratuito' }
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ fontSize: 20 }}>{item.icon}</div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{item.text}</div>
             </div>
-          )}
-          <div className="card-tags" style={{ marginBottom: 10 }}>
-            {space.event_types.map(t => <span key={t} className="tag">{t}</span>)}
-          </div>
-          <h1 className="det-title">{space.name}</h1>
-          <div className="det-loc">📍 {space.city}, {space.state} · {space.category}</div>
-          <div className="stats-row">
-            <div className="stat-item">
-              <div className="stat-val">{space.capacity}</div>
-              <div className="stat-lab">Capacidade</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-val">{space.min_hours}h</div>
-              <div className="stat-lab">Mínimo</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-val" style={{ color: '#5aa800' }}>Ativo</div>
-              <div className="stat-lab">Status</div>
-            </div>
-          </div>
-          {space.description && (
-            <p className="det-desc" style={{ marginTop: 16 }}>
-              {space.description}
-            </p>
-          )}
-          {space.attributes.length > 0 && (
-            <>
-              <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, marginTop: 20 }}>O que o local oferece</h3>
-              <div className="attrs">
-                {space.attributes.map(a => (
-                  <div key={a} className="attr">✓ {a}</div>
-                ))}
-              </div>
-            </>
-          )}
+          ))}
         </div>
 
-        <aside>
-          <div className="quote-box">
-            <div className="qb-price">
-              {space.price_per_hour ? `R$ ${space.price_per_hour}/hora` : `R$ ${space.price_per_day}/dia`}
-            </div>
-            <div className="qb-sub">Preço orientativo · sujeito a negociação</div>
-
-            {success && (
-              <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 16, textAlign: 'center', marginBottom: 12 }}>
-                <div style={{ fontSize: 28, marginBottom: 6 }}>✅</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#166534' }}>Orçamento enviado!</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>O fornecedor responderá em breve</div>
-                <button
-                  onClick={() => goToPage('my-quotes')}
-                  style={{ marginTop: 12, fontSize: 13, color: '#5aa800', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
-                >
-                  Ver meus orçamentos →
-                </button>
-              </div>
-            )}
-
-            {!success && !showForm && (
-              <button
-                className="btn-primary"
-                style={{ width: '100%', padding: 13 }}
-                onClick={() => user ? setShowForm(true) : goToPage('login')}
-              >
-                {user ? 'Solicitar orçamento' : 'Entre para solicitar'}
-              </button>
-            )}
-
-            {showForm && (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Tipo de evento *</label>
-                  <select
-                    value={eventType}
-                    onChange={e => setEventType(e.target.value)}
-                    required
-                    style={{ width: '100%', padding: 9, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }}
-                  >
-                    {space.event_types.map(t => <option key={t} value={t}>{t}</option>)}
-                    {EVENT_TYPES.filter(t => !space.event_types.includes(t)).map(t => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Data do evento *</label>
-                  <input
-                    type="date"
-                    value={eventDate}
-                    onChange={e => setEventDate(e.target.value)}
-                    required
-                    min={new Date().toISOString().split('T')[0]}
-                    style={{ width: '100%', padding: 9, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Convidados *</label>
-                  <input
-                    type="number"
-                    value={guestsCount}
-                    onChange={e => setGuestsCount(e.target.value)}
-                    required
-                    min={1}
-                    max={space.capacity}
-                    placeholder={`Máx: ${space.capacity}`}
-                    style={{ width: '100%', padding: 9, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Duração (horas)</label>
-                  <input
-                    type="number"
-                    value={duration}
-                    onChange={e => setDuration(e.target.value)}
-                    min={space.min_hours}
-                    placeholder={`Mín: ${space.min_hours}h`}
-                    style={{ width: '100%', padding: 9, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Mensagem (opcional)</label>
-                  <textarea
-                    value={message}
-                    onChange={e => setMessage(e.target.value)}
-                    rows={3}
-                    placeholder="Conte mais sobre seu evento..."
-                    style={{ width: '100%', padding: 9, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }}
-                  />
-                </div>
-                {error && <div className="auth-error">⚠️ {error}</div>}
-                <button type="submit" className="btn-primary" style={{ padding: 11 }} disabled={loading}>
-                  {loading ? 'Enviando...' : 'Enviar solicitação'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  style={{ background: 'none', border: 'none', fontSize: 12, color: '#6b7280', cursor: 'pointer' }}
-                >
-                  Cancelar
-                </button>
-              </form>
-            )}
-
-            <div className="qb-sec">🔒 Seus dados são protegidos. Compartilhados apenas com o fornecedor.</div>
-          </div>
-        </aside>
+        <div style={{ marginTop: 40, paddingTop: 28, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Ainda não tem conta?</div>
+          <button
+            onClick={() => goToPage('supplier-signup')}
+            style={{
+              padding: '10px 20px', fontSize: 14, fontWeight: 600,
+              background: 'transparent', border: '1.5px solid rgba(163,230,53,0.5)',
+              borderRadius: 8, color: '#a3e635', cursor: 'pointer', fontFamily: 'inherit'
+            }}
+          >
+            Criar conta gratuita →
+          </button>
+        </div>
       </div>
-    </>
+
+      {/* Lado direito — formulário */}
+      <div style={{ flex: 1, padding: '48px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ maxWidth: 400 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Entrar na área do fornecedor</h1>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 32 }}>
+            Acesse seu painel de serviços.
+          </p>
+
+          <form onSubmit={handleLogin}>
+            <div className="fg">
+              <label>Email</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="contato@email.com"
+                autoFocus
+              />
+            </div>
+            <div className="fg">
+              <label>Senha</label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Sua senha"
+              />
+            </div>
+
+            {error && <div className="auth-error">⚠️ {error}</div>}
+
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ width: '100%', padding: 14, marginTop: 10, fontSize: 15 }}
+              disabled={loading}
+            >
+              {loading ? 'Entrando...' : '🛠️ Entrar no painel'}
+            </button>
+          </form>
+
+          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
+            Não tem conta ainda?{' '}
+            <a onClick={() => goToPage('supplier-signup')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>
+              Cadastrar gratuitamente →
+            </a>
+          </div>
+          <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
+            <a onClick={() => goToPage('login')} style={{ color: '#9ca3af', cursor: 'pointer' }}>
+              Login como host ou guest →
+            </a>
+          </div>
+          <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
+            <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>
+              ← Voltar para a home
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

@@ -1,268 +1,259 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import { supabase } from '../supabase'
-import type { User } from '@supabase/supabase-js'
-import type { Quote } from '../types'
-import { QUOTE_STATUS_LABELS } from '../types'
+import { CATEGORIES, ATTRIBUTES } from '../types'
+import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  user: User
-  goToPage: (page: Page) => void
+  goToPage: (page: Page, space?: Space) => void
+  compareSpaces: Space[]
+  onCompareToggle: (space: Space) => void
+  onClearCompare: () => void
 }
 
-export default function HostQuotesPage({ user, goToPage }: Props) {
-  const [quotes, setQuotes] = useState<Quote[]>([])
+const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
+  space: Space
+  onClick: () => void
+  onCompare: (e: React.MouseEvent) => void
+  isComparing: boolean
+}) => (
+  <div className="card" style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }}>
+      <img
+        src={space.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'}
+        alt={space.name}
+        loading="lazy"
+        onClick={onClick}
+        style={{ cursor: 'pointer', width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
+      />
+      {/* Botão comparar sobre a imagem */}
+      <button
+        onClick={onCompare}
+        style={{
+          position: 'absolute', bottom: 8, right: 8,
+          padding: '5px 10px', fontSize: 11, fontWeight: 700,
+          background: isComparing ? '#a3e635' : 'rgba(0,0,0,0.6)',
+          color: isComparing ? '#1a2e05' : '#fff',
+          border: 'none', borderRadius: 6, cursor: 'pointer',
+          transition: 'all 0.2s'
+        }}
+      >
+        {isComparing ? '✓ Comparando' : '+ Comparar'}
+      </button>
+    </div>
+    <div className="card-body" onClick={onClick} style={{ cursor: 'pointer' }}>
+      <div className="card-name">{space.name}</div>
+      <div className="card-loc">📍 {space.city}, {space.state} · {space.category}</div>
+      <div className="card-tags">
+        {space.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+      </div>
+      <div className="card-foot">
+        <span className="card-price">
+          {space.price_per_hour ? `R$${space.price_per_hour}/h` : `R$${space.price_per_day}/dia`}
+        </span>
+        <span className="card-cap">👥 até {space.capacity}</span>
+      </div>
+    </div>
+  </div>
+))
+
+export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, onClearCompare }: Props) {
+  const [filterCity, setFilterCity] = useState('')
+  const [filterGuests, setFilterGuests] = useState('')
+  const [filterCategory, setFilterCategory] = useState<string[]>([])
+  const [filterAttrs, setFilterAttrs] = useState<string[]>([])
+  const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
-  const [respondingTo, setRespondingTo] = useState<string | null>(null)
-  const [responseText, setResponseText] = useState('')
-  const [proposedPrice, setProposedPrice] = useState('')
-  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    loadQuotes()
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      const { data } = await supabase
+        .from('spaces')
+        .select('id, host_id, name, city, state, category, event_types, media_urls, price_per_hour, price_per_day, capacity, attributes, min_hours, address, description, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+      if (!cancelled && data) setSpaces(data)
+      if (!cancelled) setLoading(false)
+    }
+    load()
+    return () => { cancelled = true }
   }, [])
 
-  const loadQuotes = async () => {
-    setLoading(true)
-    const { data } = await supabase
-      .from('quotes')
-      .select(`
-        *,
-        spaces (
-          id, name, city, state, category, media_urls
-        )
-      `)
-      .eq('host_id', user.id)
-      .order('created_at', { ascending: false })
+  const toggleCategory = useCallback((cat: string) => {
+    setFilterCategory(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
+  }, [])
 
-    if (data) setQuotes(data as any)
-    setLoading(false)
-  }
+  const toggleAttr = useCallback((attr: string) => {
+    setFilterAttrs(prev => prev.includes(attr) ? prev.filter(a => a !== attr) : [...prev, attr])
+  }, [])
 
-  const markAsViewed = async (id: string) => {
-    await supabase
-      .from('quotes')
-      .update({ status: 'viewed' })
-      .eq('id', id)
-      .eq('status', 'pending')
-  }
+  const clearFilters = useCallback(() => {
+    setFilterCategory([])
+    setFilterAttrs([])
+    setFilterCity('')
+    setFilterGuests('')
+  }, [])
 
-  const startResponse = (quote: Quote) => {
-    setRespondingTo(quote.id)
-    setResponseText('')
-    setProposedPrice('')
-    if (quote.status === 'pending') {
-      markAsViewed(quote.id)
-    }
-  }
+  const filteredSpaces = useMemo(() => {
+    return spaces.filter(s => {
+      if (filterCity && !s.city.toLowerCase().includes(filterCity.toLowerCase())) return false
+      if (filterGuests && s.capacity < parseInt(filterGuests)) return false
+      if (filterCategory.length > 0 && !filterCategory.includes(s.category)) return false
+      if (filterAttrs.length > 0 && !filterAttrs.every(a => s.attributes.includes(a))) return false
+      return true
+    })
+  }, [spaces, filterCity, filterGuests, filterCategory, filterAttrs])
 
-  const submitResponse = async (id: string) => {
-    if (!responseText.trim()) {
-      alert('Por favor, escreva uma resposta')
-      return
-    }
-    setSubmitting(true)
-    try {
-      const { error } = await supabase
-        .from('quotes')
-        .update({
-          host_response: responseText,
-          proposed_price: proposedPrice ? parseFloat(proposedPrice) : null,
-          status: 'responded',
-          responded_at: new Date().toISOString()
-        })
-        .eq('id', id)
-
-      if (error) throw error
-
-      setRespondingTo(null)
-      setResponseText('')
-      setProposedPrice('')
-      await loadQuotes()
-      alert('✅ Resposta enviada!')
-    } catch (err: any) {
-      alert('Erro: ' + err.message)
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('pt-BR')
-  }
-
-  const stats = {
-    total: quotes.length,
-    pending: quotes.filter(q => q.status === 'pending').length,
-    responded: quotes.filter(q => q.status === 'responded' || q.status === 'accepted').length,
-  }
+  const compareIds = useMemo(() => new Set(compareSpaces.map(s => s.id)), [compareSpaces])
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Orçamentos recebidos</h1>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>Responda às solicitações dos clientes</p>
-        </div>
-        <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
-          ← Voltar ao painel
-        </button>
+    <>
+      <div className="mini-search">
+        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+        <input type="number" placeholder="Convidados" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
+        <button className="btn-primary">Buscar</button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24, marginTop: 20 }}>
-        <div className="stat-card">
-          <div className="stat-num">{stats.total}</div>
-          <div className="stat-lab2">Total</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: '#c05621' }}>{stats.pending}</div>
-          <div className="stat-lab2">Pendentes</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: '#5aa800' }}>{stats.responded}</div>
-          <div className="stat-lab2">Respondidos</div>
-        </div>
+      <div className="listing-wrap">
+        <aside className="filters-sidebar">
+          <div className="sf-group">
+            <div className="sf-group-title">Capacidade mínima</div>
+            <input type="number" placeholder="Convidados" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
+          </div>
+          <div className="sf-group">
+            <div className="sf-group-title">Categoria</div>
+            {CATEGORIES.map(c => (
+              <label key={c.name} className="chk-row">
+                <input type="checkbox" checked={filterCategory.includes(c.name)} onChange={() => toggleCategory(c.name)} />
+                <span>{c.name}</span>
+              </label>
+            ))}
+          </div>
+          <div className="sf-group">
+            <div className="sf-group-title">Atributos</div>
+            {ATTRIBUTES.slice(0, 7).map(a => (
+              <label key={a} className="chk-row">
+                <input type="checkbox" checked={filterAttrs.includes(a)} onChange={() => toggleAttr(a)} />
+                <span>{a}</span>
+              </label>
+            ))}
+          </div>
+          <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
+            Limpar filtros
+          </button>
+        </aside>
+
+        <main className="results-area">
+          <div className="results-bar">
+            <span><strong>{filteredSpaces.length} espaços</strong> encontrados</span>
+            {compareSpaces.length > 0 && (
+              <span style={{ fontSize: 12, color: '#5aa800', fontWeight: 600 }}>
+                {compareSpaces.length} selecionado(s) para comparar
+              </span>
+            )}
+          </div>
+
+          {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando espaços...</p>}
+
+          {!loading && filteredSpaces.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 40, background: '#f9fafb', borderRadius: 12 }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Nenhum espaço encontrado</h3>
+              <p style={{ fontSize: 13, color: '#6b7280' }}>
+                {spaces.length === 0 ? 'Ainda não há espaços cadastrados.' : 'Tente ajustar os filtros.'}
+              </p>
+            </div>
+          )}
+
+          <div className="cards-2col">
+            {filteredSpaces.map(s => (
+              <SpaceCard
+                key={s.id}
+                space={s}
+                onClick={() => goToPage('detail', s)}
+                onCompare={(e) => {
+                  e.stopPropagation()
+                  onCompareToggle(s)
+                }}
+                isComparing={compareIds.has(s.id)}
+              />
+            ))}
+          </div>
+        </main>
       </div>
 
-      {loading && <p>Carregando...</p>}
+      {/* BARRA FLUTUANTE DE COMPARAÇÃO */}
+      {compareSpaces.length > 0 && (
+        <div style={{
+          position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
+          background: '#1a1a1a', borderRadius: 16, padding: '14px 20px',
+          display: 'flex', alignItems: 'center', gap: 12, zIndex: 999,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)', flexWrap: 'wrap',
+          maxWidth: 'calc(100vw - 40px)'
+        }}>
+          <span style={{ fontSize: 13, color: '#aaa', fontWeight: 600, whiteSpace: 'nowrap' }}>
+            📊 Comparar:
+          </span>
 
-      {!loading && quotes.length === 0 && (
-        <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Sem orçamentos ainda</h3>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>Quando alguém solicitar um orçamento, aparecerá aqui.</p>
+          {/* Miniaturas dos espaços selecionados */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {compareSpaces.map(s => (
+              <div key={s.id} style={{ position: 'relative' }}>
+                <img
+                  src={s.media_urls[0] || 'https://via.placeholder.com/40x40'}
+                  alt={s.name}
+                  style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', border: '2px solid #a3e635' }}
+                />
+                <button
+                  onClick={() => onCompareToggle(s)}
+                  style={{
+                    position: 'absolute', top: -6, right: -6,
+                    background: '#ef4444', color: '#fff', border: 'none',
+                    borderRadius: '50%', width: 18, height: 18,
+                    cursor: 'pointer', fontSize: 10, fontWeight: 700
+                  }}
+                >×</button>
+              </div>
+            ))}
+
+            {/* Slots vazios */}
+            {Array.from({ length: 3 - compareSpaces.length }).map((_, i) => (
+              <div key={i} style={{
+                width: 40, height: 40, borderRadius: 8,
+                border: '2px dashed #444', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                color: '#555', fontSize: 18
+              }}>+</div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, marginLeft: 4 }}>
+            <button
+              onClick={() => goToPage('comparison')}
+              className="btn-primary"
+              style={{ padding: '8px 18px', fontSize: 13, whiteSpace: 'nowrap' }}
+            >
+              Ver comparação →
+            </button>
+            <button
+              onClick={onClearCompare}
+              style={{
+                padding: '8px 14px', fontSize: 12, fontWeight: 600,
+                background: 'transparent', border: '1px solid #444',
+                borderRadius: 8, cursor: 'pointer', color: '#aaa',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Limpar
+            </button>
+          </div>
         </div>
       )}
 
-      <div style={{ display: 'grid', gap: 16 }}>
-        {quotes.map(q => {
-          const status = QUOTE_STATUS_LABELS[q.status]
-          const isResponding = respondingTo === q.id
-          const canRespond = q.status === 'pending' || q.status === 'viewed'
-
-          return (
-            <div key={q.id} style={{ background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 14, padding: 20 }}>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {q.spaces && (
-                  <img
-                    src={(q.spaces as any).media_urls?.[0] || 'https://via.placeholder.com/120x90?text=Sem+foto'}
-                    alt={(q.spaces as any).name}
-                    style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 10 }}
-                  />
-                )}
-
-                <div style={{ flex: 1, minWidth: 240 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                    <div>
-                      <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>{(q.spaces as any)?.name || 'Espaço'}</h3>
-                      <div style={{ fontSize: 12, color: '#6b7280' }}>Recebido em {formatDate(q.created_at)}</div>
-                    </div>
-                    <span style={{
-                      fontSize: 11, fontWeight: 600, padding: '3px 10px',
-                      borderRadius: 100, background: status.bg, color: status.color
-                    }}>{status.label}</span>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Evento</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{q.event_type}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Data</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{formatDate(q.event_date)}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Convidados</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{q.guests_count}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Duração</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{q.duration_hours}h</div>
-                    </div>
-                  </div>
-
-                  {q.message && (
-                    <div style={{ marginTop: 10, padding: 10, background: '#f9fafb', borderRadius: 8, fontSize: 12, color: '#4b5563' }}>
-                      <strong>Mensagem do cliente:</strong> {q.message}
-                    </div>
-                  )}
-
-                  {q.host_response && !isResponding && (
-                    <div style={{ marginTop: 10, padding: 12, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#166534', marginBottom: 4 }}>💬 Sua resposta:</div>
-                      <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.5 }}>{q.host_response}</div>
-                      {q.proposed_price && (
-                        <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#166534' }}>
-                          💰 R$ {q.proposed_price.toLocaleString('pt-BR')}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {isResponding && (
-                    <div style={{ marginTop: 14, padding: 14, background: '#fafafa', borderRadius: 10 }}>
-                      <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Sua resposta *</label>
-                      <textarea
-                        value={responseText}
-                        onChange={e => setResponseText(e.target.value)}
-                        placeholder="Olá! Temos disponibilidade para a data..."
-                        rows={4}
-                        style={{ width: '100%', padding: 10, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 }}
-                      />
-                      <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Preço proposto (R$)</label>
-                      <input
-                        type="number"
-                        value={proposedPrice}
-                        onChange={e => setProposedPrice(e.target.value)}
-                        placeholder="Ex: 4500"
-                        style={{ width: '100%', padding: 10, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', marginBottom: 12 }}
-                      />
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          onClick={() => submitResponse(q.id)}
-                          className="btn-primary"
-                          disabled={submitting}
-                          style={{ flex: 1 }}
-                        >
-                          {submitting ? 'Enviando...' : '✓ Enviar resposta'}
-                        </button>
-                        <button
-                          onClick={() => setRespondingTo(null)}
-                          style={{
-                            padding: '10px 16px', fontSize: 13, fontWeight: 600,
-                            background: '#fff', border: '1.5px solid #e8e8e8',
-                            borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {!isResponding && canRespond && (
-                    <div style={{ marginTop: 12 }}>
-                      <button
-                        onClick={() => startResponse(q)}
-                        className="btn-primary"
-                      >
-                        💬 Responder orçamento
-                      </button>
-                    </div>
-                  )}
-
-                  {!isResponding && !canRespond && q.status === 'responded' && (
-                    <div style={{ marginTop: 10, fontSize: 12, color: '#6b7280' }}>
-                      ✓ Aguardando retorno do cliente
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
+      {/* Espaço extra no fundo quando barra aparece */}
+      {compareSpaces.length > 0 && <div style={{ height: 80 }} />}
+    </>
   )
 }

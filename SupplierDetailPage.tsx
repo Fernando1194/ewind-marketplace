@@ -1,323 +1,194 @@
+import { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import { supabase } from '../supabase'
+import { SUPPLIER_CATEGORIES } from '../types'
+import type { Supplier } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  goToPage: (page: Page) => void
+  goToPage: (page: Page, supplier?: Supplier) => void
 }
 
-export default function AboutPage({ goToPage }: Props) {
-  const values = [
-    {
-      icon: '🤝',
-      title: 'Conexão real',
-      desc: 'Acreditamos que eventos inesquecíveis começam com conexões genuínas. Por isso ligamos diretamente quem precisa a quem oferece, sem intermediários desnecessários.'
-    },
-    {
-      icon: '🔒',
-      title: 'Segurança e transparência',
-      desc: 'Cada informação publicada, cada orçamento enviado e cada resposta recebida acontece de forma clara e rastreável. Você sempre sabe com quem está falando.'
-    },
-    {
-      icon: '💚',
-      title: 'Acessibilidade para todos',
-      desc: 'Seja um casamento intimista ou uma grande confraternização corporativa, o Ewind serve a todos — sem taxas escondidas e sem burocracia.'
-    },
-    {
-      icon: '🚀',
-      title: 'Simplicidade que transforma',
-      desc: 'Processos complexos viram poucos cliques. Nossa tecnologia existe para sumir do caminho e deixar você focar no que realmente importa: o evento.'
-    }
-  ]
+const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick: () => void }) => {
+  const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
+  return (
+    <div className="card" onClick={onClick} style={{ cursor: 'pointer' }}>
+      <div style={{ position: 'relative' }}>
+        <img
+          src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'}
+          alt={supplier.name}
+          loading="lazy"
+          style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
+        />
+        <div style={{
+          position: 'absolute', top: 10, left: 10,
+          background: cat?.bg || '#f0fdf4', borderRadius: 20,
+          padding: '4px 10px', fontSize: 12, fontWeight: 700,
+          display: 'flex', alignItems: 'center', gap: 4
+        }}>
+          {cat?.icon} {supplier.category}
+        </div>
+      </div>
+      <div className="card-body">
+        <div className="card-name">{supplier.name}</div>
+        {supplier.subcategory && (
+          <div style={{ fontSize: 12, color: '#5aa800', fontWeight: 600, marginBottom: 4 }}>
+            {supplier.subcategory}
+          </div>
+        )}
+        <div className="card-loc">
+          📍 {supplier.cities.slice(0, 2).join(', ')}{supplier.cities.length > 2 ? ` +${supplier.cities.length - 2}` : ''}, {supplier.state}
+        </div>
+        {supplier.price_info && (
+          <div style={{ fontSize: 13, color: '#6b7280', marginTop: 6 }}>
+            💰 {supplier.price_info}
+          </div>
+        )}
+        <div className="card-tags" style={{ marginTop: 8 }}>
+          {supplier.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+        </div>
+      </div>
+    </div>
+  )
+})
 
-  const stats = [
-    { number: '5', label: 'categorias de espaços' },
-    { number: '100%', label: 'gratuito para quem busca' },
-    { number: '0', label: 'taxas sobre negociações' },
-    { number: '∞', label: 'orçamentos simultâneos' }
-  ]
+export default function SuppliersPage({ goToPage }: Props) {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filterCategory, setFilterCategory] = useState<string>('')
+  const [filterCity, setFilterCity] = useState('')
 
-  const team = [
-    {
-      name: 'Fernando Vieira',
-      role: 'Fundador & CEO',
-      city: 'Curitiba, PR',
-      bio: 'Empreendedor com paixão por tecnologia e eventos. Criou o Ewind após perceber como era difícil e estressante encontrar e contratar espaços para eventos no Brasil.',
-      emoji: '👨‍💼'
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      setLoading(true)
+      const { data } = await supabase
+        .from('suppliers')
+        .select('id, owner_id, name, description, category, subcategory, cities, state, price_info, media_urls, event_types, attributes, whatsapp, instagram, email, website, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+      if (!cancelled && data) setSuppliers(data)
+      if (!cancelled) setLoading(false)
     }
-  ]
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  const filtered = useMemo(() => {
+    return suppliers.filter(s => {
+      if (filterCategory && s.category !== filterCategory) return false
+      if (filterCity && !s.cities.some(c => c.toLowerCase().includes(filterCity.toLowerCase()))) return false
+      return true
+    })
+  }, [suppliers, filterCategory, filterCity])
+
+  const clearFilters = useCallback(() => {
+    setFilterCategory('')
+    setFilterCity('')
+  }, [])
 
   return (
-    <div style={{ background: '#fff' }}>
-
-      {/* HERO */}
-      <section style={{
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-        padding: '80px 24px',
-        textAlign: 'center'
-      }}>
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-            QUEM SOMOS
-          </div>
-          <h1 style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.15, marginBottom: 20 }}>
-            Tornando cada evento{' '}
-            <span style={{ color: '#a3e635' }}>menos estressante</span>{' '}
-            e mais inesquecível
-          </h1>
-          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, maxWidth: 580, margin: '0 auto 32px' }}>
-            O Ewind nasceu de uma crença simples: organizar um evento especial não deveria ser uma fonte de ansiedade. Deveria ser o começo de uma história bonita.
-          </p>
-          <button
-            className="btn-primary"
-            style={{ fontSize: 15, padding: '14px 32px' }}
-            onClick={() => goToPage('listing')}
-          >
-            Conhecer os espaços →
-          </button>
-        </div>
-      </section>
-
-      {/* MISSÃO */}
-      <section style={{ padding: '72px 24px', maxWidth: 1000, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-              NOSSA MISSÃO
-            </div>
-            <h2 style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.25, marginBottom: 20, color: '#2d2d2d' }}>
-              Facilitar o encontro entre quem sonha e quem realiza
-            </h2>
-            <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8, marginBottom: 16 }}>
-              Eventos marcam a vida das pessoas. Um casamento, uma formatura, um aniversário, uma confraternização — cada um desses momentos carrega emoção, expectativa e muito trabalho por trás.
-            </p>
-            <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8, marginBottom: 16 }}>
-              O que vimos é que a parte mais difícil nem sempre é a decoração ou o buffet: é encontrar o espaço certo, comparar opções, entender preços e ter segurança na escolha.
-            </p>
-            <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8 }}>
-              O Ewind existe para resolver exatamente isso. Somos o elo entre quem busca um espaço perfeito e quem tem esse espaço para oferecer — de forma rápida, gratuita e transparente.
-            </p>
-          </div>
-
-          {/* Card visual da missão */}
-          <div style={{
-            background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)',
-            borderRadius: 20,
-            padding: 40,
-            border: '1px solid #d9f99d'
-          }}>
-            <div style={{ fontSize: 48, marginBottom: 20 }}>🎯</div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 14, color: '#1a2e05' }}>
-              Nosso propósito
-            </h3>
-            <p style={{ fontSize: 15, color: '#365314', lineHeight: 1.7, fontStyle: 'italic' }}>
-              "Fazer com que o momento de organizar um evento seja tão especial quanto o evento em si — conectando pessoas, espaços e serviços com simplicidade, segurança e sem custo."
-            </p>
-            <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #bbf7d0' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#5aa800' }}>Fernando Vieira</div>
-              <div style={{ fontSize: 12, color: '#6b7280' }}>Fundador, Ewind</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PROBLEMA QUE RESOLVEMOS */}
-      <section style={{ background: '#f9fafb', padding: '72px 24px', borderTop: '1px solid #e8e8e8' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-            POR QUE O EWIND EXISTE
-          </div>
-          <h2 style={{ fontSize: 30, fontWeight: 800, marginBottom: 16, color: '#2d2d2d' }}>
-            Organizar eventos no Brasil é mais difícil do que deveria ser
-          </h2>
-          <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8, maxWidth: 700, margin: '0 auto 48px' }}>
-            Antes do Ewind, encontrar um espaço para eventos significava horas de busca no Google, ligações sem retorno, orçamentos que chegavam dias depois e dificuldade de comparar opções lado a lado.
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20, textAlign: 'left' }}>
-            <div style={{ background: '#fff', padding: 24, borderRadius: 14, border: '1px solid #e8e8e8' }}>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>😓</div>
-              <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: '#2d2d2d' }}>Antes</h4>
-              <ul style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.8, paddingLeft: 16 }}>
-                <li>Horas pesquisando sem comparar</li>
-                <li>Orçamentos demoram dias</li>
-                <li>Informações inconsistentes</li>
-                <li>Sem segurança na escolha</li>
-                <li>Processo estressante</li>
-              </ul>
-            </div>
-            <div style={{ background: '#f0fdf4', padding: 24, borderRadius: 14, border: '1px solid #bbf7d0' }}>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>🎉</div>
-              <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: '#1a2e05' }}>Com o Ewind</h4>
-              <ul style={{ fontSize: 13, color: '#166534', lineHeight: 1.8, paddingLeft: 16 }}>
-                <li>Busca, filtra e compara em minutos</li>
-                <li>Orçamentos em até 24 horas</li>
-                <li>Informações transparentes</li>
-                <li>Comunicação direta e segura</li>
-                <li>Foco no que importa: o evento</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* NÚMEROS */}
-      <section style={{ padding: '72px 24px', maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-          EWIND EM NÚMEROS
-        </div>
-        <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 48, color: '#2d2d2d' }}>
-          Uma plataforma feita para todo tipo de evento
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }}>
-          {stats.map((s, i) => (
-            <div key={i} style={{ background: '#f9fafb', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
-              <div style={{ fontSize: 36, fontWeight: 900, color: '#a3e635', marginBottom: 8 }}>{s.number}</div>
-              <div style={{ fontSize: 13, color: '#6b7280', fontWeight: 500, lineHeight: 1.4 }}>{s.label}</div>
-            </div>
+    <>
+      {/* Mini search */}
+      <div className="mini-search">
+        <input
+          placeholder="Cidade"
+          value={filterCity}
+          onChange={e => setFilterCity(e.target.value)}
+        />
+        <select
+          value={filterCategory}
+          onChange={e => setFilterCategory(e.target.value)}
+          style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}
+        >
+          <option value="">Todas as categorias</option>
+          {SUPPLIER_CATEGORIES.map(c => (
+            <option key={c.name} value={c.name}>{c.icon} {c.name}</option>
           ))}
-        </div>
-      </section>
+        </select>
+        <button className="btn-primary">Buscar</button>
+      </div>
 
-      {/* VALORES */}
-      <section style={{ background: '#f9fafb', padding: '72px 24px', borderTop: '1px solid #e8e8e8' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-              NOSSOS VALORES
-            </div>
-            <h2 style={{ fontSize: 28, fontWeight: 800, color: '#2d2d2d' }}>
-              O que guia cada decisão que tomamos
-            </h2>
+      <div className="listing-wrap">
+        {/* Sidebar */}
+        <aside className="filters-sidebar">
+          <div className="sf-group">
+            <div className="sf-group-title">Cidade</div>
+            <input
+              type="text"
+              placeholder="Ex: Curitiba"
+              value={filterCity}
+              onChange={e => setFilterCity(e.target.value)}
+            />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20 }}>
-            {values.map((v, i) => (
-              <div key={i} style={{ background: '#fff', padding: 28, borderRadius: 14, border: '1px solid #e8e8e8' }}>
-                <div style={{ fontSize: 36, marginBottom: 14 }}>{v.icon}</div>
-                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10, color: '#2d2d2d' }}>{v.title}</h4>
-                <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.7 }}>{v.desc}</p>
-              </div>
+          <div className="sf-group">
+            <div className="sf-group-title">Categoria</div>
+            <label className="chk-row">
+              <input
+                type="radio"
+                name="cat"
+                checked={filterCategory === ''}
+                onChange={() => setFilterCategory('')}
+              />
+              <span>Todas</span>
+            </label>
+            {SUPPLIER_CATEGORIES.map(c => (
+              <label key={c.name} className="chk-row">
+                <input
+                  type="radio"
+                  name="cat"
+                  checked={filterCategory === c.name}
+                  onChange={() => setFilterCategory(c.name)}
+                />
+                <span>{c.icon} {c.name}</span>
+              </label>
             ))}
           </div>
-        </div>
-      </section>
+          <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
+            Limpar filtros
+          </button>
+        </aside>
 
-      {/* FUNDADOR */}
-      <section style={{ padding: '72px 24px', maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-            QUEM ESTÁ POR TRÁS
-          </div>
-          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#2d2d2d' }}>Nosso time</h2>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          {team.map((t, i) => (
-            <div key={i} style={{
-              background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 16,
-              padding: 32, maxWidth: 420, textAlign: 'center'
-            }}>
-              <div style={{
-                width: 80, height: 80, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #a3e635, #5aa800)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 36, margin: '0 auto 16px'
-              }}>
-                {t.emoji}
-              </div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{t.name}</h3>
-              <div style={{ fontSize: 13, color: '#5aa800', fontWeight: 600, marginBottom: 4 }}>{t.role}</div>
-              <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 14 }}>📍 {t.city}</div>
-              <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.7 }}>{t.bio}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* PARA TODOS */}
-      <section style={{ background: '#f9fafb', padding: '72px 24px', borderTop: '1px solid #e8e8e8' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
-            PARA TODOS
-          </div>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 16, color: '#2d2d2d' }}>
-            Um ecossistema completo de eventos
-          </h2>
-          <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8, maxWidth: 660, margin: '0 auto 48px' }}>
-            O Ewind foi pensado para servir todos os envolvidos no universo de eventos — não apenas quem busca e quem oferece espaços, mas também toda a cadeia de fornecedores que torna cada celebração possível.
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-            <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
-              <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>Quem busca espaços</h4>
-              <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>
-                Encontre, compare e solicite orçamentos de espaços para qualquer tipo de evento — casamentos, aniversários, formaturas, confraternizações e mais.
-              </p>
-              <button
-                onClick={() => goToPage('listing')}
-                style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Buscar espaços →
-              </button>
-            </div>
-            <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>🏢</div>
-              <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8 }}>Quem oferece espaços</h4>
-              <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6 }}>
-                Cadastre seu espaço gratuitamente, receba solicitações qualificadas e responda com orçamentos personalizados. Mais visibilidade, mais negócios.
-              </p>
-              <button
-                onClick={() => goToPage('signup')}
-                style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Anunciar espaço →
-              </button>
-            </div>
-            <div style={{ background: '#f9fafb', borderRadius: 14, padding: 28, border: '1px dashed #d1d5db' }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>🛠️</div>
-              <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, color: '#9ca3af' }}>Fornecedores de serviços</h4>
-              <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.6 }}>
-                Buffet, decoração, fotografia, música, segurança e muito mais. Em breve, fornecedores de serviços também terão seu espaço no Ewind.
-              </p>
-              <div style={{ marginTop: 16, fontSize: 12, fontWeight: 700, color: '#d1d5db' }}>
-                Em breve ✨
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section style={{ padding: '72px 24px', background: '#1a1a1a' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🎊</div>
-          <h2 style={{ fontSize: 30, fontWeight: 800, color: '#a3e635', marginBottom: 16, lineHeight: 1.3 }}>
-            Vamos tornar seu próximo evento inesquecível?
-          </h2>
-          <p style={{ fontSize: 15, color: '#9ca3af', marginBottom: 32, lineHeight: 1.7 }}>
-            Junte-se ao Ewind e descubra como organizar eventos pode ser simples, seguro e até prazeroso. Porque o momento especial começa muito antes da festa.
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        {/* Results */}
+        <main className="results-area">
+          <div className="results-bar">
+            <span><strong>{filtered.length} fornecedores</strong> encontrados</span>
             <button
               className="btn-primary"
-              style={{ fontSize: 15, padding: '14px 28px' }}
-              onClick={() => goToPage('listing')}
+              style={{ fontSize: 13, padding: '8px 16px' }}
+              onClick={() => goToPage('new-supplier')}
             >
-              🔍 Encontrar meu espaço
-            </button>
-            <button
-              style={{
-                fontSize: 15, padding: '14px 28px',
-                background: 'transparent', border: '2px solid #a3e635',
-                borderRadius: 8, color: '#a3e635', fontWeight: 700,
-                cursor: 'pointer', fontFamily: 'inherit'
-              }}
-              onClick={() => goToPage('how-it-works')}
-            >
-              📖 Como funciona
+              + Anunciar serviço
             </button>
           </div>
-        </div>
-      </section>
 
-    </div>
+          {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando fornecedores...</p>}
+
+          {!loading && filtered.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 48, background: '#f9fafb', borderRadius: 14 }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Nenhum fornecedor encontrado</h3>
+              <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+                {suppliers.length === 0
+                  ? 'Seja o primeiro a anunciar seus serviços!'
+                  : 'Tente ajustar os filtros.'}
+              </p>
+              <button className="btn-primary" onClick={() => goToPage('new-supplier')}>
+                + Anunciar meu serviço
+              </button>
+            </div>
+          )}
+
+          <div className="cards-2col">
+            {filtered.map(s => (
+              <SupplierCard
+                key={s.id}
+                supplier={s}
+                onClick={() => goToPage('supplier-detail', s as any)}
+              />
+            ))}
+          </div>
+        </main>
+      </div>
+    </>
   )
 }
