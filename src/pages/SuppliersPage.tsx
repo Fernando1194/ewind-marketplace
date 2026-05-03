@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react'
 import { supabase } from '../supabase'
 import { SUPPLIER_CATEGORIES, EVENT_TYPES } from '../types'
 import type { Supplier } from '../types'
@@ -9,6 +9,11 @@ interface Props {
 }
 
 const STATES = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
+const PAGE_SIZE = 9
+
+// Cache em memória
+const cache: { suppliers: Supplier[] | null; ts: number } = { suppliers: null, ts: 0 }
+const CACHE_TTL = 60_000
 
 const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick: () => void }) => {
   const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
@@ -17,11 +22,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
       <div style={{ position: 'relative' }}>
         <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={supplier.name}
           loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
-        <div style={{
-          position: 'absolute', top: 10, left: 10, background: cat?.bg || '#f0fdf4',
-          borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700,
-          display: 'flex', alignItems: 'center', gap: 4
-        }}>
+        <div style={{ position: 'absolute', top: 10, left: 10, background: cat?.bg || '#f0fdf4', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
           {cat?.icon} {supplier.category}
         </div>
       </div>
@@ -47,32 +48,48 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
 export default function SuppliersPage({ goToPage }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // Filtros
   const [filterCity, setFilterCity] = useState('')
   const [filterState, setFilterState] = useState('')
   const [filterCategories, setFilterCategories] = useState<string[]>([])
   const [filterEventTypes, setFilterEventTypes] = useState<string[]>([])
 
+  const abortRef = useRef<AbortController | null>(null)
+
   useEffect(() => {
-    let cancelled = false
     const load = async () => {
+      if (cache.suppliers && Date.now() - cache.ts < CACHE_TTL) {
+        setSuppliers(cache.suppliers)
+        setLoading(false)
+        return
+      }
+
+      abortRef.current?.abort()
+      abortRef.current = new AbortController()
       setLoading(true)
+
       const { data } = await supabase
         .from('suppliers')
         .select('id, owner_id, name, description, category, subcategory, cities, state, neighborhood, price_info, media_urls, event_types, attributes, whatsapp, instagram, email, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
-      if (!cancelled && data) setSuppliers(data)
-      if (!cancelled) setLoading(false)
+
+      if (data) {
+        cache.suppliers = data
+        cache.ts = Date.now()
+        setSuppliers(data)
+      }
+      setLoading(false)
     }
     load()
-    return () => { cancelled = true }
+    return () => abortRef.current?.abort()
   }, [])
 
-  const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) => {
+  useEffect(() => { setCurrentPage(1) }, [filterCity, filterState, filterCategories, filterEventTypes])
+
+  const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) =>
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
-  }
 
   const clearFilters = useCallback(() => {
     setFilterCity(''); setFilterState('')
@@ -81,15 +98,18 @@ export default function SuppliersPage({ goToPage }: Props) {
 
   const activeFiltersCount = [filterCity, filterState, ...filterCategories, ...filterEventTypes].filter(Boolean).length
 
-  const filtered = useMemo(() => {
-    return suppliers.filter(s => {
-      if (filterCity && !s.cities.some(c => c.toLowerCase().includes(filterCity.toLowerCase()))) return false
-      if (filterState && s.state !== filterState) return false
-      if (filterCategories.length > 0 && !filterCategories.includes(s.category)) return false
-      if (filterEventTypes.length > 0 && !filterEventTypes.some(t => s.event_types.includes(t))) return false
-      return true
-    })
-  }, [suppliers, filterCity, filterState, filterCategories, filterEventTypes])
+  const filtered = useMemo(() => suppliers.filter(s => {
+    if (filterCity && !s.cities.some(c => c.toLowerCase().includes(filterCity.toLowerCase()))) return false
+    if (filterState && s.state !== filterState) return false
+    if (filterCategories.length > 0 && !filterCategories.includes(s.category)) return false
+    if (filterEventTypes.length > 0 && !filterEventTypes.some(t => s.event_types.includes(t))) return false
+    return true
+  }), [suppliers, filterCity, filterState, filterCategories, filterEventTypes])
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = useMemo(() => filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [filtered, currentPage])
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
   return (
     <>
@@ -105,12 +125,9 @@ export default function SuppliersPage({ goToPage }: Props) {
 
       <div className="listing-wrap">
         <aside className="filters-sidebar">
-
-          {/* Localização */}
           <div className="sf-group">
             <div className="sf-group-title">Localização</div>
-            <input type="text" placeholder="Cidade" value={filterCity}
-              onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
             <select value={filterState} onChange={e => setFilterState(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
               <option value="">Todos os estados</option>
@@ -118,13 +135,12 @@ export default function SuppliersPage({ goToPage }: Props) {
             </select>
           </div>
 
-          {/* Categoria */}
           <div className="sf-group">
             <div className="sf-group-title">Categoria</div>
             {SUPPLIER_CATEGORIES.map(c => (
               <label key={c.name} style={{
-                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
-                cursor: 'pointer', fontSize: 13, padding: '5px 8px', borderRadius: 8,
+                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, cursor: 'pointer',
+                fontSize: 13, padding: '5px 8px', borderRadius: 8,
                 color: filterCategories.includes(c.name) ? '#1a2e05' : '#6b7280',
                 fontWeight: filterCategories.includes(c.name) ? 600 : 400,
                 background: filterCategories.includes(c.name) ? '#f0fdf4' : 'transparent',
@@ -140,7 +156,6 @@ export default function SuppliersPage({ goToPage }: Props) {
             ))}
           </div>
 
-          {/* Tipo de evento */}
           <div className="sf-group">
             <div className="sf-group-title">Tipo de evento</div>
             {EVENT_TYPES.map(t => (
@@ -152,7 +167,6 @@ export default function SuppliersPage({ goToPage }: Props) {
             ))}
           </div>
 
-          {/* Chips ativos */}
           {activeFiltersCount > 0 && (
             <div className="sf-group">
               <div className="sf-group-title">Filtros ativos</div>
@@ -183,14 +197,26 @@ export default function SuppliersPage({ goToPage }: Props) {
 
         <main className="results-area">
           <div className="results-bar">
-            <span><strong>{filtered.length} fornecedores</strong> encontrados</span>
-            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }}
-              onClick={() => goToPage('supplier-signup')}>
+            <span>
+              <strong>{filtered.length} fornecedores</strong> encontrados
+              {filtered.length > PAGE_SIZE && (
+                <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>
+                  · página {currentPage} de {totalPages}
+                </span>
+              )}
+            </span>
+            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage('supplier-signup')}>
               + Anunciar serviço
             </button>
           </div>
 
-          {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando fornecedores...</p>}
+          {loading && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {[1,2,3,4].map(i => (
+                <div key={i} style={{ height: 260, borderRadius: 14, background: 'linear-gradient(90deg, #f3f4f6 25%, #e8e8e8 50%, #f3f4f6 75%)', backgroundSize: '200% 100%' }} />
+              ))}
+            </div>
+          )}
 
           {!loading && filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: 48, background: '#f9fafb', borderRadius: 14 }}>
@@ -199,7 +225,7 @@ export default function SuppliersPage({ goToPage }: Props) {
                 {activeFiltersCount > 0 ? 'Nenhum fornecedor encontrado' : 'Seja o primeiro a anunciar!'}
               </h3>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
-                {activeFiltersCount > 0 ? 'Tente ajustar os filtros.' : 'Cadastre seus serviços e apareça para quem está organizando eventos.'}
+                {activeFiltersCount > 0 ? 'Tente ajustar os filtros.' : 'Cadastre seus serviços e apareça para quem organiza eventos.'}
               </p>
               {activeFiltersCount > 0
                 ? <button className="btn-primary" onClick={clearFilters}>Limpar filtros</button>
@@ -209,10 +235,45 @@ export default function SuppliersPage({ goToPage }: Props) {
           )}
 
           <div className="cards-2col">
-            {filtered.map(s => (
+            {paginated.map(s => (
               <SupplierCard key={s.id} supplier={s} onClick={() => goToPage('supplier-detail', s)} />
             ))}
           </div>
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 32, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
+              <button onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); scrollToTop() }}
+                disabled={currentPage === 1}
+                style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}>
+                ← Anterior
+              </button>
+
+              <div style={{ display: 'flex', gap: 4 }}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .reduce((acc: (number | string)[], p, i, arr) => {
+                    if (i > 0 && (p as number) - (arr[i - 1] as number) > 1) acc.push('...')
+                    acc.push(p)
+                    return acc
+                  }, [])
+                  .map((p, i) => p === '...' ? (
+                    <span key={`d${i}`} style={{ padding: '8px 4px', fontSize: 13, color: '#9ca3af' }}>…</span>
+                  ) : (
+                    <button key={p} onClick={() => { setCurrentPage(p as number); scrollToTop() }}
+                      style={{ width: 36, height: 36, fontSize: 13, fontWeight: 600, border: '1.5px solid', borderColor: currentPage === p ? '#a3e635' : '#e8e8e8', borderRadius: 8, background: currentPage === p ? '#f0fdf4' : '#fff', color: currentPage === p ? '#1a2e05' : '#2d2d2d', cursor: 'pointer' }}>
+                      {p}
+                    </button>
+                  ))}
+              </div>
+
+              <button onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); scrollToTop() }}
+                disabled={currentPage === totalPages}
+                style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}>
+                Próxima →
+              </button>
+            </div>
+          )}
         </main>
       </div>
     </>
