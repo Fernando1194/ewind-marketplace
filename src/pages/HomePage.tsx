@@ -66,7 +66,7 @@ export default function HomePage({ goToPage }: Props) {
   return (
     <>
       {/* HERO */}
-      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', maxWidth: '100vw' }}>
         {heroImages.map((img, i) => (
           <div key={img} style={{
             position: 'absolute', inset: 0,
@@ -151,7 +151,7 @@ export default function HomePage({ goToPage }: Props) {
       {/* CATEGORIAS */}
       <section className="section">
         <h2 className="sec-title">Explore por categoria</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
           {CATEGORIES.map(c => (
             <div key={c.name} onClick={() => goToPage('listing')}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 8px', borderRadius: 12, border: '1.5px solid #e8e8e8', cursor: 'pointer', background: '#fff', transition: 'all 0.2s', textAlign: 'center' }}

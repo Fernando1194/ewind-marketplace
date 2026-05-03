@@ -146,14 +146,14 @@ function App() {
   return (
     <div className="app">
       <nav className="nav">
-        <div className="nav-logo" onClick={() => goToPage('home')}>
-          <img src="/logo.png" alt="Ewind" className="logo-img" />
-        </div>
         <button className="nav-hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
           <span style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
           <span style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
           <span style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
         </button>
+        <div className="nav-logo" onClick={() => goToPage('home')}>
+          <img src="/logo.png" alt="Ewind" className="logo-img" />
+        </div>
 
         <div className="nav-center">
           <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
