@@ -64,6 +64,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
   const [filterMinPrice, setFilterMinPrice] = useState('')
   const [filterMaxPrice, setFilterMaxPrice] = useState('')
 
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
@@ -146,6 +147,11 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
 
       <div className="listing-wrap">
         <aside className="filters-sidebar">
+          <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
+            <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
+            <span>{filtersOpen ? '▲' : '▼'}</span>
+          </button>
+          <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
           <div className="sf-group">
             <div className="sf-group-title">Localização</div>
             <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
@@ -206,6 +212,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
           <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
             Limpar filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </button>
+          </div>
         </aside>
 
         <main className="results-area">

@@ -45,6 +45,7 @@ function App() {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
   const [compareSpaces, setCompareSpaces] = useState<Space[]>([])
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
   const [loading, setLoading] = useState(true)
@@ -99,6 +100,7 @@ function App() {
   }, [])
 
   const goToPage = useCallback((p: Page, data?: Space | Supplier) => {
+    setMobileMenuOpen(false)
     setPage(p)
     if (data) {
       if (p === 'edit-space') setEditingSpace(data as Space)
@@ -147,6 +149,11 @@ function App() {
         <div className="nav-logo" onClick={() => goToPage('home')}>
           <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
+        <button className="nav-hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
+          <span style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
+          <span style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
+          <span style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
+        </button>
 
         <div className="nav-center">
           <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
@@ -215,6 +222,36 @@ function App() {
           )}
         </div>
       </nav>
+
+      {/* MOBILE MENU */}
+      <div className={`nav-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+        <a onClick={() => goToPage('home')}>🏠 Início</a>
+        <a onClick={() => goToPage('listing')}>🏢 Espaços</a>
+        <a onClick={() => goToPage('suppliers')}>🛠️ Fornecedores</a>
+        <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
+        <a onClick={() => goToPage('about')}>👥 Quem somos</a>
+        {user && profile?.role === 'guest' && (
+          <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
+        )}
+        {user && profile?.role === 'host' && (
+          <a onClick={() => goToPage('host-dashboard')}>🏢 Meu painel</a>
+        )}
+        {user && profile?.role === 'supplier' && (
+          <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meus serviços</a>
+        )}
+        <div className="mobile-auth">
+          {!user ? (
+            <>
+              <button className="btn-link" onClick={() => goToPage('login')}>Entrar</button>
+              <button className="btn-primary" onClick={() => goToPage('signup')}>Cadastrar</button>
+            </>
+          ) : (
+            <button className="btn-link" onClick={async () => { await supabase.auth.signOut(); setMobileMenuOpen(false) }}>
+              Sair da conta
+            </button>
+          )}
+        </div>
+      </div>
 
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
