@@ -14,6 +14,7 @@ export default function LoginPage({ goToPage }: Props) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPass, setShowPass] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
