@@ -22,10 +22,6 @@ const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
 const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
 const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
-const TermsPage = lazy(() => import('./pages/TermsPage'))
-const PricingPage = lazy(() => import('./pages/PricingPage'))
-const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 export type Page =
   | 'home' | 'listing' | 'detail'
@@ -35,7 +31,6 @@ export type Page =
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
-  | 'reset-password' | 'terms' | 'pricing' | 'admin'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -90,14 +85,10 @@ function App() {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) loadUserRole(session.user.id)
       else { setUserRole('guest'); setPendingQuotesCount(0) }
-      // Redirecionar para redefinição de senha ao clicar no link do email
-      if (event === 'PASSWORD_RECOVERY') {
-        setPage('reset-password')
-      }
     })
 
     return () => subscription.unsubscribe()
@@ -184,26 +175,10 @@ function App() {
           )}
 
           <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
-          <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
         </div>
 
         <div className="nav-right">
-          {user?.id === '17ce4a1d-a693-4902-b4ee-b03b3a288914' && (
-            <button
-              onClick={() => goToPage('admin')}
-              title="Painel Admin"
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                fontSize: 18, padding: '4px 6px', opacity: 0.4,
-                transition: 'opacity 0.2s'
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.4'}
-            >
-              ⚙️
-            </button>
-          )}
           {/* Badge comparação */}
           {compareSpaces.length > 0 && (
             <button
@@ -254,7 +229,6 @@ function App() {
         <a onClick={() => goToPage('listing')}>🏢 Espaços</a>
         <a onClick={() => goToPage('suppliers')}>🛠️ Fornecedores</a>
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
-        <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
         {user && profile?.role === 'guest' && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
@@ -331,11 +305,6 @@ function App() {
         {/* Área do Fornecedor */}
         {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} />}
         {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
-        {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
-        {page === 'terms' && <TermsPage goToPage={goToPage} />}
-        {page === 'pricing' && <PricingPage goToPage={goToPage} />}
-        {page === 'admin' && user?.id === '17ce4a1d-a693-4902-b4ee-b03b3a288914' && <AdminPage goToPage={goToPage} />}
-        {page === 'admin' && user?.id !== '17ce4a1d-a693-4902-b4ee-b03b3a288914' && <div style={{padding:40,textAlign:'center'}}><h2>Acesso negado</h2></div>}
         {page === 'supplier-dashboard' && user && (
           <SupplierDashboard user={user} goToPage={goToPage} />
         )}
