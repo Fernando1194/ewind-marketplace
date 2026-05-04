@@ -32,6 +32,7 @@ const HERO_IMAGES = [
 export default function HomePage({ goToPage }: Props) {
   const [filterCity, setFilterCity] = useState('')
   const [filterGuests, setFilterGuests] = useState('')
+  const [filterDate, setFilterDate] = useState('')
   const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
   const [heroImages] = useState<string[]>(HERO_IMAGES)
   const [currentHero, setCurrentHero] = useState(0)
@@ -93,6 +94,16 @@ export default function HomePage({ goToPage }: Props) {
             <div className="sf">
               <div className="sf-label">Onde</div>
               <input placeholder="Cidade ou região" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+            </div>
+            <div className="sf">
+              <div className="sf-label">Data do evento</div>
+              <input
+                type="date"
+                value={filterDate}
+                onChange={e => setFilterDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                style={{ colorScheme: 'light' }}
+              />
             </div>
             <div className="sf">
               <div className="sf-label">Convidados</div>
