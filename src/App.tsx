@@ -24,6 +24,7 @@ const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
 const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
+const PricingPage = lazy(() => import('./pages/PricingPage'))
 
 export type Page =
   | 'home' | 'listing' | 'detail'
@@ -33,7 +34,7 @@ export type Page =
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
-  | 'reset-password' | 'terms'
+  | 'reset-password' | 'terms' | 'pricing'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -182,6 +183,7 @@ function App() {
           )}
 
           <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
+          <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
         </div>
 
@@ -236,6 +238,7 @@ function App() {
         <a onClick={() => goToPage('listing')}>🏢 Espaços</a>
         <a onClick={() => goToPage('suppliers')}>🛠️ Fornecedores</a>
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
+        <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
         {user && profile?.role === 'guest' && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
@@ -314,6 +317,7 @@ function App() {
         {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
         {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
         {page === 'terms' && <TermsPage goToPage={goToPage} />}
+        {page === 'pricing' && <PricingPage goToPage={goToPage} />}
         {page === 'supplier-dashboard' && user && (
           <SupplierDashboard user={user} goToPage={goToPage} />
         )}
