@@ -47,7 +47,7 @@ interface QuoteRow {
   guest_email?: string
 }
 
-const ADMIN_ID = '17ce4a1d-a693-4902-b4ee-b03b3a288914'
+const ADMIN_ID = '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b'
 
 export default function AdminPage({ goToPage }: Props) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'spaces' | 'suppliers' | 'quotes'>('overview')
