@@ -39,6 +39,10 @@ export default function AdminPage({ goToPage }: Props) {
   const [categoryQuoteStats, setCategoryQuoteStats] = useState<any[]>([])
   const [supplierCategoryStats, setSupplierCategoryStats] = useState<any[]>([])
   const [supplierQuoteStats, setSupplierQuoteStats] = useState<any[]>([])
+  const [spaceCityStats, setSpaceCityStats] = useState<any[]>([])
+  const [spaceStateStats, setSpaceStateStats] = useState<any[]>([])
+  const [supplierCityStats, setSupplierCityStats] = useState<any[]>([])
+  const [supplierStateStats, setSupplierStateStats] = useState<any[]>([])
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -105,6 +109,28 @@ export default function AdminPage({ goToPage }: Props) {
       const evtMap: Record<string, number> = {}
       quotesData?.forEach((q: any) => { evtMap[q.event_type] = (evtMap[q.event_type] || 0) + 1 })
       setSupplierQuoteStats(Object.entries(evtMap).map(([cat, count]) => ({ cat, count })).sort((a, b) => b.count - a.count))
+
+      // Geo stats
+      const spaceCityMap: Record<string, number> = {}
+      const spaceStateMap: Record<string, number> = {}
+      spacesData?.forEach((s: any) => {
+        spaceCityMap[s.city] = (spaceCityMap[s.city] || 0) + 1
+        spaceStateMap[s.state] = (spaceStateMap[s.state] || 0) + 1
+      })
+      setSpaceCityStats(Object.entries(spaceCityMap).map(([cat, count]) => ({ cat, count })).sort((a, b) => b.count - a.count))
+      setSpaceStateStats(Object.entries(spaceStateMap).map(([cat, count]) => ({ cat, count })).sort((a, b) => b.count - a.count))
+
+      const suppCityMap: Record<string, number> = {}
+      const suppStateMap: Record<string, number> = {}
+      suppliersData?.forEach((s: any) => {
+        suppStateMap[s.state] = (suppStateMap[s.state] || 0) + 1
+        // suppliers have cities array
+        if (Array.isArray((s as any).cities)) {
+          (s as any).cities.forEach((c: string) => { suppCityMap[c] = (suppCityMap[c] || 0) + 1 })
+        }
+      })
+      setSupplierCityStats(Object.entries(suppCityMap).map(([cat, count]) => ({ cat, count })).sort((a, b) => b.count - a.count))
+      setSupplierStateStats(Object.entries(suppStateMap).map(([cat, count]) => ({ cat, count })).sort((a, b) => b.count - a.count))
 
     } catch (err) { console.error(err) }
     finally { setLoading(false) }
@@ -278,6 +304,18 @@ export default function AdminPage({ goToPage }: Props) {
                   <BarChart data={categoryQuoteStats} maxVal={categoryQuoteStats[0]?.count || 1} color="#a3e635" />
                 </div>
 
+                <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>📍 Cidades com mais espaços</h3>
+                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>Top cidades por número de espaços cadastrados</p>
+                  <BarChart data={spaceCityStats.slice(0, 10)} maxVal={spaceCityStats[0]?.count || 1} color="#f59e0b" />
+                </div>
+
+                <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>🗺️ Estados com mais espaços</h3>
+                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>Distribuição geográfica dos espaços por estado</p>
+                  <BarChart data={spaceStateStats} maxVal={spaceStateStats[0]?.count || 1} color="#ec4899" />
+                </div>
+
                 <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8', gridColumn: '1 / -1' }}>
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>📊 Comparativo: cadastros vs orçamentos por categoria</h3>
                   <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>Identifique gargalos — categorias com muitos cadastros mas poucos orçamentos (oferta excedendo demanda) ou vice-versa</p>
@@ -329,6 +367,18 @@ export default function AdminPage({ goToPage }: Props) {
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>🎉 Tipos de evento mais solicitados</h3>
                   <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>Quais eventos geram mais orçamentos no Ewind</p>
                   <BarChart data={supplierQuoteStats} maxVal={supplierQuoteStats[0]?.count || 1} color="#f59e0b" />
+                </div>
+
+                <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>📍 Cidades com mais fornecedores</h3>
+                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>Top cidades por atuação de fornecedores</p>
+                  <BarChart data={supplierCityStats.slice(0, 10)} maxVal={supplierCityStats[0]?.count || 1} color="#f59e0b" />
+                </div>
+
+                <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>🗺️ Estados com mais fornecedores</h3>
+                  <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 20 }}>Distribuição geográfica dos fornecedores por estado</p>
+                  <BarChart data={supplierStateStats} maxVal={supplierStateStats[0]?.count || 1} color="#10b981" />
                 </div>
 
                 <div style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8', gridColumn: '1 / -1' }}>
