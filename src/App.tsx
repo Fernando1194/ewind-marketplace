@@ -25,6 +25,7 @@ const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 export type Page =
   | 'home' | 'listing' | 'detail'
@@ -34,7 +35,7 @@ export type Page =
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
-  | 'reset-password' | 'terms' | 'pricing'
+  | 'reset-password' | 'terms' | 'pricing' | 'admin'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -188,6 +189,21 @@ function App() {
         </div>
 
         <div className="nav-right">
+          {user?.id === '17ce4a1d-a693-4902-b4ee-b03b3a288914' && (
+            <button
+              onClick={() => goToPage('admin')}
+              title="Painel Admin"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: 18, padding: '4px 6px', opacity: 0.4,
+                transition: 'opacity 0.2s'
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.4'}
+            >
+              ⚙️
+            </button>
+          )}
           {/* Badge comparação */}
           {compareSpaces.length > 0 && (
             <button
@@ -318,6 +334,8 @@ function App() {
         {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
         {page === 'terms' && <TermsPage goToPage={goToPage} />}
         {page === 'pricing' && <PricingPage goToPage={goToPage} />}
+        {page === 'admin' && user?.id === '17ce4a1d-a693-4902-b4ee-b03b3a288914' && <AdminPage goToPage={goToPage} />}
+        {page === 'admin' && user?.id !== '17ce4a1d-a693-4902-b4ee-b03b3a288914' && <div style={{padding:40,textAlign:'center'}}><h2>Acesso negado</h2></div>}
         {page === 'supplier-dashboard' && user && (
           <SupplierDashboard user={user} goToPage={goToPage} />
         )}
