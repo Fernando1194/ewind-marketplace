@@ -14,7 +14,12 @@ export default function SupplierDetailPage({ supplier, goToPage }: Props) {
   const handleWhatsApp = () => {
     if (!supplier.whatsapp) return
     const num = supplier.whatsapp.replace(/\D/g, '')
-    window.open(`https://wa.me/55${num}?text=Olá! Vi seu perfil no Ewind e gostaria de saber mais sobre seus serviços.`, '_blank')
+    const msg = encodeURIComponent(
+      `Olá! Te encontrei na plataforma Ewind e gostaria de um orçamento do seu serviço de *${supplier.category}*. 🎉\n\n` +
+      `Vi seu perfil como *${supplier.name}* na plataforma e adorei o trabalho!\n\n` +
+      `Poderia me passar mais informações sobre disponibilidade e valores? 😊`
+    )
+    window.open(`https://wa.me/55${num}?text=${msg}`, '_blank')
   }
 
   const handleInstagram = () => {
