@@ -253,8 +253,28 @@ export default function HostQuotesPage({ user, goToPage }: Props) {
                   )}
 
                   {!isResponding && !canRespond && q.status === 'responded' && (
-                    <div style={{ marginTop: 10, fontSize: 12, color: '#6b7280' }}>
-                      ✓ Aguardando retorno do cliente
+                    <div style={{ marginTop: 10, padding: '10px 14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, fontSize: 12, color: '#92400e', fontWeight: 500 }}>
+                      ⏳ Proposta enviada — aguardando o cliente aceitar ou recusar
+                    </div>
+                  )}
+
+                  {q.status === 'accepted' && (
+                    <div style={{ marginTop: 12, padding: '16px 20px', background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '2px solid #86efac', borderRadius: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 28 }}>🎉</span>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: '#14532d' }}>Evento agendado!</div>
+                          <div style={{ fontSize: 12, color: '#166534', marginTop: 2 }}>
+                            O cliente aceitou sua proposta{q.proposed_price ? ` de R$ ${q.proposed_price.toLocaleString('pt-BR')}` : ''}. Entre em contato para finalizar os detalhes.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {q.status === 'closed' && (
+                    <div style={{ marginTop: 10, padding: '10px 14px', background: '#f9fafb', border: '1px solid #e8e8e8', borderRadius: 8, fontSize: 12, color: '#9ca3af' }}>
+                      Orçamento encerrado
                     </div>
                   )}
                 </div>
