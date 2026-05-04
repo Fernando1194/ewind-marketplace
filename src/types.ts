@@ -15,6 +15,7 @@ export interface Space {
   attributes: string[]
   media_urls: string[]
   neighborhood: string | null
+  cep: string | null
   area_covered: number | null
   area_uncovered: number | null
   whatsapp: string | null
@@ -36,6 +37,7 @@ export interface Quote {
   event_date: string
   guests_count: number
   duration_hours: number
+  event_time: string | null
   message: string | null
   host_response: string | null
   proposed_price: number | null

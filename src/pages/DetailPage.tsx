@@ -18,6 +18,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
   const [eventDate, setEventDate] = useState('')
   const [guestsCount, setGuestsCount] = useState('')
   const [duration, setDuration] = useState('4')
+  const [eventTime, setEventTime] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -46,6 +47,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
         host_id: space.host_id,
         event_type: eventType,
         event_date: eventDate,
+        event_time: eventTime || null,
         guests_count: parseInt(guestsCount),
         duration_hours: parseInt(duration),
         message: message || null,
@@ -251,6 +253,10 @@ export default function DetailPage({ space, user, goToPage }: Props) {
                 <button type="submit" className="btn-primary" style={{ padding: 11 }} disabled={loading}>
                   {loading ? 'Enviando...' : 'Enviar solicitação'}
                 </button>
+                <div style={{ marginTop: 10, padding: '8px 12px', background: '#f0fdf4', borderRadius: 8, fontSize: 12, color: '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>⚡</span>
+                  <span>Anunciantes respondem em até <strong>24 horas</strong>. Você receberá a proposta diretamente no painel.</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
