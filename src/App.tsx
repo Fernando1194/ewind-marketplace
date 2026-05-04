@@ -22,6 +22,8 @@ const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
 const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
 const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
 
 export type Page =
   | 'home' | 'listing' | 'detail'
@@ -31,6 +33,7 @@ export type Page =
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
+  | 'reset-password' | 'terms'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -85,10 +88,14 @@ function App() {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) loadUserRole(session.user.id)
       else { setUserRole('guest'); setPendingQuotesCount(0) }
+      // Redirecionar para redefinição de senha ao clicar no link do email
+      if (event === 'PASSWORD_RECOVERY') {
+        setPage('reset-password')
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -305,6 +312,8 @@ function App() {
         {/* Área do Fornecedor */}
         {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} />}
         {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
+        {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
+        {page === 'terms' && <TermsPage goToPage={goToPage} />}
         {page === 'supplier-dashboard' && user && (
           <SupplierDashboard user={user} goToPage={goToPage} />
         )}

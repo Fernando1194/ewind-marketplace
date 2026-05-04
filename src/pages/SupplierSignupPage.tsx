@@ -178,7 +178,11 @@ export default function SupplierSignupPage({ goToPage }: Props) {
               </div>
             )}
 
-            <button type="submit" className="btn-primary" style={{ width: '100%', padding: 14, marginTop: 12, fontSize: 15 }} disabled={loading}>
+            <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8, lineHeight: 1.5 }}>
+              Ao criar uma conta você concorda com nossos{' '}
+              <a onClick={() => goToPage('terms')} style={{ color: '#5aa800', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso e Política de Privacidade</a>.
+            </p>
+            <button type="submit" className="btn-primary" style={{ width: '100%', padding: 14, marginTop: 4, fontSize: 15 }} disabled={loading}>
               {loading ? 'Criando perfil...' : '🛠️ Criar meu perfil de fornecedor'}
             </button>
           </form>
