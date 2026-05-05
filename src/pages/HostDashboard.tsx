@@ -129,6 +129,14 @@ export default function HostDashboard({ user, goToPage }: Props) {
                 <div>
                   <div className="card-name">{s.name}</div>
                   <div className="card-loc">📍 {s.city}, {s.state}</div>
+                  {!s.whatsapp && (
+                    <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '5px 10px', fontSize: 11, color: '#dc2626', fontWeight: 600 }}>
+                      ⚠️ Sem WhatsApp —{' '}
+                      <span onClick={() => { goToPage('edit-space', s) }} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#dc2626' }}>
+                        adicionar agora para receber leads
+                      </span>
+                    </div>
+                  )}
                 </div>
                 {statusBadge(s.status)}
               </div>

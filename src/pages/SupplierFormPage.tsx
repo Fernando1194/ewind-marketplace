@@ -66,8 +66,8 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
       setError('Adicione pelo menos uma cidade de atendimento')
       return false
     }
-    if (step === 3 && !whatsapp && !email) {
-      setError('Informe pelo menos um contato (WhatsApp ou email)')
+    if (step === 3 && !whatsapp.trim()) {
+      setError('O WhatsApp é obrigatório — é como os clientes vão te contatar via Ewind')
       return false
     }
     return true
@@ -248,8 +248,30 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
           <>
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📞 Contato e redes sociais</h2>
             <div className="fg">
-              <label>WhatsApp</label>
-              <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="(41) 99999-9999" />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                💬 WhatsApp
+                <span style={{ background: '#fee2e2', color: '#dc2626', fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Obrigatório
+                </span>
+              </label>
+              <input
+                type="tel"
+                value={whatsapp}
+                onChange={e => setWhatsapp(e.target.value)}
+                placeholder="(41) 99999-9999"
+                style={{ borderColor: !whatsapp ? '#fca5a5' : undefined }}
+              />
+              {!whatsapp && (
+                <p style={{ fontSize: 11, color: '#dc2626', marginTop: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span>⚠️</span>
+                  Sem WhatsApp, clientes não conseguem te contatar diretamente via Ewind.
+                </p>
+              )}
+              {whatsapp && (
+                <p style={{ fontSize: 11, color: '#16a34a', marginTop: 5 }}>
+                  ✓ Clientes interessados vão te chamar neste número com mensagem do Ewind.
+                </p>
+              )}
             </div>
             <div className="fg">
               <label>Instagram</label>

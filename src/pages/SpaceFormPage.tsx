@@ -13,6 +13,23 @@ interface Props {
 
 export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   const isEditing = !!editingSpace
+
+  const fetchCep = async (value: string) => {
+    const clean = value.replace(/\D/g, '')
+    if (clean.length !== 8) return
+    setCepLoading(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`)
+      const data = await res.json()
+      if (!data.erro) {
+        if (!city) setCity(data.localidade || '')
+        if (!state) setState(data.uf || '')
+        if (!neighborhood) setNeighborhood(data.bairro || '')
+        if (!address) setAddress(data.logradouro || '')
+      }
+    } catch {}
+    setCepLoading(false)
+  }
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -31,6 +48,8 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   const [state, setState] = useState(editingSpace?.state || 'PR')
   const [address, setAddress] = useState(editingSpace?.address || '')
   const [neighborhood, setNeighborhood] = useState(editingSpace?.neighborhood || '')
+  const [cep, setCep] = useState(editingSpace?.cep || '')
+  const [cepLoading, setCepLoading] = useState(false)
   const [areaCovered, setAreaCovered] = useState(editingSpace?.area_covered?.toString() || '')
   const [areaUncovered, setAreaUncovered] = useState(editingSpace?.area_uncovered?.toString() || '')
 
@@ -70,6 +89,9 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
       if (!capacity || parseInt(capacity) < 1) { setError('Informe a capacidade'); return false }
       if (!pricePerHour && !pricePerDay) { setError('Informe pelo menos um preço'); return false }
     }
+    if (step === 5 && !whatsapp.trim()) {
+      setError('O WhatsApp é obrigatório — é por onde os clientes vão te contatar via Ewind'); return false
+    }
     return true
   }
 
@@ -97,6 +119,7 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
         category, event_types: eventTypes,
         city, state, address: address || null,
         neighborhood: neighborhood || null,
+        cep: cep || null,
         area_covered: areaCovered ? parseInt(areaCovered) : null,
         area_uncovered: areaUncovered ? parseInt(areaUncovered) : null,
         capacity: parseInt(capacity),
@@ -207,6 +230,31 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
               <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="PR" maxLength={2} />
             </div>
             <div className="fg">
+              <label>CEP (opcional)</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  value={cep}
+                  onChange={e => {
+                    const v = e.target.value.replace(/\D/g,'').slice(0,8)
+                    const fmt = v.length > 5 ? `${v.slice(0,5)}-${v.slice(5)}` : v
+                    setCep(fmt)
+                    if (v.length === 8) fetchCep(v)
+                  }}
+                  placeholder="00000-000"
+                  maxLength={9}
+                />
+                {cepLoading && (
+                  <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#5aa800' }}>
+                    Buscando...
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>
+                💡 Digite o CEP para preencher cidade, estado e bairro automaticamente.
+              </p>
+            </div>
+            <div className="fg">
               <label>Bairro (opcional)</label>
               <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Ex: Batel, Água Verde" />
             </div>
@@ -278,13 +326,35 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
           <>
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>🔗 Links e redes sociais</h2>
             <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
-              Adicione seus contatos e links para facilitar o contato de clientes. Todos os campos são opcionais.
+              O WhatsApp é obrigatório — é o canal que o Ewind usa para notificar você sobre novos leads. Os demais são opcionais.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="fg">
-                <label>💬 WhatsApp</label>
-                <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="(41) 99999-9999" />
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  💬 WhatsApp
+                  <span style={{ background: '#fee2e2', color: '#dc2626', fontSize: 9, fontWeight: 800, padding: '2px 7px', borderRadius: 100, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    Obrigatório
+                  </span>
+                </label>
+                <input
+                  type="tel"
+                  value={whatsapp}
+                  onChange={e => setWhatsapp(e.target.value)}
+                  placeholder="(41) 99999-9999"
+                  style={{ borderColor: !whatsapp ? '#fca5a5' : undefined }}
+                />
+                {!whatsapp && (
+                  <p style={{ fontSize: 11, color: '#dc2626', marginTop: 5, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span>⚠️</span>
+                    Sem WhatsApp, os clientes não conseguem acelerar o contato via Ewind. Você pode perder leads.
+                  </p>
+                )}
+                {whatsapp && (
+                  <p style={{ fontSize: 11, color: '#16a34a', marginTop: 5 }}>
+                    ✓ Clientes que pedirem orçamento vão te notificar neste número via Ewind.
+                  </p>
+                )}
               </div>
               <div className="fg">
                 <label>📸 Instagram</label>
