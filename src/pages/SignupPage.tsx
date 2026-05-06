@@ -157,7 +157,7 @@ export default function SignupPage({ goToPage }: Props) {
             <a onClick={() => goToPage('terms')} style={{ color: '#5aa800', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso e Política de Privacidade</a>.
           </p>
           <button type="submit" className="btn-primary" style={{ width: '100%', padding: 13, marginTop: 4, fontSize: 15 }} disabled={loading}>
-            {loading ? 'Criando conta...' : 'Criar conta gratuitamente'}
+            {loading ? 'Criando conta...' : 'Criar conta e começar'}
           </button>
         </form>
 

@@ -26,9 +26,9 @@ export default function PricingPage({ goToPage }: Props) {
       icon: '🌱',
       name: 'Gratuito',
       tag: null,
-      price: 'R$ 0',
-      period: 'para sempre',
-      desc: 'Para quem está começando e quer experimentar a plataforma.',
+      price: '90 dias',
+      period: 'gratuito',
+      desc: 'Período de experiência para novos anunciantes. Após 90 dias, é necessário assinar um plano para manter o anúncio ativo.',
       features: [
         '1 anúncio ativo',
         'Fotos e vídeos no perfil',
@@ -38,7 +38,7 @@ export default function PricingPage({ goToPage }: Props) {
         'Painel de gerenciamento',
       ],
       locked: [],
-      cta: 'Começar grátis',
+      cta: 'Começar — 90 dias grátis',
       ctaAction: 'signup',
       highlight: false,
     },
@@ -106,7 +106,7 @@ export default function PricingPage({ goToPage }: Props) {
             <span style={{ color: '#a3e635' }}>Pague quando valer a pena.</span>
           </h1>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', maxWidth: 560, margin: '0 auto 32px', lineHeight: 1.7 }}>
-            O Ewind está em fase de lançamento. Todos os anunciantes que entrarem agora têm acesso gratuito e ilimitado enquanto construímos a plataforma juntos.
+            Anunciantes que entrarem agora têm 90 dias gratuitos para testar a plataforma. Após esse período, planos acessíveis mantêm seu anúncio visível.
           </p>
 
           {/* Early adopter badge */}
@@ -125,10 +125,10 @@ export default function PricingPage({ goToPage }: Props) {
             <div style={{ fontSize: 40 }}>🎁</div>
             <div>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#1a2e05', marginBottom: 4 }}>
-                Você é Early Adopter — tudo grátis enquanto lançamos!
+                Você é Early Adopter — 90 dias grátis + desconto exclusivo nos planos!
               </div>
               <div style={{ fontSize: 14, color: '#365314', lineHeight: 1.6 }}>
-                Quem entrar agora terá condições especiais quando os planos pagos forem lançados. <strong>Garantia de desconto exclusivo</strong> para quem ajudou a construir o Ewind desde o início.
+                Quem entrar agora tem 90 dias gratuitos e <strong>desconto exclusivo garantido</strong> nos planos pagos — por ter apoiado o Ewind desde o início.
               </div>
             </div>
           </div>
@@ -184,8 +184,9 @@ export default function PricingPage({ goToPage }: Props) {
               <div style={{ marginBottom: 24, padding: '16px 0', borderTop: '1px solid #f3f4f6', borderBottom: '1px solid #f3f4f6' }}>
                 {plan.id === 'gratuito' ? (
                   <div>
-                    <span style={{ fontSize: 36, fontWeight: 900, color: '#2d2d2d' }}>R$ 0</span>
-                    <span style={{ fontSize: 14, color: '#9ca3af', marginLeft: 6 }}>/ para sempre</span>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#2d2d2d', marginBottom: 4 }}>Primeiros</div>
+                    <span style={{ fontSize: 42, fontWeight: 900, color: '#5aa800', lineHeight: 1 }}>90 dias</span>
+                    <div style={{ fontSize: 13, color: '#9ca3af', marginTop: 4 }}>grátis a partir da publicação</div>
                   </div>
                 ) : (
                   <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -201,7 +202,7 @@ export default function PricingPage({ goToPage }: Props) {
                 )}
                 {plan.id === 'gratuito' && (
                   <div style={{ fontSize: 12, color: '#16a34a', fontWeight: 600, marginTop: 4 }}>
-                    ✓ Gratuito durante o período de lançamento
+                    ✓ 90 dias gratuitos a partir da publicação
                   </div>
                 )}
               </div>
@@ -298,7 +299,7 @@ export default function PricingPage({ goToPage }: Props) {
             Cadastre seu email para ser o primeiro a saber quando os planos pagos forem lançados — e garantir um <strong>desconto exclusivo de early adopter</strong>.
           </p>
           <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 32 }}>
-            Sem spam. Você receberá apenas novidades importantes do Ewind.
+            Sem spam. Você será o primeiro a saber quando os valores forem definidos.
           </p>
 
           {submitted ? (
@@ -343,9 +344,9 @@ export default function PricingPage({ goToPage }: Props) {
           <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 32 }}>Perguntas frequentes</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
-              { q: 'Quando os planos pagos serão lançados?', a: 'Estamos construindo a plataforma e definindo os valores com base no feedback dos primeiros usuários. Em breve anunciaremos os planos com antecedência.' },
-              { q: 'Quem entrar agora vai ter que pagar depois?', a: 'Os early adopters terão condições especiais quando os planos forem lançados. Você será notificado com antecedência e terá garantia de desconto por ter apoiado o Ewind desde o início.' },
-              { q: 'O plano gratuito vai continuar existindo?', a: 'Sim! O plano gratuito continuará disponível para sempre. Ele permite cadastrar 1 anúncio e receber orçamentos ilimitados — suficiente para quem está começando.' },
+              { q: 'O que acontece se eu não assinar após os 90 dias?', a: 'Seu anúncio fica pausado e deixa de aparecer nas buscas. Assim que você assinar um plano, ele volta a ser exibido imediatamente. Nenhum dado é perdido.' },
+              { q: 'Quem entra agora como Early Adopter tem algum benefício?', a: 'Sim! Early adopters terão desconto exclusivo nos planos pagos quando eles forem lançados. Você será notificado com antecedência e terá condições permanentemente melhores que os novos entrantes.' },
+              { q: 'Por quanto tempo meu anúncio fica ativo?', a: 'Todos os novos anunciantes têm 90 dias gratuitos a partir da data de publicação do anúncio. Após esse período, é necessário assinar um dos planos pagos para manter a visibilidade.' },
               { q: 'Quem recebe orçamentos paga alguma taxa?', a: 'Não. O Ewind nunca cobra comissão sobre orçamentos, negociações ou contratos fechados. Os pagamentos acontecem diretamente entre cliente e anunciante.' },
               { q: 'E para quem busca espaços, é gratuito?', a: 'Sim, buscar espaços, comparar e solicitar orçamentos é e sempre será gratuito. Os planos pagos são voltados exclusivamente para anunciantes.' },
             ].map((faq, i) => (

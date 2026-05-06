@@ -15,7 +15,7 @@ export default function AboutPage({ goToPage }: Props) {
   const stats = [
     { number: '7', label: 'categorias de espaços' },
     { number: '15', label: 'categorias de fornecedores' },
-    { number: '100%', label: 'gratuito para quem busca' },
+    { number: '90', label: 'dias grátis para anunciantes' },
     { number: '0', label: 'taxas sobre negociações' },
   ]
 
@@ -63,7 +63,7 @@ export default function AboutPage({ goToPage }: Props) {
             <div style={{ fontSize: 48, marginBottom: 20 }}>🎯</div>
             <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 14, color: '#1a2e05' }}>Nosso propósito</h3>
             <p style={{ fontSize: 15, color: '#365314', lineHeight: 1.7, fontStyle: 'italic' }}>
-              "Fazer com que o momento de planejar um evento seja tão especial quanto o evento em si — conectando pessoas, espaços e serviços com simplicidade, segurança e sem custo."
+              "Fazer com que o momento de planejar um evento seja tão especial quanto o evento em si — conectando pessoas, espaços e serviços com simplicidade, transparência e sem complicação."
             </p>
             <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid #bbf7d0' }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: '#5aa800' }}>Fernando Vieira</div>
@@ -198,7 +198,7 @@ export default function AboutPage({ goToPage }: Props) {
             Vamos tornar seu próximo evento inesquecível?
           </h2>
           <p style={{ fontSize: 15, color: '#9ca3af', marginBottom: 32, lineHeight: 1.7 }}>
-            O momento especial começa muito antes da festa. Comece agora, é grátis.
+            O momento especial começa muito antes da festa. Comece agora.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button className="btn-primary" style={{ fontSize: 15, padding: '14px 28px' }} onClick={() => goToPage('listing')}>

@@ -14,7 +14,7 @@ export default function HowItWorksPage({ goToPage }: Props) {
   const guestSteps = [
     { icon: '🔍', title: 'Busque e filtre', desc: 'Pesquise por cidade, tipo de evento, capacidade e faixa de preço. Use os filtros para encontrar o espaço certo para o seu momento.' },
     { icon: '📊', title: 'Compare lado a lado', desc: 'Selecione até 3 espaços e compare preços, capacidade, metragem e atributos em uma tabela clara e objetiva.' },
-    { icon: '📝', title: 'Solicite orçamentos gratuitos', desc: 'Envie sua solicitação com data, número de convidados e tipo de evento. É grátis, rápido e sem compromisso.' },
+    { icon: '📝', title: 'Solicite orçamentos grátis', desc: 'Envie sua solicitação com data, número de convidados e tipo de evento. Para quem busca, é sempre grátis e sem compromisso.' },
     { icon: '💬', title: 'Receba propostas personalizadas', desc: 'O anunciante responde com proposta e preço final em até 24h. Você decide com quem quer fechar.' },
     { icon: '🎉', title: 'Realize o evento que você imaginou', desc: 'Negocie diretamente com o anunciante escolhido. Sem taxas adicionais, sem intermediação no pagamento.' },
   ]
@@ -36,7 +36,7 @@ export default function HowItWorksPage({ goToPage }: Props) {
   ]
 
   const faqs = [
-    { q: 'O Ewind é gratuito para quem busca um espaço?', a: 'Sim, 100% gratuito. Você pesquisa, compara e solicita quantos orçamentos quiser sem pagar nada. O Ewind não cobra taxas sobre orçamentos ou negociações.' },
+    { q: 'O Ewind é gratuito para quem busca um espaço?', a: 'Sim, buscar espaços, comparar e solicitar orçamentos é sempre gratuito para quem organiza eventos. O Ewind não cobra nenhuma taxa de quem busca.' },
     { q: 'Como funciona o pagamento pelo espaço?', a: 'O Ewind não intermedia pagamentos. Você negocia e paga diretamente com o anunciante escolhido, combinando forma de pagamento, sinal e condições entre vocês.' },
     { q: 'Posso solicitar orçamentos em vários espaços ao mesmo tempo?', a: 'Sim! Você pode solicitar quantos orçamentos quiser, em espaços diferentes, ao mesmo tempo. Compare as propostas e escolha a que faz mais sentido para o seu evento.' },
     { q: 'Quanto tempo leva para receber um orçamento?', a: 'Depende de cada anunciante, mas a maioria responde em até 24 horas. Você acompanha o status de cada solicitação no seu painel em tempo real.' },
