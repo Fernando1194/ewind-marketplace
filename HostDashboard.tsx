@@ -1,259 +1,206 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../supabase'
-import { CATEGORIES, ATTRIBUTES } from '../types'
+import type { User } from '@supabase/supabase-js'
 import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
+  user: User
   goToPage: (page: Page, space?: Space) => void
-  compareSpaces: Space[]
-  onCompareToggle: (space: Space) => void
-  onClearCompare: () => void
 }
 
-const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
-  space: Space
-  onClick: () => void
-  onCompare: (e: React.MouseEvent) => void
-  isComparing: boolean
-}) => (
-  <div className="card" style={{ position: 'relative' }}>
-    <div style={{ position: 'relative' }}>
-      <img
-        src={space.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'}
-        alt={space.name}
-        loading="lazy"
-        onClick={onClick}
-        style={{ cursor: 'pointer', width: '100%', height: 180, objectFit: 'cover', display: 'block' }}
-      />
-      {/* Botão comparar sobre a imagem */}
-      <button
-        onClick={onCompare}
-        style={{
-          position: 'absolute', bottom: 8, right: 8,
-          padding: '5px 10px', fontSize: 11, fontWeight: 700,
-          background: isComparing ? '#a3e635' : 'rgba(0,0,0,0.6)',
-          color: isComparing ? '#1a2e05' : '#fff',
-          border: 'none', borderRadius: 6, cursor: 'pointer',
-          transition: 'all 0.2s'
-        }}
-      >
-        {isComparing ? '✓ Comparando' : '+ Comparar'}
-      </button>
-    </div>
-    <div className="card-body" onClick={onClick} style={{ cursor: 'pointer' }}>
-      <div className="card-name">{space.name}</div>
-      <div className="card-loc">📍 {space.city}, {space.state} · {space.category}</div>
-      <div className="card-tags">
-        {space.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
-      </div>
-      <div className="card-foot">
-        <span className="card-price">
-          {space.price_per_hour ? `R$${space.price_per_hour}/h` : `R$${space.price_per_day}/dia`}
-        </span>
-        <span className="card-cap">👥 até {space.capacity}</span>
-      </div>
-    </div>
-  </div>
-))
-
-export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, onClearCompare }: Props) {
-  const [filterCity, setFilterCity] = useState('')
-  const [filterGuests, setFilterGuests] = useState('')
-  const [filterCategory, setFilterCategory] = useState<string[]>([])
-  const [filterAttrs, setFilterAttrs] = useState<string[]>([])
+export default function HostDashboard({ user, goToPage }: Props) {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
 
+  const loadMySpaces = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase
+      .from('spaces')
+      .select('id, host_id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, status, event_types, attributes, min_hours, address, description, neighborhood, area_covered, area_uncovered, whatsapp, instagram, facebook, website, cardapio_url, created_at, updated_at')
+      .eq('host_id', user.id)
+      .order('created_at', { ascending: false })
+    if (data) setSpaces(data)
+    setLoading(false)
+  }, [user.id])
+
   useEffect(() => {
-    let cancelled = false
-    const load = async () => {
-      setLoading(true)
-      const { data } = await supabase
-        .from('spaces')
-        .select('id, host_id, name, city, state, category, event_types, media_urls, price_per_hour, price_per_day, capacity, attributes, min_hours, address, description, status, created_at, updated_at')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-      if (!cancelled && data) setSpaces(data)
-      if (!cancelled) setLoading(false)
+    loadMySpaces()
+  }, [loadMySpaces])
+
+  const deleteSpace = useCallback(async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este espaço? Esta ação não pode ser desfeita.')) return
+    const { error } = await supabase.from('spaces').delete().eq('id', id)
+    if (!error) setSpaces(prev => prev.filter(s => s.id !== id))
+  }, [])
+
+  const togglePause = useCallback(async (space: Space) => {
+    const newStatus = space.status === 'active' ? 'paused' : 'active'
+    const { error } = await supabase
+      .from('spaces')
+      .update({ status: newStatus })
+      .eq('id', space.id)
+    if (!error) {
+      setSpaces(prev => prev.map(s => s.id === space.id ? { ...s, status: newStatus as any } : s))
     }
-    load()
-    return () => { cancelled = true }
   }, [])
 
-  const toggleCategory = useCallback((cat: string) => {
-    setFilterCategory(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
-  }, [])
+  const stats = useMemo(() => ({
+    total: spaces.length,
+    active: spaces.filter(s => s.status === 'active').length,
+    pending: spaces.filter(s => s.status === 'pending').length,
+    paused: spaces.filter(s => s.status === 'paused').length,
+  }), [spaces])
 
-  const toggleAttr = useCallback((attr: string) => {
-    setFilterAttrs(prev => prev.includes(attr) ? prev.filter(a => a !== attr) : [...prev, attr])
-  }, [])
-
-  const clearFilters = useCallback(() => {
-    setFilterCategory([])
-    setFilterAttrs([])
-    setFilterCity('')
-    setFilterGuests('')
-  }, [])
-
-  const filteredSpaces = useMemo(() => {
-    return spaces.filter(s => {
-      if (filterCity && !s.city.toLowerCase().includes(filterCity.toLowerCase())) return false
-      if (filterGuests && s.capacity < parseInt(filterGuests)) return false
-      if (filterCategory.length > 0 && !filterCategory.includes(s.category)) return false
-      if (filterAttrs.length > 0 && !filterAttrs.every(a => s.attributes.includes(a))) return false
-      return true
-    })
-  }, [spaces, filterCity, filterGuests, filterCategory, filterAttrs])
-
-  const compareIds = useMemo(() => new Set(compareSpaces.map(s => s.id)), [compareSpaces])
+  const statusBadge = (status: string) => {
+    const config: Record<string, { bg: string; color: string; label: string }> = {
+      active: { bg: '#f0fdf4', color: '#166534', label: 'Ativo' },
+      pending: { bg: '#fff7ed', color: '#c05621', label: 'Em revisão' },
+      paused: { bg: '#f3f4f6', color: '#4b5563', label: 'Pausado' },
+      rejected: { bg: '#fef2f2', color: '#991b1b', label: 'Rejeitado' }
+    }
+    const c = config[status] || config.pending
+    return (
+      <span style={{
+        fontSize: 11, fontWeight: 600, padding: '3px 10px',
+        borderRadius: 100, background: c.bg, color: c.color
+      }}>{c.label}</span>
+    )
+  }
 
   return (
-    <>
-      <div className="mini-search">
-        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
-        <input type="number" placeholder="Convidados" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
-        <button className="btn-primary">Buscar</button>
-      </div>
-
-      <div className="listing-wrap">
-        <aside className="filters-sidebar">
-          <div className="sf-group">
-            <div className="sf-group-title">Capacidade mínima</div>
-            <input type="number" placeholder="Convidados" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
-          </div>
-          <div className="sf-group">
-            <div className="sf-group-title">Categoria</div>
-            {CATEGORIES.map(c => (
-              <label key={c.name} className="chk-row">
-                <input type="checkbox" checked={filterCategory.includes(c.name)} onChange={() => toggleCategory(c.name)} />
-                <span>{c.name}</span>
-              </label>
-            ))}
-          </div>
-          <div className="sf-group">
-            <div className="sf-group-title">Atributos</div>
-            {ATTRIBUTES.slice(0, 7).map(a => (
-              <label key={a} className="chk-row">
-                <input type="checkbox" checked={filterAttrs.includes(a)} onChange={() => toggleAttr(a)} />
-                <span>{a}</span>
-              </label>
-            ))}
-          </div>
-          <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
-            Limpar filtros
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
+            Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]} 👋
+          </h1>
+          <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus espaços</p>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => goToPage('supplier-dashboard')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
+            🛠️ Painel fornecedor
           </button>
-        </aside>
-
-        <main className="results-area">
-          <div className="results-bar">
-            <span><strong>{filteredSpaces.length} espaços</strong> encontrados</span>
-            {compareSpaces.length > 0 && (
-              <span style={{ fontSize: 12, color: '#5aa800', fontWeight: 600 }}>
-                {compareSpaces.length} selecionado(s) para comparar
-              </span>
-            )}
-          </div>
-
-          {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando espaços...</p>}
-
-          {!loading && filteredSpaces.length === 0 && (
-            <div style={{ textAlign: 'center', padding: 40, background: '#f9fafb', borderRadius: 12 }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Nenhum espaço encontrado</h3>
-              <p style={{ fontSize: 13, color: '#6b7280' }}>
-                {spaces.length === 0 ? 'Ainda não há espaços cadastrados.' : 'Tente ajustar os filtros.'}
-              </p>
-            </div>
-          )}
-
-          <div className="cards-2col">
-            {filteredSpaces.map(s => (
-              <SpaceCard
-                key={s.id}
-                space={s}
-                onClick={() => goToPage('detail', s)}
-                onCompare={(e) => {
-                  e.stopPropagation()
-                  onCompareToggle(s)
-                }}
-                isComparing={compareIds.has(s.id)}
-              />
-            ))}
-          </div>
-        </main>
+          <button className="btn-primary" onClick={() => goToPage('new-space')}>
+            + Cadastrar novo espaço
+          </button>
+        </div>
       </div>
 
-      {/* BARRA FLUTUANTE DE COMPARAÇÃO */}
-      {compareSpaces.length > 0 && (
-        <div style={{
-          position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)',
-          background: '#1a1a1a', borderRadius: 16, padding: '14px 20px',
-          display: 'flex', alignItems: 'center', gap: 12, zIndex: 999,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)', flexWrap: 'wrap',
-          maxWidth: 'calc(100vw - 40px)'
-        }}>
-          <span style={{ fontSize: 13, color: '#aaa', fontWeight: 600, whiteSpace: 'nowrap' }}>
-            📊 Comparar:
-          </span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+        <div className="stat-card">
+          <div className="stat-num">{stats.total}</div>
+          <div className="stat-lab2">Total</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div>
+          <div className="stat-lab2">Ativos</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-num" style={{ color: '#c05621' }}>{stats.pending}</div>
+          <div className="stat-lab2">Em revisão</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-num" style={{ color: '#6b7280' }}>{stats.paused}</div>
+          <div className="stat-lab2">Pausados</div>
+        </div>
+      </div>
 
-          {/* Miniaturas dos espaços selecionados */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {compareSpaces.map(s => (
-              <div key={s.id} style={{ position: 'relative' }}>
-                <img
-                  src={s.media_urls[0] || 'https://via.placeholder.com/40x40'}
-                  alt={s.name}
-                  style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', border: '2px solid #a3e635' }}
-                />
-                <button
-                  onClick={() => onCompareToggle(s)}
-                  style={{
-                    position: 'absolute', top: -6, right: -6,
-                    background: '#ef4444', color: '#fff', border: 'none',
-                    borderRadius: '50%', width: 18, height: 18,
-                    cursor: 'pointer', fontSize: 10, fontWeight: 700
-                  }}
-                >×</button>
-              </div>
-            ))}
+      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Meus espaços</h2>
 
-            {/* Slots vazios */}
-            {Array.from({ length: 3 - compareSpaces.length }).map((_, i) => (
-              <div key={i} style={{
-                width: 40, height: 40, borderRadius: 8,
-                border: '2px dashed #444', display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
-                color: '#555', fontSize: 18
-              }}>+</div>
-            ))}
-          </div>
+      {loading && <p>Carregando...</p>}
 
-          <div style={{ display: 'flex', gap: 8, marginLeft: 4 }}>
-            <button
-              onClick={() => goToPage('comparison')}
-              className="btn-primary"
-              style={{ padding: '8px 18px', fontSize: 13, whiteSpace: 'nowrap' }}
-            >
-              Ver comparação →
-            </button>
-            <button
-              onClick={onClearCompare}
-              style={{
-                padding: '8px 14px', fontSize: 12, fontWeight: 600,
-                background: 'transparent', border: '1px solid #444',
-                borderRadius: 8, cursor: 'pointer', color: '#aaa',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              Limpar
-            </button>
-          </div>
+      {!loading && spaces.length === 0 && (
+        <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🏢</div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Você ainda não cadastrou nenhum espaço</h3>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>Cadastre seu primeiro espaço e comece a receber orçamentos!</p>
+          <button className="btn-primary" onClick={() => goToPage('new-space')}>
+            + Cadastrar primeiro espaço
+          </button>
         </div>
       )}
 
-      {/* Espaço extra no fundo quando barra aparece */}
-      {compareSpaces.length > 0 && <div style={{ height: 80 }} />}
-    </>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        {spaces.map(s => (
+          <div key={s.id} className="card">
+            <img
+              src={s.media_urls[0] || 'https://via.placeholder.com/400x180?text=Sem+foto'}
+              alt={s.name}
+              style={{ height: 160, width: '100%', objectFit: 'cover' }}
+            />
+            <div className="card-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <div>
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">📍 {s.city}, {s.state}</div>
+                  {!s.whatsapp && (
+                    <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '5px 10px', fontSize: 11, color: '#dc2626', fontWeight: 600 }}>
+                      ⚠️ Sem WhatsApp —{' '}
+                      <span onClick={() => { goToPage('edit-space', s) }} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#dc2626' }}>
+                        adicionar agora para receber leads
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {statusBadge(s.status)}
+              </div>
+              <div className="card-foot" style={{ marginTop: 8 }}>
+                <span className="card-price">
+                  {s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}
+                </span>
+                <span className="card-cap">👥 {s.capacity}</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => goToPage('detail', s)}
+                  style={{
+                    flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #e8e8e8',
+                    borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
+                  }}
+                >
+                  👁 Ver
+                </button>
+                <button
+                  onClick={() => goToPage('edit-space', s)}
+                  style={{
+                    flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #a3e635',
+                    borderRadius: 8, cursor: 'pointer', color: '#5aa800'
+                  }}
+                >
+                  ✏️ Editar
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <button
+                  onClick={() => togglePause(s)}
+                  style={{
+                    flex: 1, padding: 7, fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #e8e8e8',
+                    borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
+                  }}
+                >
+                  {s.status === 'active' ? '⏸ Pausar' : '▶ Ativar'}
+                </button>
+                <button
+                  onClick={() => deleteSpace(s.id)}
+                  style={{
+                    padding: '7px 12px', fontSize: 12, fontWeight: 600,
+                    background: '#fff', border: '1.5px solid #fecaca',
+                    borderRadius: 8, cursor: 'pointer', color: '#991b1b'
+                  }}
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
