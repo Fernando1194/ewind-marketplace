@@ -132,8 +132,10 @@ export default function HomePage({ goToPage }: Props) {
         {heroImages.length > 1 && (
           <>
             <button onClick={() => goToImage((currentHero - 1 + heroImages.length) % heroImages.length)}
+className="hero-arrow hero-arrow-left"
               style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
             <button onClick={() => goToImage((currentHero + 1) % heroImages.length)}
+className="hero-arrow hero-arrow-right"
               style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
           </>
         )}

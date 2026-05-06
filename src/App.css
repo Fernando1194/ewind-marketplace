@@ -1046,3 +1046,10 @@
     padding: 20px 14px !important;
   }
 }
+
+/* ESCONDER SETAS DO CARROSSEL NO MOBILE */
+@media (max-width: 768px) {
+  .hero-arrow {
+    display: none !important;
+  }
+}
