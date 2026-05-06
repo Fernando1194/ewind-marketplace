@@ -323,7 +323,7 @@ function App() {
 
         {/* Área do Host */}
         {page === 'host-dashboard' && user && (
-          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} isSupplier={isSupplier} />
+          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
         )}
         {page === 'new-space' && user && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
