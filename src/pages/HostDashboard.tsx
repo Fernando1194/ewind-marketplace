@@ -77,9 +77,24 @@ export default function HostDashboard({ user, goToPage }: Props) {
           </h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus espaços</p>
         </div>
-        <button className="btn-primary" onClick={() => goToPage('new-space')}>
-          + Cadastrar novo espaço
-        </button>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          {!isSupplier ? (
+            <button onClick={async () => {
+              const { supabase } = await import('../supabase')
+              await supabase.from('profiles').update({ is_supplier: true }).eq('id', user.id)
+              goToPage('new-supplier')
+            }} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
+              🛠️ Ativar perfil fornecedor
+            </button>
+          ) : (
+            <button onClick={() => goToPage('supplier-dashboard')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
+              🛠️ Ver painel de serviços
+            </button>
+          )}
+          <button className="btn-primary" onClick={() => goToPage('new-space')}>
+            + Cadastrar novo espaço
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
