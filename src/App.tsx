@@ -67,6 +67,8 @@ function App() {
 
     if (data) {
       setUserRole(data.role)
+      setIsHost(data.is_host || data.role === 'host')
+      setIsSupplier(data.is_supplier || data.role === 'supplier')
       // Badge de orçamentos só para guest e host
       if (data.role === 'host') {
         const { count } = await supabase
@@ -264,10 +266,10 @@ function App() {
         {user && userRole === 'guest' && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
-        {user && isHost && (
+        {user && (isHost || userRole === 'host') && (
           <a onClick={() => goToPage('host-dashboard')}>🏢 Meus espaços</a>
         )}
-        {user && isSupplier && (
+        {user && (isSupplier || userRole === 'supplier') && (
           <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meus serviços</a>
         )}
         <div className="mobile-auth">
@@ -317,8 +319,8 @@ function App() {
         {page === 'signup' && <SignupPage goToPage={goToPage} />}
 
         {/* Área do Host */}
-        {page === 'host-dashboard' && user && (
-          <HostDashboard user={user} goToPage={goToPage} />
+        {page === 'host-dashboard' && user && (isHost || userRole === 'host') && (
+          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} isSupplier={isSupplier} />
         )}
         {page === 'new-space' && user && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
