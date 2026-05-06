@@ -22,14 +22,41 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
       const res = await fetch(`https://viacep.com.br/ws/${clean}/json/`)
       const data = await res.json()
       if (!data.erro) {
-        if (!city) setCity(data.localidade || '')
-        if (!state) setState(data.uf || '')
-        if (!neighborhood) setNeighborhood(data.bairro || '')
-        if (!address) setAddress(data.logradouro || '')
+        setCity(data.localidade || city)
+        setState(data.uf || state)
+        setNeighborhood(data.bairro || neighborhood)
+        if (!address && data.logradouro) setAddress(data.logradouro)
       }
     } catch {}
     setCepLoading(false)
   }
+
+  // Máscara de telefone: (99) 99999-9999
+  const maskPhone = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 11)
+    if (d.length <= 2) return d
+    if (d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2)}`
+    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+  }
+
+  // Máscara CEP: 99999-999
+  const maskCep = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 8)
+    return d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d
+  }
+
+  // Máscara preço: R$ formatado
+  const maskPrice = (v: string) => v.replace(/[^0-9.]/g, '')
+
+  // Extrair @handle do Instagram colado com URL completa
+  const cleanInstagram = (v: string) => {
+    const match = v.match(/instagram\.com\/([^/?]+)/)
+    if (match) return '@' + match[1]
+    return v.startsWith('@') ? v : v ? '@' + v.replace('@', '') : ''
+  }
+
+  // Extrair número limpo do WhatsApp
+  const cleanWhatsapp = (v: string) => maskPhone(v)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -236,10 +263,9 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
                   type="text"
                   value={cep}
                   onChange={e => {
-                    const v = e.target.value.replace(/\D/g,'').slice(0,8)
-                    const fmt = v.length > 5 ? `${v.slice(0,5)}-${v.slice(5)}` : v
-                    setCep(fmt)
-                    if (v.length === 8) fetchCep(v)
+                    const masked = maskCep(e.target.value)
+                    setCep(masked)
+                    if (masked.replace(/\D/g,'').length === 8) fetchCep(masked)
                   }}
                   placeholder="00000-000"
                   maxLength={9}
@@ -273,7 +299,28 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="fg">
                 <label>Capacidade máxima *</label>
-                <input type="number" value={capacity} onChange={e => setCapacity(e.target.value)} placeholder="Ex: 200" min={1} />
+                <input
+                  type="number"
+                  value={capacity}
+                  onChange={e => {
+                    setCapacity(e.target.value)
+                    // Sugestão automática de preço baseada na capacidade
+                    const cap = parseInt(e.target.value)
+                    if (cap > 0 && !pricePerHour && !pricePerDay) {
+                      if (cap <= 50) setPricePerHour('500')
+                      else if (cap <= 100) setPricePerHour('800')
+                      else if (cap <= 200) setPricePerHour('1200')
+                      else setPricePerHour('2000')
+                    }
+                  }}
+                  placeholder="Ex: 200"
+                  min={1}
+                />
+                {capacity && (
+                  <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>
+                    💡 Capacidade de {capacity} pessoas — verifique se o preço sugerido está correto
+                  </p>
+                )}
               </div>
               <div className="fg">
                 <label>Mínimo de horas</label>
@@ -340,8 +387,9 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
                 <input
                   type="tel"
                   value={whatsapp}
-                  onChange={e => setWhatsapp(e.target.value)}
+                  onChange={e => setWhatsapp(maskPhone(e.target.value))}
                   placeholder="(41) 99999-9999"
+                  maxLength={16}
                   style={{ borderColor: !whatsapp ? '#fca5a5' : undefined }}
                 />
                 {!whatsapp && (
