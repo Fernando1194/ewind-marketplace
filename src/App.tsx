@@ -25,6 +25,7 @@ const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 export type Page =
   | 'home' | 'listing' | 'detail'
@@ -34,7 +35,7 @@ export type Page =
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
-  | 'reset-password' | 'terms' | 'pricing'
+  | 'reset-password' | 'terms' | 'pricing' | 'admin'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -188,6 +189,24 @@ function App() {
         </div>
 
         <div className="nav-right">
+          {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+            <button
+              onClick={() => goToPage('admin')}
+              title="Admin"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '6px', opacity: 0.25, transition: 'opacity 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.25'}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d2d2d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+          )}
           {/* Badge comparação */}
           {compareSpaces.length > 0 && (
             <button
@@ -240,13 +259,13 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {user && profile?.role === 'guest' && (
+        {user && userRole === 'guest' && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
-        {user && profile?.role === 'host' && (
+        {user && userRole === 'host' && (
           <a onClick={() => goToPage('host-dashboard')}>🏢 Meu painel</a>
         )}
-        {user && profile?.role === 'supplier' && (
+        {user && userRole === 'supplier' && (
           <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meus serviços</a>
         )}
         <div className="mobile-auth">
@@ -318,6 +337,8 @@ function App() {
         {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
         {page === 'terms' && <TermsPage goToPage={goToPage} />}
         {page === 'pricing' && <PricingPage goToPage={goToPage} />}
+        {page === 'admin' && user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <AdminPage goToPage={goToPage} />}
+        {page === 'admin' && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <div style={{padding:40,textAlign:'center'}}><h2>Acesso negado</h2></div>}
         {page === 'supplier-dashboard' && user && (
           <SupplierDashboard user={user} goToPage={goToPage} />
         )}
