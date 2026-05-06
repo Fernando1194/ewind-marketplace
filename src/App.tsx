@@ -66,9 +66,12 @@ function App() {
       .single()
 
     if (data) {
-      setUserRole(data.role)
-      setIsHost(data.is_host || data.role === 'host')
-      setIsSupplier(data.is_supplier || data.role === 'supplier')
+      const role = data.role || 'guest'
+      const isH = !!(data.is_host || role === 'host')
+      const isS = !!(data.is_supplier || role === 'supplier')
+      setUserRole(role)
+      setIsHost(isH)
+      setIsSupplier(isS)
       // Badge de orçamentos só para guest e host
       if (data.role === 'host') {
         const { count } = await supabase
@@ -319,7 +322,7 @@ function App() {
         {page === 'signup' && <SignupPage goToPage={goToPage} />}
 
         {/* Área do Host */}
-        {page === 'host-dashboard' && user && (isHost || userRole === 'host') && (
+        {page === 'host-dashboard' && user && (
           <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} isSupplier={isSupplier} />
         )}
         {page === 'new-space' && user && (
