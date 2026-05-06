@@ -26,7 +26,7 @@ const HERO_IMAGES = [
   // Convidados brindando e celebrando
   'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&h=800&fit=crop&q=90',
   // Bolo de casamento decorado com flores
-  'https://images.unsplash.com/photo-1464349095431-e9a21285b19a?w=1600&h=800&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
 ]
 
 export default function HomePage({ goToPage }: Props) {
