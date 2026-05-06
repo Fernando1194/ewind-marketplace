@@ -61,7 +61,7 @@ function App() {
   const loadUserRole = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_host, is_supplier')
       .eq('id', userId)
       .single()
 
