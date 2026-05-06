@@ -53,6 +53,8 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
+  const [isHost, setIsHost] = useState(false)
+  const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
 
@@ -93,7 +95,7 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) loadUserRole(session.user.id)
-      else { setUserRole('guest'); setPendingQuotesCount(0) }
+      else { setUserRole('guest'); setIsHost(false); setIsSupplier(false); setPendingQuotesCount(0) }
       // Redirecionar para redefinição de senha ao clicar no link do email
       if (event === 'PASSWORD_RECOVERY') {
         setPage('reset-password')
@@ -170,7 +172,7 @@ function App() {
           <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
 
           {/* Nav items por role */}
-          {user && userRole === 'guest' && (
+          {user && userRole === 'guest' && !isHost && !isSupplier && (
             <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>
               Meus orçamentos
               {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
@@ -262,10 +264,10 @@ function App() {
         {user && userRole === 'guest' && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
-        {user && userRole === 'host' && (
-          <a onClick={() => goToPage('host-dashboard')}>🏢 Meu painel</a>
+        {user && isHost && (
+          <a onClick={() => goToPage('host-dashboard')}>🏢 Meus espaços</a>
         )}
-        {user && userRole === 'supplier' && (
+        {user && isSupplier && (
           <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meus serviços</a>
         )}
         <div className="mobile-auth">
