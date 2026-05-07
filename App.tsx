@@ -308,7 +308,7 @@ function App() {
 
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
-        {page === 'home' && <HomePage goToPage={goToPage} userRole={userRole} user={user} />}
+        {page === 'home' && <HomePage goToPage={goToPage} />}
         {page === 'listing' && (
           <ListingPage
             goToPage={goToPage}
