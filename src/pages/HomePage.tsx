@@ -251,15 +251,14 @@ className="hero-arrow hero-arrow-right"
                 }
                 <div className="card-body">
                   <div className="card-name">{s.name}</div>
-                  <div className="card-loc">🛠️ {s.category} · {s.cities?.[0] || s.state}</div>
-                  {s.price_info && (
-                    <div className="card-tags">
-                      <span className="tag">{s.price_info}</span>
-                    </div>
-                  )}
+                  <div className="card-loc">📍 {s.cities?.[0] || s.state} · {s.category}</div>
+                  <div className="card-tags">
+                    <span className="tag">🛠️ Fornecedor</span>
+                    {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
+                  </div>
                   <div className="card-foot">
-                    <span className="card-price" style={{ fontSize: 13, color: '#5aa800', fontWeight: 700 }}>Ver perfil →</span>
-                    {s.whatsapp && <span style={{ fontSize: 11, color: '#25d366', fontWeight: 600 }}>💬 WhatsApp</span>}
+                    <span className="card-price">{s.price_info ? s.price_info : 'Consultar valor'}</span>
+                    <span className="card-cap">Ver perfil →</span>
                   </div>
                 </div>
               </div>
