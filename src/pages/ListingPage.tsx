@@ -72,6 +72,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
   const [filterMaxCapacity, setFilterMaxCapacity] = useState('')
   const [filterMinPrice, setFilterMinPrice] = useState('')
   const [filterMaxPrice, setFilterMaxPrice] = useState('')
+  const [filterDate, setFilterDate] = useState('')
 
   const [filtersOpen, setFiltersOpen] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
@@ -91,7 +92,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
 
       const { data } = await supabase
         .from('spaces')
-        .select('id, host_id, name, city, state, category, event_types, media_urls, price_per_hour, price_per_day, capacity, attributes, min_hours, address, description, neighborhood, area_covered, area_uncovered, whatsapp, instagram, facebook, website, cardapio_url, status, created_at, updated_at')
+        .select('id, host_id, name, city, state, category, event_types, media_urls, price_per_hour, price_per_day, capacity, attributes, available_dates, availability_note, min_hours, address, description, neighborhood, area_covered, area_uncovered, whatsapp, instagram, facebook, website, cardapio_url, status, created_at, updated_at')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
 
@@ -107,7 +108,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
   }, [])
 
   // Reset página ao filtrar
-  useEffect(() => { setCurrentPage(1) }, [filterCity, filterState, filterCategory, filterEventTypes, filterAttrs, filterMinCapacity, filterMaxCapacity, filterMinPrice, filterMaxPrice])
+  useEffect(() => { setCurrentPage(1) }, [filterCity, filterState, filterCategory, filterEventTypes, filterAttrs, filterMinCapacity, filterMaxCapacity, filterMinPrice, filterMaxPrice, filterDate])
 
   const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) =>
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
@@ -117,9 +118,10 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
     setFilterEventTypes([]); setFilterAttrs([])
     setFilterMinCapacity(''); setFilterMaxCapacity('')
     setFilterMinPrice(''); setFilterMaxPrice('')
+    setFilterDate('')
   }, [])
 
-  const activeFiltersCount = [filterCity, filterState, ...filterCategory, ...filterEventTypes, ...filterAttrs, filterMinCapacity, filterMaxCapacity, filterMinPrice, filterMaxPrice].filter(Boolean).length
+  const activeFiltersCount = [filterCity, filterState, ...filterCategory, ...filterEventTypes, ...filterAttrs, filterMinCapacity, filterMaxCapacity, filterMinPrice, filterMaxPrice, filterDate].filter(Boolean).length
 
   const filtered = useMemo(() => spaces.filter(s => {
     if (filterCity && !s.city.toLowerCase().includes(filterCity.toLowerCase())) return false
@@ -132,8 +134,13 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
     const price = s.price_per_hour || s.price_per_day || 0
     if (filterMinPrice && price < parseFloat(filterMinPrice)) return false
     if (filterMaxPrice && price > parseFloat(filterMaxPrice)) return false
+    // Filtro de data — só mostra espaços disponíveis na data ou sem restrição
+    if (filterDate) {
+      const avail = (s as any).available_dates
+      if (avail && avail.length > 0 && !avail.includes(filterDate)) return false
+    }
     return true
-  }), [spaces, filterCity, filterState, filterCategory, filterEventTypes, filterAttrs, filterMinCapacity, filterMaxCapacity, filterMinPrice, filterMaxPrice])
+  }), [spaces, filterCity, filterState, filterCategory, filterEventTypes, filterAttrs, filterMinCapacity, filterMaxCapacity, filterMinPrice, filterMaxPrice, filterDate])
 
   // Paginação
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE)

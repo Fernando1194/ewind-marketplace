@@ -53,6 +53,7 @@ export default function SuppliersPage({ goToPage }: Props) {
   const [filterCity, setFilterCity] = useState('')
   const [filterState, setFilterState] = useState('')
   const [filterCategories, setFilterCategories] = useState<string[]>([])
+  const [filterDate, setFilterDate] = useState('')
   const [filterEventTypes, setFilterEventTypes] = useState<string[]>([])
 
   const [filtersOpen, setFiltersOpen] = useState(false)
@@ -87,7 +88,7 @@ export default function SuppliersPage({ goToPage }: Props) {
     return () => abortRef.current?.abort()
   }, [])
 
-  useEffect(() => { setCurrentPage(1) }, [filterCity, filterState, filterCategories, filterEventTypes])
+  useEffect(() => { setCurrentPage(1) }, [filterCity, filterState, filterCategories, filterEventTypes, filterDate])
 
   const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) =>
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
@@ -97,7 +98,7 @@ export default function SuppliersPage({ goToPage }: Props) {
     setFilterCategories([]); setFilterEventTypes([])
   }, [])
 
-  const activeFiltersCount = [filterCity, filterState, ...filterCategories, ...filterEventTypes].filter(Boolean).length
+  const activeFiltersCount = [filterCity, filterState, ...filterCategories, ...filterEventTypes, filterDate].filter(Boolean).length
 
   const filtered = useMemo(() => suppliers.filter(s => {
     if (filterCity && !s.cities.some(c => c.toLowerCase().includes(filterCity.toLowerCase()))) return false
@@ -134,6 +135,15 @@ export default function SuppliersPage({ goToPage }: Props) {
           <div className="sf-group">
             <div className="sf-group-title">Localização</div>
             <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.06em', display: 'block', marginBottom: 4 }}>📅 Data do evento</label>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={e => setFilterDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', marginBottom: 4 }}
+            />
+            {filterDate && <p style={{ fontSize: 11, color: '#5aa800', marginBottom: 8 }}>✓ Mostrando disponíveis em {new Date(filterDate + 'T12:00:00').toLocaleDateString('pt-BR')}</p>}
             <select value={filterState} onChange={e => setFilterState(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
               <option value="">Todos os estados</option>
