@@ -9,32 +9,19 @@ interface Props {
 }
 
 const HERO_IMAGES = [
-  // Casal dançando no casamento — momento mágico
-  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1600&h=800&fit=crop&q=90',
-  // Noiva com buquê — sorriso e emoção
-  'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1600&h=800&fit=crop&q=90',
-  // Mesa de casamento decorada com flores e velas
   'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&h=800&fit=crop&q=90',
-  // Festa de aniversário com confetes e celebração
+  'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1600&h=800&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=1600&h=800&fit=crop&q=90',
   'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1600&h=800&fit=crop&q=90',
-  // Fotógrafo capturando o momento perfeito
-  'https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1600&h=800&fit=crop&q=90',
-  // Maquiagem artística — making of da noiva
-  'https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=1600&h=800&fit=crop&q=90',
-  // Festa com luzes, música e alegria
-  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=800&fit=crop&q=90',
-  // Convidados brindando e celebrando
-  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&h=800&fit=crop&q=90',
-  // Bolo de casamento decorado com flores
-  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
+  'https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=1600&h=800&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=1600&h=800&fit=crop&q=90',
+  'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=1600&h=800&fit=crop&q=90',
 ]
 
 export default function HomePage({ goToPage }: Props) {
   const [filterCity, setFilterCity] = useState('')
   const [filterGuests, setFilterGuests] = useState('')
-  const [filterDate, setFilterDate] = useState('')
   const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
-  const [featuredSuppliers, setFeaturedSuppliers] = useState<any[]>([])
   const [heroImages] = useState<string[]>(HERO_IMAGES)
   const [currentHero, setCurrentHero] = useState(0)
   const [fadeIn, setFadeIn] = useState(true)
@@ -42,22 +29,13 @@ export default function HomePage({ goToPage }: Props) {
   useEffect(() => { loadData() }, [])
 
   const loadData = async () => {
-    const [{ data: spacesData }, { data: suppData }] = await Promise.all([
-      supabase
-        .from('spaces')
-        .select('id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, event_types, host_id, min_hours, address, description, attributes, status, created_at, updated_at')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(6),
-      supabase
-        .from('suppliers')
-        .select('id, owner_id, name, category, subcategory, state, cities, neighborhood, media_urls, price_info, description, attributes, event_types, whatsapp, email, instagram, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(6)
-    ])
-    if (spacesData && spacesData.length > 0) setFeaturedSpaces(spacesData)
-    if (suppData && suppData.length > 0) setFeaturedSuppliers(suppData)
+    const { data } = await supabase
+      .from('spaces')
+      .select('id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, event_types, host_id, min_hours, address, description, attributes, status, created_at, updated_at')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(6)
+    if (data && data.length > 0) setFeaturedSpaces(data)
   }
 
   useEffect(() => {
@@ -77,7 +55,7 @@ export default function HomePage({ goToPage }: Props) {
   return (
     <>
       {/* HERO */}
-      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', maxWidth: '100vw' }}>
+      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         {heroImages.map((img, i) => (
           <div key={img} style={{
             position: 'absolute', inset: 0,
@@ -106,16 +84,6 @@ export default function HomePage({ goToPage }: Props) {
               <input placeholder="Cidade ou região" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
             </div>
             <div className="sf">
-              <div className="sf-label">Data do evento</div>
-              <input
-                type="date"
-                value={filterDate}
-                onChange={e => setFilterDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
-                style={{ colorScheme: 'light' }}
-              />
-            </div>
-            <div className="sf">
               <div className="sf-label">Convidados</div>
               <input type="number" placeholder="Quantidade" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
             </div>
@@ -142,10 +110,8 @@ export default function HomePage({ goToPage }: Props) {
         {heroImages.length > 1 && (
           <>
             <button onClick={() => goToImage((currentHero - 1 + heroImages.length) % heroImages.length)}
-className="hero-arrow hero-arrow-left"
               style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
             <button onClick={() => goToImage((currentHero + 1) % heroImages.length)}
-className="hero-arrow hero-arrow-right"
               style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
           </>
         )}
@@ -157,7 +123,7 @@ className="hero-arrow hero-arrow-right"
           {[
             { icon: '🔍', title: 'Compare opções', desc: 'Veja vários espaços lado a lado antes de decidir' },
             { icon: '💬', title: 'Orçamento direto', desc: 'Fale diretamente com o anunciante, sem intermediários' },
-            { icon: '💸', title: 'Grátis para quem busca', desc: 'Nenhuma taxa para quem organiza eventos' },
+            { icon: '💸', title: '100% gratuito', desc: 'Nenhuma taxa para quem busca um espaço' },
             { icon: '⚡', title: 'Resposta rápida', desc: 'Anunciantes respondem em até 24 horas' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
@@ -174,7 +140,7 @@ className="hero-arrow hero-arrow-right"
       {/* CATEGORIAS */}
       <section className="section">
         <h2 className="sec-title">Explore por categoria</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10 }}>
           {CATEGORIES.map(c => (
             <div key={c.name} onClick={() => goToPage('listing')}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 8px', borderRadius: 12, border: '1.5px solid #e8e8e8', cursor: 'pointer', background: '#fff', transition: 'all 0.2s', textAlign: 'center' }}
@@ -226,63 +192,8 @@ className="hero-arrow hero-arrow-right"
             <p style={{ fontSize: 14, color: '#365314', marginBottom: 20, lineHeight: 1.6, maxWidth: 460, margin: '0 auto 20px' }}>
               Estamos recebendo os primeiros cadastros de espaços. Garanta visibilidade desde o início e comece a receber orçamentos.
             </p>
-            <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage(userRole === 'supplier' ? 'new-supplier' : 'signup')}>
-              {userRole === 'supplier' ? 'Cadastrar meu serviço' : 'Cadastrar meu espaço gratuitamente'}
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* FORNECEDORES EM DESTAQUE */}
-      {featuredSuppliers.length > 0 && (
-        <section className="section" style={{ paddingTop: 0 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 className="sec-title" style={{ marginBottom: 0 }}>Fornecedores em destaque</h2>
-            <button onClick={() => goToPage('suppliers')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-              Ver todos →
-            </button>
-          </div>
-          <div className="cards-3col">
-            {featuredSuppliers.slice(0, 3).map(s => (
-              <div key={s.id} className="card" onClick={() => goToPage('supplier-detail', s)}>
-                {s.media_urls?.[0]
-                  ? <img src={s.media_urls[0]} alt={s.name} loading="lazy" />
-                  : <div style={{ height: 180, background: 'linear-gradient(135deg, #f0fdf4, #ecfccb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🛠️</div>
-                }
-                <div className="card-body">
-                  <div className="card-name">{s.name}</div>
-                  <div className="card-loc">📍 {s.cities?.[0] || s.state} · {s.category}</div>
-                  <div className="card-tags">
-                    <span className="tag">🛠️ Fornecedor</span>
-                    {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
-                  </div>
-                  <div className="card-foot">
-                    <span className="card-price">{s.price_info
-                      ? (isNaN(Number(s.price_info.replace(/[^0-9.,]/g, ''))) || !s.price_info.trim()
-                          ? s.price_info
-                          : s.price_info.toLowerCase().includes('r$')
-                            ? s.price_info
-                            : `R$ ${s.price_info}`)
-                      : 'Consultar valor'}</span>
-                    <span className="card-cap">Ver perfil →</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {featuredSuppliers.length === 0 && (
-        <section className="section" style={{ paddingTop: 0 }}>
-          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '40px 36px', textAlign: 'center', border: '1px solid #d9f99d' }}>
-            <div style={{ fontSize: 38, marginBottom: 12 }}>🛠️</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros fornecedores!</h3>
-            <p style={{ fontSize: 13, color: '#365314', marginBottom: 18, lineHeight: 1.6, maxWidth: 420, margin: '0 auto 18px' }}>
-              Fotógrafos, DJs, decoradores e confeiteiros — cadastre seu serviço e comece a receber orçamentos.
-            </p>
-            <button className="btn-primary" style={{ padding: '11px 24px', fontSize: 14 }} onClick={() => goToPage('signup')}>
-              Cadastrar meu serviço gratuitamente
+            <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage('signup')}>
+              Cadastrar meu espaço gratuitamente
             </button>
           </div>
         </section>
@@ -297,8 +208,8 @@ className="hero-arrow hero-arrow-right"
               Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
             </div>
           </div>
-          <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage(userRole === 'supplier' ? 'new-supplier' : 'signup')}>
-            {userRole === 'supplier' ? 'Anunciar meu serviço →' : 'Anunciar meu espaço →'}
+          <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage('signup')}>
+            Anunciar meu espaço →
           </button>
         </div>
       </section>

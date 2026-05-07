@@ -4,7 +4,7 @@ import type { User } from '@supabase/supabase-js'
 import type { Space, Supplier } from './types'
 import './App.css'
 
-const HomePage = lazy(() => import('./pages/HomePageNew'))
+const HomePage = lazy(() => import('./pages/HomePage'))
 const ListingPage = lazy(() => import('./pages/ListingPage'))
 const DetailPage = lazy(() => import('./pages/DetailPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
@@ -22,10 +22,6 @@ const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
 const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
 const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
-const TermsPage = lazy(() => import('./pages/TermsPage'))
-const PricingPage = lazy(() => import('./pages/PricingPage'))
-const AdminPage = lazy(() => import('./pages/AdminPage'))
 
 export type Page =
   | 'home' | 'listing' | 'detail'
@@ -35,7 +31,6 @@ export type Page =
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
-  | 'reset-password' | 'terms' | 'pricing' | 'admin'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -50,60 +45,35 @@ function App() {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
   const [compareSpaces, setCompareSpaces] = useState<Space[]>([])
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
-  const [isHost, setIsHost] = useState(false)
-  const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
 
   const loadUserRole = useCallback(async (userId: string) => {
-    // Tentar buscar perfil
-    let { data } = await supabase
+    const { data } = await supabase
       .from('profiles')
-      .select('role, is_host, is_supplier')
+      .select('role')
       .eq('id', userId)
       .single()
 
-    // Se não encontrar perfil, criar a partir do user_metadata
-    if (!data) {
-      const { data: authData } = await supabase.auth.getUser()
-      const meta = authData?.user?.user_metadata
-      const role = meta?.role || 'guest'
-      await supabase.from('profiles').upsert({
-        id: userId,
-        email: authData?.user?.email,
-        full_name: meta?.full_name || '',
-        role,
-        is_host: role === 'host',
-        is_supplier: role === 'supplier',
-        updated_at: new Date().toISOString()
-      })
-      data = { role, is_host: role === 'host', is_supplier: role === 'supplier' }
-    }
-
-    const role = data.role || 'guest'
-    const isH = !!(data.is_host || role === 'host')
-    const isS = !!(data.is_supplier || role === 'supplier')
-    setUserRole(role)
-    setIsHost(isH)
-    setIsSupplier(isS)
-
-    // Badge de orçamentos pendentes
-    if (isH || isS) {
-      const { count } = await supabase
-        .from('quotes')
-        .select('*', { count: 'exact', head: true })
-        .eq('host_id', userId)
-        .eq('status', 'pending')
-      setPendingQuotesCount(count || 0)
-    } else if (role === 'guest') {
-      const { count } = await supabase
-        .from('quotes')
-        .select('*', { count: 'exact', head: true })
-        .eq('guest_id', userId)
-      setPendingQuotesCount(count || 0)
+    if (data) {
+      setUserRole(data.role)
+      // Badge de orçamentos só para guest e host
+      if (data.role === 'host') {
+        const { count } = await supabase
+          .from('quotes')
+          .select('*', { count: 'exact', head: true })
+          .eq('host_id', userId)
+          .eq('status', 'pending')
+        setPendingQuotesCount(count || 0)
+      } else if (data.role === 'guest') {
+        const { count } = await supabase
+          .from('quotes')
+          .select('*', { count: 'exact', head: true })
+          .eq('guest_id', userId)
+        setPendingQuotesCount(count || 0)
+      }
     }
   }, [])
 
@@ -114,14 +84,10 @@ function App() {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) loadUserRole(session.user.id)
-      else { setUserRole('guest'); setIsHost(false); setIsSupplier(false); setPendingQuotesCount(0) }
-      // Redirecionar para redefinição de senha ao clicar no link do email
-      if (event === 'PASSWORD_RECOVERY') {
-        setPage('reset-password')
-      }
+      else { setUserRole('guest'); setPendingQuotesCount(0) }
     })
 
     return () => subscription.unsubscribe()
@@ -133,7 +99,6 @@ function App() {
   }, [])
 
   const goToPage = useCallback((p: Page, data?: Space | Supplier) => {
-    setMobileMenuOpen(false)
     setPage(p)
     if (data) {
       if (p === 'edit-space') setEditingSpace(data as Space)
@@ -179,11 +144,6 @@ function App() {
   return (
     <div className="app">
       <nav className="nav">
-        <button className="nav-hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
-          <span style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
-          <span style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
-          <span style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
-        </button>
         <div className="nav-logo" onClick={() => goToPage('home')}>
           <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
@@ -194,13 +154,13 @@ function App() {
           <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
 
           {/* Nav items por role */}
-          {user && userRole === 'guest' && !isHost && !isSupplier && (
+          {user && userRole === 'guest' && (
             <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>
               Meus orçamentos
               {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
             </a>
           )}
-          {user && (userRole === 'host' || userRole === 'supplier' || isHost || isSupplier) && (
+          {user && userRole === 'host' && (
             <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
               Orçamentos
               {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
@@ -208,29 +168,10 @@ function App() {
           )}
 
           <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
-          <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
         </div>
 
         <div className="nav-right">
-          {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-            <button
-              onClick={() => goToPage('admin')}
-              title="Admin"
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                padding: '6px', opacity: 0.25, transition: 'opacity 0.2s',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.25'}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d2d2d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </button>
-          )}
           {/* Badge comparação */}
           {compareSpaces.length > 0 && (
             <button
@@ -251,10 +192,15 @@ function App() {
 
           {user ? (
             <>
-              {/* Meu painel */}
-              {user && userRole !== 'guest' && (
-                <button className="btn-primary" onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
-                  {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+              {/* Botão de painel por role */}
+              {userRole === 'host' && (
+                <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
+                  🏢 Meu painel
+                </button>
+              )}
+              {userRole === 'supplier' && (
+                <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>
+                  🛠️ Meus serviços
                 </button>
               )}
 
@@ -270,42 +216,6 @@ function App() {
         </div>
       </nav>
 
-      {/* MOBILE MENU */}
-      <div className={`nav-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-        <a onClick={() => goToPage('home')}>🏠 Início</a>
-        <a onClick={() => goToPage('listing')}>🏢 Espaços</a>
-        <a onClick={() => goToPage('suppliers')}>🛠️ Fornecedores</a>
-        <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
-        <a onClick={() => goToPage('pricing')}>💎 Planos</a>
-        <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {user && userRole === 'guest' && !isHost && !isSupplier && (
-          <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
-        )}
-        {user && userRole !== 'guest' && (
-          <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
-            {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
-          </a>
-        )}
-        {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
-          <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-            📋 Orçamentos recebidos
-            {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-          </a>
-        )}
-        <div className="mobile-auth">
-          {!user ? (
-            <>
-              <button className="btn-link" onClick={() => goToPage('login')}>Entrar</button>
-              <button className="btn-primary" onClick={() => goToPage('signup')}>Cadastrar</button>
-            </>
-          ) : (
-            <button className="btn-link" onClick={async () => { await supabase.auth.signOut(); setMobileMenuOpen(false) }}>
-              Sair da conta
-            </button>
-          )}
-        </div>
-      </div>
-
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
         {page === 'home' && <HomePage goToPage={goToPage} />}
@@ -320,9 +230,9 @@ function App() {
         {page === 'detail' && selectedSpace && (
           <DetailPage space={selectedSpace} goToPage={goToPage} user={user} />
         )}
-        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} />}
+        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} />}
         {page === 'supplier-detail' && selectedSupplier && (
-          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} user={user} />
+          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} />
         )}
         {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
         {page === 'about' && <AboutPage goToPage={goToPage} />}
@@ -340,37 +250,24 @@ function App() {
 
         {/* Área do Host */}
         {page === 'host-dashboard' && user && (
-          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
+          <HostDashboard user={user} goToPage={goToPage} />
         )}
-        {page === 'new-space' && user && userRole !== 'supplier' && (
+        {page === 'new-space' && user && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
         )}
-        {page === 'new-space' && user && userRole === 'supplier' && (
-          <div style={{ padding: '60px 24px', textAlign: 'center' }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>🛠️</div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Seu perfil é de fornecedor</h2>
-            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Para anunciar espaços, você precisa de um perfil de locatário.</p>
-            <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>Voltar ao meu painel</button>
-          </div>
-        )}
-        {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
+        {page === 'edit-space' && user && editingSpace && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
         )}
         {page === 'my-quotes' && user && (
           <MyQuotesPage user={user} goToPage={goToPage} />
         )}
         {page === 'host-quotes' && user && (
-          <HostQuotesPage user={user} goToPage={goToPage} userRole={userRole} />
+          <HostQuotesPage user={user} goToPage={goToPage} />
         )}
 
         {/* Área do Fornecedor */}
         {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} />}
         {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
-        {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
-        {page === 'terms' && <TermsPage goToPage={goToPage} />}
-        {page === 'pricing' && <PricingPage goToPage={goToPage} />}
-        {page === 'admin' && user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <AdminPage goToPage={goToPage} />}
-        {page === 'admin' && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <div style={{padding:40,textAlign:'center'}}><h2>Acesso negado</h2></div>}
         {page === 'supplier-dashboard' && user && (
           <SupplierDashboard user={user} goToPage={goToPage} />
         )}
