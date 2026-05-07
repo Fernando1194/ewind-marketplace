@@ -44,6 +44,7 @@ export default function AdminPage({ goToPage }: Props) {
 
   // UI state
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [deleteSpaceConfirm, setDeleteSpaceConfirm] = useState<string | null>(null)
   const [msgModal, setMsgModal] = useState<any | null>(null)
   const [msgText, setMsgText] = useState('')
   const [msgSending, setMsgSending] = useState(false)
@@ -152,6 +153,15 @@ export default function AdminPage({ goToPage }: Props) {
     await supabase.from('suppliers').update({ status }).eq('id', id)
     setSuppliers(prev => prev.map(s => s.id === id ? { ...s, status } : s))
     addLog('Fornecedor', `"${name}" → ${STATUS_LABEL[status]}`)
+    setActionLoading(null)
+  }
+
+  const deleteSpace = async (id: string, name: string) => {
+    setActionLoading(id)
+    await supabase.from('spaces').delete().eq('id', id)
+    setSpaces(prev => prev.filter(s => s.id !== id))
+    addLog('Espaço excluído', `"${name}"`)
+    setDeleteSpaceConfirm(null)
     setActionLoading(null)
   }
 
@@ -541,8 +551,17 @@ export default function AdminPage({ goToPage }: Props) {
                               <td style={{ padding: '10px 14px' }} onClick={e => e.stopPropagation()}>
                                 <div style={{ display: 'flex', gap: 4 }}>
                                   {s.status !== 'active' && <button onClick={() => updateSpaceStatus(s.id, 'active', s.name)} disabled={actionLoading === s.id} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 700, background: '#dcfce7', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#16a34a' }}>✓ Ativar</button>}
-                                  {s.status === 'active' && <button onClick={() => updateSpaceStatus(s.id, 'paused', s.name)} disabled={actionLoading === s.id} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#6b7280' }}>⏸</button>}
-                                  {s.status !== 'rejected' && <button onClick={() => updateSpaceStatus(s.id, 'rejected', s.name)} disabled={actionLoading === s.id} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#dc2626' }}>✕</button>}
+                                  {s.status === 'active' && <button onClick={() => updateSpaceStatus(s.id, 'paused', s.name)} disabled={actionLoading === s.id} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#6b7280' }}>⏸ Pausar</button>}
+                                  {s.status !== 'rejected' && <button onClick={() => updateSpaceStatus(s.id, 'rejected', s.name)} disabled={actionLoading === s.id} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#dc2626' }}>✕ Rejeitar</button>}
+                                  {deleteSpaceConfirm === s.id ? (
+                                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                                      <span style={{ fontSize: 10, color: '#dc2626' }}>Excluir?</span>
+                                      <button onClick={() => deleteSpace(s.id, s.name)} disabled={actionLoading === s.id} style={{ padding: '3px 6px', fontSize: 10, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#dc2626' }}>Sim</button>
+                                      <button onClick={() => setDeleteSpaceConfirm(null)} style={{ padding: '3px 6px', fontSize: 10, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#6b7280' }}>Não</button>
+                                    </div>
+                                  ) : (
+                                    <button onClick={() => setDeleteSpaceConfirm(s.id)} style={{ padding: '3px 8px', fontSize: 10, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 4, cursor: 'pointer', color: '#dc2626' }}>🗑</button>
+                                  )}
                                 </div>
                               </td>
                             </tr>
