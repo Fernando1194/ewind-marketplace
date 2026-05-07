@@ -8,10 +8,9 @@ import type { Page } from '../App'
 interface Props {
   user: User
   goToPage: (page: Page, supplier?: Supplier) => void
-  isHost?: boolean
 }
 
-export default function SupplierDashboard({ user, goToPage, isHost }: Props) {
+export default function SupplierDashboard({ user, goToPage }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
 

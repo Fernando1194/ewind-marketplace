@@ -8,9 +8,10 @@ interface Props {
   user: User
   goToPage: (page: Page) => void
   onQuoteCountChange?: () => void
+  userRole?: string
 }
 
-export default function HostQuotesPage({ user, goToPage, onQuoteCountChange }: Props) {
+export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, userRole = 'host' }: Props) {
   const [quotes, setQuotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [respondingId, setRespondingId] = useState<string | null>(null)
@@ -22,11 +23,22 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange }: P
 
   const loadQuotes = useCallback(async () => {
     setLoading(true)
-    const { data } = await supabase
+    const isSupplierRole = userRole === 'supplier'
+    let query = supabase
       .from('quotes')
       .select(`*, spaces (id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, min_hours, status, created_at, updated_at), suppliers (id, name, category, state, cities)`)
       .eq('host_id', user.id)
       .order('created_at', { ascending: false })
+
+    // Supplier: only show quotes with supplier_id (not space quotes)
+    if (isSupplierRole) {
+      query = query.not('supplier_id', 'is', null)
+    } else {
+      // Host: only show space quotes
+      query = query.is('supplier_id', null)
+    }
+
+    const { data } = await query
     if (data) setQuotes(data as any)
     setLoading(false)
     onQuoteCountChange?.()
@@ -95,7 +107,8 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange }: P
   const openRespond = async (q: any) => {
     setRespondingId(q.id)
     setResponseText('')
-    setProposedPrice(q.spaces?.price_per_hour ? q.spaces.price_per_hour.toString() : q.spaces?.price_per_day?.toString() || '')
+    const spacePrice = q.spaces?.price_per_hour ? q.spaces.price_per_hour.toString() : q.spaces?.price_per_day?.toString() || ''
+    setProposedPrice(spacePrice)
     if (q.status === 'pending') await markAsViewed(q.id)
   }
 
@@ -185,7 +198,11 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange }: P
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                     <div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{q.spaces?.name || q.suppliers?.name}</h3>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
+                        {userRole === 'supplier'
+                          ? (q.suppliers?.name || q.spaces?.name || 'Serviço')
+                          : (q.spaces?.name || q.suppliers?.name || 'Espaço')}
+                      </h3>
                       <div style={{ fontSize: 12, color: '#6b7280' }}>📍 {q.spaces?.city}, {q.spaces?.state} · {hoursAgo(q.created_at)}</div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 100, background: status.bg, color: status.color, whiteSpace: 'nowrap', flexShrink: 0 }}>

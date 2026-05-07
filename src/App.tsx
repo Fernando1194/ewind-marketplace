@@ -352,7 +352,7 @@ function App() {
           <MyQuotesPage user={user} goToPage={goToPage} />
         )}
         {page === 'host-quotes' && user && (
-          <HostQuotesPage user={user} goToPage={goToPage} />
+          <HostQuotesPage user={user} goToPage={goToPage} userRole={userRole} />
         )}
 
         {/* Área do Fornecedor */}
