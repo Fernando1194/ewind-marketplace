@@ -36,7 +36,10 @@ export default function SignupPage({ goToPage }: Props) {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [showPass, setShowPass] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [touchedPass, setTouchedPass] = useState(false)
+  const [touchedConfirm, setTouchedConfirm] = useState(false)
 
   const rules = useMemo(() => ({
     length: password.length >= 8,
@@ -49,7 +52,10 @@ export default function SignupPage({ goToPage }: Props) {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(''); setSuccess('')
-    if (!allRulesOk) { setError('A senha não atende todos os requisitos'); setTouchedPass(true); return }
+    setTouchedPass(true)
+    setTouchedConfirm(true)
+    if (!allRulesOk) { setError('A senha não atende todos os requisitos'); return }
+    if (password !== confirmPassword) { setError('As senhas não coincidem'); return }
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -59,7 +65,7 @@ export default function SignupPage({ goToPage }: Props) {
       if (error) throw error
       if (data.user) {
         setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
-        setEmail(''); setPassword(''); setName('')
+        setEmail(''); setPassword(''); setConfirmPassword(''); setName('')
       }
     } catch (err: any) {
       setError(err.message || 'Erro ao cadastrar. Tente novamente.')
@@ -136,6 +142,36 @@ export default function SignupPage({ goToPage }: Props) {
                     {rule.label}
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Confirmar senha */}
+          <div className="fg">
+            <label>Confirmar senha</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showConfirm ? 'text' : 'password'}
+                required
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                onBlur={() => setTouchedConfirm(true)}
+                placeholder="Repita a senha"
+                style={{ paddingRight: 44, borderColor: touchedConfirm && confirmPassword && confirmPassword !== password ? '#dc2626' : undefined }}
+              />
+              <button type="button" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}
+                style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: 0, display: 'flex', alignItems: 'center' }}>
+                <EyeIcon open={showConfirm} />
+              </button>
+            </div>
+            {touchedConfirm && confirmPassword && confirmPassword !== password && (
+              <div style={{ marginTop: 6, fontSize: 12, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 5 }}>
+                ⚠️ As senhas não coincidem
+              </div>
+            )}
+            {touchedConfirm && confirmPassword && confirmPassword === password && allRulesOk && (
+              <div style={{ marginTop: 6, fontSize: 12, color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+                ✓ Senhas coincidem
               </div>
             )}
           </div>
