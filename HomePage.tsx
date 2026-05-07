@@ -5,9 +5,7 @@ import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  goToPage: (page: Page, space?: Space | Supplier) => void
-  userRole?: string
-  user?: any
+  goToPage: (page: Page, space?: Space) => void
 }
 
 const HERO_IMAGES = [
@@ -31,7 +29,7 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
 ]
 
-export default function HomePage({ goToPage, userRole = 'guest', user }: Props) {
+export default function HomePage({ goToPage }: Props) {
   const [filterCity, setFilterCity] = useState('')
   const [filterGuests, setFilterGuests] = useState('')
   const [filterDate, setFilterDate] = useState('')
@@ -228,8 +226,8 @@ className="hero-arrow hero-arrow-right"
             <p style={{ fontSize: 14, color: '#365314', marginBottom: 20, lineHeight: 1.6, maxWidth: 460, margin: '0 auto 20px' }}>
               Estamos recebendo os primeiros cadastros de espaços. Garanta visibilidade desde o início e comece a receber orçamentos.
             </p>
-            <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage(userRole === 'supplier' ? 'new-supplier' : 'signup')}>
-              {userRole === 'supplier' ? 'Cadastrar meu serviço' : 'Cadastrar meu espaço gratuitamente'}
+            <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage('signup')}>
+              Cadastrar meu espaço gratuitamente
             </button>
           </div>
         </section>
@@ -299,8 +297,8 @@ className="hero-arrow hero-arrow-right"
               Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
             </div>
           </div>
-          <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage(userRole === 'supplier' ? 'new-supplier' : 'signup')}>
-            {userRole === 'supplier' ? 'Anunciar meu serviço →' : 'Anunciar meu espaço →'}
+          <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage('signup')}>
+            Anunciar meu espaço →
           </button>
         </div>
       </section>
