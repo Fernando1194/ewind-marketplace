@@ -59,34 +59,51 @@ function App() {
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
 
   const loadUserRole = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    // Tentar buscar perfil
+    let { data } = await supabase
       .from('profiles')
       .select('role, is_host, is_supplier')
       .eq('id', userId)
       .single()
 
-    if (data) {
-      const role = data.role || 'guest'
-      const isH = !!(data.is_host || role === 'host')
-      const isS = !!(data.is_supplier || role === 'supplier')
-      setUserRole(role)
-      setIsHost(isH)
-      setIsSupplier(isS)
-      // Badge de orçamentos pendentes
-      if (isH || isS) {
-        const { count } = await supabase
-          .from('quotes')
-          .select('*', { count: 'exact', head: true })
-          .eq('host_id', userId)
-          .eq('status', 'pending')
-        setPendingQuotesCount(count || 0)
-      } else if (data.role === 'guest') {
-        const { count } = await supabase
-          .from('quotes')
-          .select('*', { count: 'exact', head: true })
-          .eq('guest_id', userId)
-        setPendingQuotesCount(count || 0)
-      }
+    // Se não encontrar perfil, criar a partir do user_metadata
+    if (!data) {
+      const { data: authData } = await supabase.auth.getUser()
+      const meta = authData?.user?.user_metadata
+      const role = meta?.role || 'guest'
+      await supabase.from('profiles').upsert({
+        id: userId,
+        email: authData?.user?.email,
+        full_name: meta?.full_name || '',
+        role,
+        is_host: role === 'host',
+        is_supplier: role === 'supplier',
+        updated_at: new Date().toISOString()
+      })
+      data = { role, is_host: role === 'host', is_supplier: role === 'supplier' }
+    }
+
+    const role = data.role || 'guest'
+    const isH = !!(data.is_host || role === 'host')
+    const isS = !!(data.is_supplier || role === 'supplier')
+    setUserRole(role)
+    setIsHost(isH)
+    setIsSupplier(isS)
+
+    // Badge de orçamentos pendentes
+    if (isH || isS) {
+      const { count } = await supabase
+        .from('quotes')
+        .select('*', { count: 'exact', head: true })
+        .eq('host_id', userId)
+        .eq('status', 'pending')
+      setPendingQuotesCount(count || 0)
+    } else if (role === 'guest') {
+      const { count } = await supabase
+        .from('quotes')
+        .select('*', { count: 'exact', head: true })
+        .eq('guest_id', userId)
+      setPendingQuotesCount(count || 0)
     }
   }, [])
 
@@ -234,15 +251,10 @@ function App() {
 
           {user ? (
             <>
-              {/* Meu painel — aparece para qualquer anunciante */}
-              {user && (userRole === 'host' || isHost) && (
-                <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
-                  🏢 Meu painel
-                </button>
-              )}
-              {user && (userRole === 'supplier' || isSupplier) && userRole !== 'host' && !isHost && (
-                <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>
-                  🛠️ Meu painel
+              {/* Meu painel */}
+              {user && userRole !== 'guest' && (
+                <button className="btn-primary" onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+                  {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
                 </button>
               )}
 
@@ -269,11 +281,10 @@ function App() {
         {user && userRole === 'guest' && !isHost && !isSupplier && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
-        {user && (userRole === 'host' || isHost) && (
-          <a onClick={() => goToPage('host-dashboard')}>🏢 Meu painel</a>
-        )}
-        {user && (userRole === 'supplier' || isSupplier) && userRole !== 'host' && !isHost && (
-          <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meu painel</a>
+        {user && userRole !== 'guest' && (
+          <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+            {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+          </a>
         )}
         {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
           <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
@@ -297,7 +308,7 @@ function App() {
 
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
-        {page === 'home' && <HomePage goToPage={goToPage} />}
+        {page === 'home' && <HomePage goToPage={goToPage} userRole={userRole} user={user} />}
         {page === 'listing' && (
           <ListingPage
             goToPage={goToPage}
@@ -331,17 +342,25 @@ function App() {
         {page === 'host-dashboard' && user && (
           <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
         )}
-        {page === 'new-space' && user && (
+        {page === 'new-space' && user && userRole !== 'supplier' && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
         )}
-        {page === 'edit-space' && user && editingSpace && (
+        {page === 'new-space' && user && userRole === 'supplier' && (
+          <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🛠️</div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Seu perfil é de fornecedor</h2>
+            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Para anunciar espaços, você precisa de um perfil de locatário.</p>
+            <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>Voltar ao meu painel</button>
+          </div>
+        )}
+        {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
         )}
         {page === 'my-quotes' && user && (
           <MyQuotesPage user={user} goToPage={goToPage} />
         )}
         {page === 'host-quotes' && user && (
-          <HostQuotesPage user={user} goToPage={goToPage} />
+          <HostQuotesPage user={user} goToPage={goToPage} userRole={userRole} />
         )}
 
         {/* Área do Fornecedor */}
