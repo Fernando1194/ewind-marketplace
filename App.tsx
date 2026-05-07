@@ -183,7 +183,7 @@ function App() {
               {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
             </a>
           )}
-          {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
+          {user && (userRole === 'host' || userRole === 'supplier' || isHost || isSupplier) && (
             <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
               Orçamentos
               {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
@@ -234,14 +234,13 @@ function App() {
 
           {user ? (
             <>
-              {/* Meu painel — host */}
-              {(isHost || userRole === 'host') && (
+              {/* Meu painel — aparece para qualquer anunciante */}
+              {user && (userRole === 'host' || isHost) && (
                 <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
                   🏢 Meu painel
                 </button>
               )}
-              {/* Meu painel — supplier (só se não for host também) */}
-              {(isSupplier || userRole === 'supplier') && !(isHost || userRole === 'host') && (
+              {user && (userRole === 'supplier' || isSupplier) && userRole !== 'host' && !isHost && (
                 <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>
                   🛠️ Meu painel
                 </button>
@@ -270,10 +269,10 @@ function App() {
         {user && userRole === 'guest' && !isHost && !isSupplier && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
-        {user && (isHost || userRole === 'host') && (
+        {user && (userRole === 'host' || isHost) && (
           <a onClick={() => goToPage('host-dashboard')}>🏢 Meu painel</a>
         )}
-        {user && (isSupplier || userRole === 'supplier') && !(isHost || userRole === 'host') && (
+        {user && (userRole === 'supplier' || isSupplier) && userRole !== 'host' && !isHost && (
           <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meu painel</a>
         )}
         {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
