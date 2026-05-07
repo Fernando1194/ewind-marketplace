@@ -36,6 +36,21 @@ export default function DetailPage({ space, user, goToPage }: Props) {
       return
     }
 
+    if (!eventType) {
+      setError('Selecione o tipo de evento')
+      setLoading(false)
+      return
+    }
+    if (!eventDate) {
+      setError('Selecione a data do evento')
+      setLoading(false)
+      return
+    }
+    if (!guestsCount || parseInt(guestsCount) < 1) {
+      setError('Informe o número de convidados')
+      setLoading(false)
+      return
+    }
     if (parseInt(guestsCount) > space.capacity) {
       setError(`Este espaço comporta no máximo ${space.capacity} pessoas`)
       setLoading(false)
