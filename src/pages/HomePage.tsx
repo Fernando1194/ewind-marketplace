@@ -34,6 +34,7 @@ export default function HomePage({ goToPage }: Props) {
   const [filterGuests, setFilterGuests] = useState('')
   const [filterDate, setFilterDate] = useState('')
   const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
+  const [featuredSuppliers, setFeaturedSuppliers] = useState<any[]>([])
   const [heroImages] = useState<string[]>(HERO_IMAGES)
   const [currentHero, setCurrentHero] = useState(0)
   const [fadeIn, setFadeIn] = useState(true)
@@ -41,13 +42,22 @@ export default function HomePage({ goToPage }: Props) {
   useEffect(() => { loadData() }, [])
 
   const loadData = async () => {
-    const { data } = await supabase
-      .from('spaces')
-      .select('id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, event_types, host_id, min_hours, address, description, attributes, status, created_at, updated_at')
-      .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(6)
-    if (data && data.length > 0) setFeaturedSpaces(data)
+    const [{ data: spacesData }, { data: suppData }] = await Promise.all([
+      supabase
+        .from('spaces')
+        .select('id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, event_types, host_id, min_hours, address, description, attributes, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(6),
+      supabase
+        .from('suppliers')
+        .select('id, name, category, state, cities, media_urls, price_info, description, whatsapp, instagram, status, created_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(6)
+    ])
+    if (spacesData && spacesData.length > 0) setFeaturedSpaces(spacesData)
+    if (suppData && suppData.length > 0) setFeaturedSuppliers(suppData)
   }
 
   useEffect(() => {
@@ -218,6 +228,56 @@ className="hero-arrow hero-arrow-right"
             </p>
             <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage('signup')}>
               Cadastrar meu espaço gratuitamente
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* FORNECEDORES EM DESTAQUE */}
+      {featuredSuppliers.length > 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>Fornecedores em destaque</h2>
+            <button onClick={() => goToPage('suppliers')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Ver todos →
+            </button>
+          </div>
+          <div className="cards-3col">
+            {featuredSuppliers.slice(0, 3).map(s => (
+              <div key={s.id} className="card" onClick={() => goToPage('supplier-detail', s)}>
+                {s.media_urls?.[0]
+                  ? <img src={s.media_urls[0]} alt={s.name} loading="lazy" />
+                  : <div style={{ height: 180, background: 'linear-gradient(135deg, #f0fdf4, #ecfccb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🛠️</div>
+                }
+                <div className="card-body">
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">🛠️ {s.category} · {s.cities?.[0] || s.state}</div>
+                  {s.price_info && (
+                    <div className="card-tags">
+                      <span className="tag">{s.price_info}</span>
+                    </div>
+                  )}
+                  <div className="card-foot">
+                    <span className="card-price" style={{ fontSize: 13, color: '#5aa800', fontWeight: 700 }}>Ver perfil →</span>
+                    {s.whatsapp && <span style={{ fontSize: 11, color: '#25d366', fontWeight: 600 }}>💬 WhatsApp</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {featuredSuppliers.length === 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '40px 36px', textAlign: 'center', border: '1px solid #d9f99d' }}>
+            <div style={{ fontSize: 38, marginBottom: 12 }}>🛠️</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros fornecedores!</h3>
+            <p style={{ fontSize: 13, color: '#365314', marginBottom: 18, lineHeight: 1.6, maxWidth: 420, margin: '0 auto 18px' }}>
+              Fotógrafos, DJs, decoradores e confeiteiros — cadastre seu serviço e comece a receber orçamentos.
+            </p>
+            <button className="btn-primary" style={{ padding: '11px 24px', fontSize: 14 }} onClick={() => goToPage('signup')}>
+              Cadastrar meu serviço gratuitamente
             </button>
           </div>
         </section>
