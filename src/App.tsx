@@ -59,34 +59,51 @@ function App() {
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
 
   const loadUserRole = useCallback(async (userId: string) => {
-    const { data } = await supabase
+    // Tentar buscar perfil
+    let { data } = await supabase
       .from('profiles')
       .select('role, is_host, is_supplier')
       .eq('id', userId)
       .single()
 
-    if (data) {
-      const role = data.role || 'guest'
-      const isH = !!(data.is_host || role === 'host')
-      const isS = !!(data.is_supplier || role === 'supplier')
-      setUserRole(role)
-      setIsHost(isH)
-      setIsSupplier(isS)
-      // Badge de orçamentos pendentes
-      if (isH || isS) {
-        const { count } = await supabase
-          .from('quotes')
-          .select('*', { count: 'exact', head: true })
-          .eq('host_id', userId)
-          .eq('status', 'pending')
-        setPendingQuotesCount(count || 0)
-      } else if (data.role === 'guest') {
-        const { count } = await supabase
-          .from('quotes')
-          .select('*', { count: 'exact', head: true })
-          .eq('guest_id', userId)
-        setPendingQuotesCount(count || 0)
-      }
+    // Se não encontrar perfil, criar a partir do user_metadata
+    if (!data) {
+      const { data: authData } = await supabase.auth.getUser()
+      const meta = authData?.user?.user_metadata
+      const role = meta?.role || 'guest'
+      await supabase.from('profiles').upsert({
+        id: userId,
+        email: authData?.user?.email,
+        full_name: meta?.full_name || '',
+        role,
+        is_host: role === 'host',
+        is_supplier: role === 'supplier',
+        updated_at: new Date().toISOString()
+      })
+      data = { role, is_host: role === 'host', is_supplier: role === 'supplier' }
+    }
+
+    const role = data.role || 'guest'
+    const isH = !!(data.is_host || role === 'host')
+    const isS = !!(data.is_supplier || role === 'supplier')
+    setUserRole(role)
+    setIsHost(isH)
+    setIsSupplier(isS)
+
+    // Badge de orçamentos pendentes
+    if (isH || isS) {
+      const { count } = await supabase
+        .from('quotes')
+        .select('*', { count: 'exact', head: true })
+        .eq('host_id', userId)
+        .eq('status', 'pending')
+      setPendingQuotesCount(count || 0)
+    } else if (role === 'guest') {
+      const { count } = await supabase
+        .from('quotes')
+        .select('*', { count: 'exact', head: true })
+        .eq('guest_id', userId)
+      setPendingQuotesCount(count || 0)
     }
   }, [])
 
