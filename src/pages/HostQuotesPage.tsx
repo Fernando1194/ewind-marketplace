@@ -24,7 +24,7 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange }: P
     setLoading(true)
     const { data } = await supabase
       .from('quotes')
-      .select(`*, spaces (id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, min_hours, status, created_at, updated_at)`)
+      .select(`*, spaces (id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, min_hours, status, created_at, updated_at), suppliers (id, name, category, state, cities)`)
       .eq('host_id', user.id)
       .order('created_at', { ascending: false })
     if (data) setQuotes(data as any)
@@ -178,14 +178,14 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange }: P
 
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                 {q.spaces?.media_urls?.[0] && (
-                  <img src={q.spaces.media_urls[0]} alt={q.spaces?.name}
+                  <img src={q.spaces.media_urls[0]} alt={q.spaces?.name || q.suppliers?.name}
                     style={{ width: 110, height: 85, objectFit: 'cover', borderRadius: 10, flexShrink: 0 }} />
                 )}
 
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                     <div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{q.spaces?.name}</h3>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{q.spaces?.name || q.suppliers?.name}</h3>
                       <div style={{ fontSize: 12, color: '#6b7280' }}>📍 {q.spaces?.city}, {q.spaces?.state} · {hoursAgo(q.created_at)}</div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 100, background: status.bg, color: status.color, whiteSpace: 'nowrap', flexShrink: 0 }}>

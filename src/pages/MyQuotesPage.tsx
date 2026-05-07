@@ -149,8 +149,8 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
               borderRadius: 14, padding: 20
             }}>
               <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {q.spaces?.media_urls?.[0] && (
-                  <img src={q.spaces.media_urls[0]} alt={q.spaces?.name}
+                {(q.spaces?.media_urls?.[0] || q.suppliers?.media_urls?.[0]) && (
+                  <img src={q.spaces?.media_urls?.[0] || q.suppliers?.media_urls?.[0]} alt={q.spaces?.name || q.suppliers?.name}
                     style={{ width: 110, height: 85, objectFit: 'cover', borderRadius: 10, flexShrink: 0, cursor: 'pointer' }}
                     onClick={() => goToPage('listing')} />
                 )}
@@ -158,8 +158,13 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                     <div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>{q.spaces?.name || 'Espaço'}</h3>
-                      <div style={{ fontSize: 12, color: '#6b7280' }}>📍 {q.spaces?.city}, {q.spaces?.state} · {hoursAgo(q.created_at)}</div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
+                        {q.spaces?.name || q.suppliers?.name || 'Anúncio'}
+                        {q.suppliers && <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 400, marginLeft: 6 }}>Fornecedor</span>}
+                      </h3>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>
+                        {q.spaces ? `📍 ${q.spaces.city}, ${q.spaces.state}` : `🛠️ ${q.suppliers?.category}`} · {hoursAgo(q.created_at)}
+                      </div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 100, background: status.bg, color: status.color, whiteSpace: 'nowrap', flexShrink: 0 }}>
                       {status.label}
@@ -207,7 +212,7 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
                         </div>
                       )}
                       {/* Contatos do espaço após resposta */}
-                      {(q.spaces?.whatsapp || q.spaces?.instagram) && (
+                      {(q.spaces?.whatsapp || q.spaces?.instagram || q.suppliers?.whatsapp) && (
                         <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                           {q.spaces.whatsapp && (
                             <a href={`https://wa.me/55${q.spaces.whatsapp.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer"
@@ -341,7 +346,7 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
             <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
             <h2 style={{ fontSize: 28, fontWeight: 900, color: '#14532d', marginBottom: 10 }}>Evento agendado!</h2>
             <p style={{ fontSize: 15, color: '#166534', lineHeight: 1.7, marginBottom: 8 }}>
-              Você aceitou o orçamento de <strong>{celebrationQuote.spaces?.name}</strong>.
+              Você aceitou o orçamento de <strong>{celebrationQuote.spaces?.name || celebrationQuote.suppliers?.name}</strong>.
             </p>
             {celebrationQuote.proposed_price && (
               <div style={{ fontSize: 24, fontWeight: 900, color: '#16a34a', margin: '12px 0', padding: '12px', background: '#f0fdf4', borderRadius: 12 }}>
