@@ -25,7 +25,7 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
     setLoading(true)
     const { data } = await supabase
       .from('quotes')
-      .select(`*, spaces (id, name, city, state, category, media_urls, price_per_hour, price_per_day, host_id, capacity, min_hours, whatsapp, instagram, website, status, created_at, updated_at)`)
+      .select(`*, spaces (id, name, city, state, category, media_urls, price_per_hour, price_per_day, host_id, capacity, min_hours, whatsapp, instagram, website, status, created_at, updated_at), suppliers (id, name, category, state, cities, whatsapp, instagram, media_urls, owner_id)`)
       .eq('guest_id', user.id)
       .order('created_at', { ascending: false })
     if (data) setQuotes(data as any)
