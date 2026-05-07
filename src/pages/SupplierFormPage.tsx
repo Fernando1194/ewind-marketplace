@@ -338,7 +338,21 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             </div>
             <div className="fg">
               <label>💰 Faixa de preço (opcional)</label>
-              <input type="text" value={priceInfo} onChange={e => setPriceInfo(e.target.value)} placeholder="Ex: A partir de R$ 800 · Pacotes a partir de R$ 2.500" />
+              <input
+                type="text"
+                value={priceInfo}
+                onChange={e => setPriceInfo(e.target.value)}
+                onBlur={e => {
+                  const v = e.target.value.trim()
+                  if (v && !isNaN(Number(v.replace(/[^0-9.,]/g, ''))) && !v.toLowerCase().includes('r$')) {
+                    setPriceInfo(`R$ ${v}`)
+                  }
+                }}
+                placeholder="Ex: R$ 800/hora · A partir de R$ 2.500"
+              />
+              <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
+                💡 Dica: use "A partir de R$ 500" ou "R$ 800/hora" para facilitar a decisão do cliente
+              </p>
             </div>
           </>
         )}
