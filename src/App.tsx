@@ -234,15 +234,10 @@ function App() {
 
           {user ? (
             <>
-              {/* Meu painel — aparece para qualquer anunciante */}
-              {user && (userRole === 'host' || isHost) && (
-                <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
-                  🏢 Meu painel
-                </button>
-              )}
-              {user && (userRole === 'supplier' || isSupplier) && userRole !== 'host' && !isHost && (
-                <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>
-                  🛠️ Meu painel
+              {/* Meu painel */}
+              {user && userRole !== 'guest' && (
+                <button className="btn-primary" onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+                  {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
                 </button>
               )}
 
@@ -269,11 +264,10 @@ function App() {
         {user && userRole === 'guest' && !isHost && !isSupplier && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
-        {user && (userRole === 'host' || isHost) && (
-          <a onClick={() => goToPage('host-dashboard')}>🏢 Meu painel</a>
-        )}
-        {user && (userRole === 'supplier' || isSupplier) && userRole !== 'host' && !isHost && (
-          <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meu painel</a>
+        {user && userRole !== 'guest' && (
+          <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+            {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+          </a>
         )}
         {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
           <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
