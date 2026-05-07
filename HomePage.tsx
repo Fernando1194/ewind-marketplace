@@ -5,7 +5,9 @@ import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  goToPage: (page: Page, space?: Space) => void
+  goToPage: (page: Page, space?: Space | Supplier) => void
+  userRole?: string
+  user?: any
 }
 
 const HERO_IMAGES = [
@@ -29,7 +31,7 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
 ]
 
-export default function HomePage({ goToPage }: Props) {
+export default function HomePage({ goToPage, userRole = 'guest', user }: Props) {
   const [filterCity, setFilterCity] = useState('')
   const [filterGuests, setFilterGuests] = useState('')
   const [filterDate, setFilterDate] = useState('')
