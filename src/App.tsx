@@ -308,7 +308,7 @@ function App() {
 
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
-        {page === 'home' && <HomePage goToPage={goToPage} />}
+        {page === 'home' && <HomePage goToPage={goToPage} userRole={userRole} user={user} />}
         {page === 'listing' && (
           <ListingPage
             goToPage={goToPage}
@@ -342,10 +342,18 @@ function App() {
         {page === 'host-dashboard' && user && (
           <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
         )}
-        {page === 'new-space' && user && (
+        {page === 'new-space' && user && userRole !== 'supplier' && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
         )}
-        {page === 'edit-space' && user && editingSpace && (
+        {page === 'new-space' && user && userRole === 'supplier' && (
+          <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🛠️</div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Seu perfil é de fornecedor</h2>
+            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Para anunciar espaços, você precisa de um perfil de locatário.</p>
+            <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>Voltar ao meu painel</button>
+          </div>
+        )}
+        {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
         )}
         {page === 'my-quotes' && user && (
