@@ -6,6 +6,7 @@ import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page, supplier?: Supplier) => void
+  user?: any
 }
 
 const STATES = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
@@ -45,7 +46,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
   )
 })
 
-export default function SuppliersPage({ goToPage }: Props) {
+export default function SuppliersPage({ goToPage, user }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -222,7 +223,7 @@ export default function SuppliersPage({ goToPage }: Props) {
                 </span>
               )}
             </span>
-            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage('supplier-signup')}>
+            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage(user ? 'new-supplier' : 'supplier-signup')}>
               + Anunciar serviço
             </button>
           </div>
