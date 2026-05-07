@@ -1,140 +1,299 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react'
 import { supabase } from '../supabase'
+import { SUPPLIER_CATEGORIES, EVENT_TYPES } from '../types'
+import type { Supplier } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  goToPage: (page: Page) => void
+  goToPage: (page: Page, supplier?: Supplier) => void
+  user?: any
 }
 
-export default function SupplierLoginPage({ goToPage }: Props) {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+const STATES = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
+const PAGE_SIZE = 9
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) throw error
-      goToPage('supplier-dashboard')
-    } catch (err: any) {
-      setError(err.message === 'Invalid login credentials'
-        ? 'Email ou senha incorretos'
-        : (err.message || 'Erro ao entrar'))
-    } finally {
-      setLoading(false)
-    }
-  }
+// Cache em memória
+const cache: { suppliers: Supplier[] | null; ts: number } = { suppliers: null, ts: 0 }
+const CACHE_TTL = 60_000
 
+const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick: () => void }) => {
+  const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
   return (
-    <div style={{ minHeight: 'calc(100vh - 64px)', background: '#f9fafb', display: 'flex' }}>
-
-      {/* Lado esquerdo — visual */}
-      <div style={{
-        width: '42%', background: 'linear-gradient(160deg, #1a1a1a 0%, #2d2d2d 100%)',
-        padding: '60px 48px', display: 'flex', flexDirection: 'column', justifyContent: 'center'
-      }} className="supplier-side">
-        <div className="logo-box" style={{ display: 'inline-block', marginBottom: 28 }}>EWIND</div>
-        <h2 style={{ fontSize: 30, fontWeight: 800, color: '#a3e635', lineHeight: 1.2, marginBottom: 16 }}>
-          Bem-vindo de volta, profissional!
-        </h2>
-        <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, marginBottom: 36 }}>
-          Acesse seu painel, gerencie seus serviços e veja os clientes que entraram em contato.
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {[
-            { icon: '📊', text: 'Painel com seus serviços ativos' },
-            { icon: '✏️', text: 'Editar e atualizar portfólio' },
-            { icon: '⏸', text: 'Pausar quando precisar' },
-            { icon: '🆓', text: 'Sempre gratuito' }
-          ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ fontSize: 20 }}>{item.icon}</div>
-              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)' }}>{item.text}</div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: 40, paddingTop: 28, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 8 }}>Ainda não tem conta?</div>
-          <button
-            onClick={() => goToPage('supplier-signup')}
-            style={{
-              padding: '10px 20px', fontSize: 14, fontWeight: 600,
-              background: 'transparent', border: '1.5px solid rgba(163,230,53,0.5)',
-              borderRadius: 8, color: '#a3e635', cursor: 'pointer', fontFamily: 'inherit'
-            }}
-          >
-            Criar conta gratuita →
-          </button>
+    <div className="card" onClick={onClick} style={{ cursor: 'pointer' }}>
+      <div style={{ position: 'relative' }}>
+        <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={supplier.name}
+          loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
+        <div style={{ position: 'absolute', top: 10, left: 10, background: cat?.bg || '#f0fdf4', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+          {cat?.icon} {supplier.category}
         </div>
       </div>
-
-      {/* Lado direito — formulário */}
-      <div style={{ flex: 1, padding: '48px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <div style={{ maxWidth: 400 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Entrar na área do fornecedor</h1>
-          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 32 }}>
-            Acesse seu painel de serviços.
-          </p>
-
-          <form onSubmit={handleLogin}>
-            <div className="fg">
-              <label>Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="contato@email.com"
-                autoFocus
-              />
-            </div>
-            <div className="fg">
-              <label>Senha</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Sua senha"
-              />
-            </div>
-
-            {error && <div className="auth-error">⚠️ {error}</div>}
-
-            <button
-              type="submit"
-              className="btn-primary"
-              style={{ width: '100%', padding: 14, marginTop: 10, fontSize: 15 }}
-              disabled={loading}
-            >
-              {loading ? 'Entrando...' : '🛠️ Entrar no painel'}
-            </button>
-          </form>
-
-          <div style={{ marginTop: 20, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-            Não tem conta ainda?{' '}
-            <a onClick={() => goToPage('supplier-signup')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>
-              Cadastrar gratuitamente →
-            </a>
-          </div>
-          <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-            <a onClick={() => goToPage('login')} style={{ color: '#9ca3af', cursor: 'pointer' }}>
-              Login como host ou guest →
-            </a>
-          </div>
-          <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-            <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>
-              ← Voltar para a home
-            </a>
-          </div>
+      <div className="card-body">
+        <div className="card-name">{supplier.name}</div>
+        {supplier.subcategory && (
+          <div style={{ fontSize: 12, color: '#5aa800', fontWeight: 600, marginBottom: 4 }}>{supplier.subcategory}</div>
+        )}
+        <div className="card-loc">
+          📍 {supplier.cities.slice(0, 2).join(', ')}{supplier.cities.length > 2 ? ` +${supplier.cities.length - 2}` : ''}, {supplier.state}
+        </div>
+        {supplier.price_info && (
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>💰 {supplier.price_info}</div>
+        )}
+        <div className="card-tags" style={{ marginTop: 8 }}>
+          {supplier.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
         </div>
       </div>
     </div>
+  )
+})
+
+export default function SuppliersPage({ goToPage, user }: Props) {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const [filterCity, setFilterCity] = useState('')
+  const [filterState, setFilterState] = useState('')
+  const [filterCategories, setFilterCategories] = useState<string[]>([])
+  const [filterDate, setFilterDate] = useState('')
+  const [filterEventTypes, setFilterEventTypes] = useState<string[]>([])
+
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      if (cache.suppliers && Date.now() - cache.ts < CACHE_TTL) {
+        setSuppliers(cache.suppliers)
+        setLoading(false)
+        return
+      }
+
+      abortRef.current?.abort()
+      abortRef.current = new AbortController()
+      setLoading(true)
+
+      const { data } = await supabase
+        .from('suppliers')
+        .select('id, owner_id, name, description, category, subcategory, cities, state, neighborhood, price_info, media_urls, event_types, attributes, whatsapp, instagram, email, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+
+      if (data) {
+        cache.suppliers = data
+        cache.ts = Date.now()
+        setSuppliers(data)
+      }
+      setLoading(false)
+    }
+    load()
+    return () => abortRef.current?.abort()
+  }, [])
+
+  useEffect(() => { setCurrentPage(1) }, [filterCity, filterState, filterCategories, filterEventTypes, filterDate])
+
+  const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) =>
+    set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
+
+  const clearFilters = useCallback(() => {
+    setFilterCity(''); setFilterState('')
+    setFilterCategories([]); setFilterEventTypes([])
+  }, [])
+
+  const activeFiltersCount = [filterCity, filterState, ...filterCategories, ...filterEventTypes, filterDate].filter(Boolean).length
+
+  const filtered = useMemo(() => suppliers.filter(s => {
+    if (filterCity && !s.cities.some(c => c.toLowerCase().includes(filterCity.toLowerCase()))) return false
+    if (filterState && s.state !== filterState) return false
+    if (filterCategories.length > 0 && !filterCategories.includes(s.category)) return false
+    if (filterEventTypes.length > 0 && !filterEventTypes.some(t => s.event_types.includes(t))) return false
+    return true
+  }), [suppliers, filterCity, filterState, filterCategories, filterEventTypes])
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = useMemo(() => filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE), [filtered, currentPage])
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+
+  return (
+    <>
+      <div className="mini-search">
+        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+        <select value={filterState} onChange={e => setFilterState(e.target.value)}
+          style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+          <option value="">Estado</option>
+          {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <button className="btn-primary" onClick={clearFilters}>Buscar</button>
+      </div>
+
+      <div className="listing-wrap">
+        <aside className="filters-sidebar">
+          <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
+            <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
+            <span>{filtersOpen ? '▲' : '▼'}</span>
+          </button>
+          <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
+          <div className="sf-group">
+            <div className="sf-group-title">Localização</div>
+            <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.06em', display: 'block', marginBottom: 4 }}>📅 Data do evento</label>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={e => setFilterDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+              style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', marginBottom: 4 }}
+            />
+            {filterDate && <p style={{ fontSize: 11, color: '#5aa800', marginBottom: 8 }}>✓ Mostrando disponíveis em {new Date(filterDate + 'T12:00:00').toLocaleDateString('pt-BR')}</p>}
+            <select value={filterState} onChange={e => setFilterState(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+              <option value="">Todos os estados</option>
+              {STATES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+
+          <div className="sf-group">
+            <div className="sf-group-title">Categoria</div>
+            {SUPPLIER_CATEGORIES.map(c => (
+              <label key={c.name} style={{
+                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, cursor: 'pointer',
+                fontSize: 13, padding: '5px 8px', borderRadius: 8,
+                color: filterCategories.includes(c.name) ? '#1a2e05' : '#6b7280',
+                fontWeight: filterCategories.includes(c.name) ? 600 : 400,
+                background: filterCategories.includes(c.name) ? '#f0fdf4' : 'transparent',
+                border: `1px solid ${filterCategories.includes(c.name) ? '#a3e635' : 'transparent'}`,
+                transition: 'all 0.15s'
+              }}>
+                <input type="checkbox" checked={filterCategories.includes(c.name)}
+                  onChange={() => toggleArr(filterCategories, c.name, setFilterCategories)}
+                  style={{ accentColor: '#a3e635', width: 14, height: 14, flexShrink: 0 }} />
+                <span style={{ fontSize: 15, flexShrink: 0 }}>{c.icon}</span>
+                <span style={{ lineHeight: 1.3 }}>{c.name}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className="sf-group">
+            <div className="sf-group-title">Tipo de evento</div>
+            {EVENT_TYPES.map(t => (
+              <label key={t} className="chk-row">
+                <input type="checkbox" checked={filterEventTypes.includes(t)}
+                  onChange={() => toggleArr(filterEventTypes, t, setFilterEventTypes)} />
+                <span>{t}</span>
+              </label>
+            ))}
+          </div>
+
+          {activeFiltersCount > 0 && (
+            <div className="sf-group">
+              <div className="sf-group-title">Filtros ativos</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {filterCategories.map(cat => {
+                  const c = SUPPLIER_CATEGORIES.find(x => x.name === cat)
+                  return (
+                    <button key={cat} onClick={() => toggleArr(filterCategories, cat, setFilterCategories)}
+                      style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', background: '#a3e635', border: 'none', borderRadius: 100, cursor: 'pointer', color: '#1a2e05', fontFamily: 'inherit' }}>
+                      {c?.icon} {cat} ×
+                    </button>
+                  )
+                })}
+                {filterEventTypes.map(t => (
+                  <button key={t} onClick={() => toggleArr(filterEventTypes, t, setFilterEventTypes)}
+                    style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 100, cursor: 'pointer', color: '#1a2e05', fontFamily: 'inherit' }}>
+                    🎉 {t} ×
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
+            Limpar filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+          </button>
+          </div>
+        </aside>
+
+        <main className="results-area">
+          <div className="results-bar">
+            <span>
+              <strong>{filtered.length} fornecedores</strong> encontrados
+              {filtered.length > PAGE_SIZE && (
+                <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>
+                  · página {currentPage} de {totalPages}
+                </span>
+              )}
+            </span>
+            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage('supplier-signup')}>
+              + Anunciar serviço
+            </button>
+          </div>
+
+          {loading && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {[1,2,3,4].map(i => (
+                <div key={i} style={{ height: 260, borderRadius: 14, background: 'linear-gradient(90deg, #f3f4f6 25%, #e8e8e8 50%, #f3f4f6 75%)', backgroundSize: '200% 100%' }} />
+              ))}
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && (
+            <div style={{ textAlign: 'center', padding: 48, background: '#f9fafb', borderRadius: 14 }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
+                {activeFiltersCount > 0 ? 'Nenhum fornecedor encontrado' : 'Seja o primeiro a anunciar!'}
+              </h3>
+              <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
+                {activeFiltersCount > 0 ? 'Tente ajustar os filtros.' : 'Cadastre seus serviços e apareça para quem organiza eventos.'}
+              </p>
+              {activeFiltersCount > 0
+                ? <button className="btn-primary" onClick={clearFilters}>Limpar filtros</button>
+                : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'supplier-signup')}>+ Anunciar meu serviço</button>
+              }
+            </div>
+          )}
+
+          <div className="cards-2col">
+            {paginated.map(s => (
+              <SupplierCard key={s.id} supplier={s} onClick={() => goToPage('supplier-detail', s)} />
+            ))}
+          </div>
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 32, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
+              <button onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); scrollToTop() }}
+                disabled={currentPage === 1}
+                style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}>
+                ← Anterior
+              </button>
+
+              <div style={{ display: 'flex', gap: 4 }}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .reduce((acc: (number | string)[], p, i, arr) => {
+                    if (i > 0 && (p as number) - (arr[i - 1] as number) > 1) acc.push('...')
+                    acc.push(p)
+                    return acc
+                  }, [])
+                  .map((p, i) => p === '...' ? (
+                    <span key={`d${i}`} style={{ padding: '8px 4px', fontSize: 13, color: '#9ca3af' }}>…</span>
+                  ) : (
+                    <button key={p} onClick={() => { setCurrentPage(p as number); scrollToTop() }}
+                      style={{ width: 36, height: 36, fontSize: 13, fontWeight: 600, border: '1.5px solid', borderColor: currentPage === p ? '#a3e635' : '#e8e8e8', borderRadius: 8, background: currentPage === p ? '#f0fdf4' : '#fff', color: currentPage === p ? '#1a2e05' : '#2d2d2d', cursor: 'pointer' }}>
+                      {p}
+                    </button>
+                  ))}
+              </div>
+
+              <button onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); scrollToTop() }}
+                disabled={currentPage === totalPages}
+                style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}>
+                Próxima →
+              </button>
+            </div>
+          )}
+        </main>
+      </div>
+    </>
   )
 }
