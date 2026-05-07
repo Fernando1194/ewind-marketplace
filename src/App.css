@@ -628,20 +628,23 @@
 /* LOGO IMAGEM */
 .logo-img {
   height: 38px;
-  width: auto;
+  width: auto !important;
   display: block;
   cursor: pointer;
+  object-fit: contain;
 }
 .logo-img-sm {
   height: 28px;
-  width: auto;
+  width: auto !important;
   display: block;
+  object-fit: contain;
 }
 .logo-img-md {
   height: 48px;
-  width: auto;
+  width: auto !important;
   display: block;
   margin-bottom: 8px;
+  object-fit: contain;
 }
 
 /* Remove fundo verde do nav-logo agora que usamos imagem */
@@ -820,7 +823,7 @@
 @media (max-width: 480px) {
   /* EXTRA SMALL */
   .cat-grid { grid-template-columns: repeat(3, 1fr) !important; }
-  .nav-logo img { height: 28px !important; }
+  .nav-logo img { height: 28px !important; width: auto !important; }
   section h1 { font-size: 24px !important; }
   section h2 { font-size: 20px !important; }
   .auth-card { margin: 8px !important; }

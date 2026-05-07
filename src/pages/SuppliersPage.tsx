@@ -246,7 +246,7 @@ export default function SuppliersPage({ goToPage }: Props) {
               </p>
               {activeFiltersCount > 0
                 ? <button className="btn-primary" onClick={clearFilters}>Limpar filtros</button>
-                : <button className="btn-primary" onClick={() => goToPage('supplier-signup')}>+ Anunciar meu serviço</button>
+                : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'supplier-signup')}>+ Anunciar meu serviço</button>
               }
             </div>
           )}

@@ -235,12 +235,17 @@ function App() {
           {user ? (
             <>
               {/* Botão de painel por role */}
-              {userRole === 'host' && (
+              {(isHost || userRole === 'host') && !(isSupplier || userRole === 'supplier') && (
                 <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
                   🏢 Meu painel
                 </button>
               )}
-              {userRole === 'supplier' && (
+              {(isHost || userRole === 'host') && (isSupplier || userRole === 'supplier') && (
+                <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
+                  🏢 Espaços
+                </button>
+              )}
+              {(isSupplier || userRole === 'supplier') && (
                 <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>
                   🛠️ Meus serviços
                 </button>
