@@ -72,8 +72,8 @@ function App() {
       setUserRole(role)
       setIsHost(isH)
       setIsSupplier(isS)
-      // Badge de orçamentos só para guest e host
-      if (data.role === 'host') {
+      // Badge de orçamentos pendentes
+      if (isH || isS) {
         const { count } = await supabase
           .from('quotes')
           .select('*', { count: 'exact', head: true })
@@ -183,13 +183,7 @@ function App() {
               {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
             </a>
           )}
-          {user && (userRole === 'host' || isHost) && (
-            <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-              Orçamentos
-              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-            </a>
-          )}
-          {user && (userRole === 'supplier' || isSupplier) && !(userRole === 'host' || isHost) && (
+          {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
             <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
               Orçamentos
               {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
@@ -240,17 +234,13 @@ function App() {
 
           {user ? (
             <>
-              {/* Botão de painel por role */}
-              {(isHost || userRole === 'host') && !(isSupplier || userRole === 'supplier') && (
+              {/* Meu painel — host */}
+              {(isHost || userRole === 'host') && (
                 <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
                   🏢 Meu painel
                 </button>
               )}
-              {(isHost || userRole === 'host') && (isSupplier || userRole === 'supplier') && (
-                <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
-                  🏢 Espaços
-                </button>
-              )}
+              {/* Meu painel — supplier (só se não for host também) */}
               {(isSupplier || userRole === 'supplier') && !(isHost || userRole === 'host') && (
                 <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>
                   🛠️ Meu painel
@@ -277,14 +267,20 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {user && userRole === 'guest' && (
+        {user && userRole === 'guest' && !isHost && !isSupplier && (
           <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
         {user && (isHost || userRole === 'host') && (
-          <a onClick={() => goToPage('host-dashboard')}>🏢 Meus espaços</a>
+          <a onClick={() => goToPage('host-dashboard')}>🏢 Meu painel</a>
         )}
-        {user && (isSupplier || userRole === 'supplier') && (
+        {user && (isSupplier || userRole === 'supplier') && !(isHost || userRole === 'host') && (
           <a onClick={() => goToPage('supplier-dashboard')}>🛠️ Meu painel</a>
+        )}
+        {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
+          <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
+            📋 Orçamentos recebidos
+            {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
+          </a>
         )}
         <div className="mobile-auth">
           {!user ? (
@@ -316,7 +312,7 @@ function App() {
         )}
         {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} />}
         {page === 'supplier-detail' && selectedSupplier && (
-          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} />
+          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} user={user} />
         )}
         {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
         {page === 'about' && <AboutPage goToPage={goToPage} />}
