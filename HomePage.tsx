@@ -1,626 +1,335 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
+import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '../supabase'
+import { CATEGORIES } from '../types'
+import type { Space } from '../types'
+import type { Page } from '../App'
 
-:root {
-  --green: #a3e635;
-  --green-dark: #5aa800;
-  --text: #2d2d2d;
-  --text-muted: #6b6b6b;
-  --border: #e8e8e8;
-  --white: #ffffff;
-}
-
-.app {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--text);
-  background: var(--white);
-  min-height: 100vh;
+interface Props {
+  goToPage: (page: Page, space?: Space) => void
 }
 
-/* NAV */
-.nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
-  height: 64px;
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.nav-logo { cursor: pointer; }
-.logo-box {
-  background: var(--green);
-  color: #1a2e05;
-  font-weight: 800;
-  font-size: 18px;
-  padding: 6px 14px;
-  border-radius: 8px;
-  letter-spacing: 1px;
-}
-.logo-box-sm {
-  background: var(--green);
-  color: #1a2e05;
-  font-weight: 800;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  letter-spacing: 1px;
-  display: inline-block;
-}
-.nav-center { display: flex; gap: 28px; align-items: center; }
-.nav-center a {
-  font-size: 14px;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-weight: 500;
-}
-.nav-center a:hover { color: var(--text); }
-.nav-right { display: flex; gap: 12px; align-items: center; }
-.user-greeting { font-size: 13px; color: var(--text-muted); }
+const HERO_IMAGES = [
+  // Casal dançando no casamento — momento mágico
+  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1600&h=800&fit=crop&q=90',
+  // Noiva com buquê — sorriso e emoção
+  'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1600&h=800&fit=crop&q=90',
+  // Mesa de casamento decorada com flores e velas
+  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&h=800&fit=crop&q=90',
+  // Festa de aniversário com confetes e celebração
+  'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1600&h=800&fit=crop&q=90',
+  // Fotógrafo capturando o momento perfeito
+  'https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1600&h=800&fit=crop&q=90',
+  // Maquiagem artística — making of da noiva
+  'https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=1600&h=800&fit=crop&q=90',
+  // Festa com luzes, música e alegria
+  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=800&fit=crop&q=90',
+  // Convidados brindando e celebrando
+  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&h=800&fit=crop&q=90',
+  // Bolo de casamento decorado com flores
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
+]
 
-.btn-link {
-  background: none;
-  border: none;
-  font-size: 14px;
-  color: var(--text);
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-}
-.btn-primary {
-  background: var(--green);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a2e05;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.2s;
-}
-.btn-primary:hover { background: var(--green-dark); color: var(--white); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+export default function HomePage({ goToPage }: Props) {
+  const [filterCity, setFilterCity] = useState('')
+  const [filterGuests, setFilterGuests] = useState('')
+  const [filterDate, setFilterDate] = useState('')
+  const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
+  const [featuredSuppliers, setFeaturedSuppliers] = useState<any[]>([])
+  const [heroImages] = useState<string[]>(HERO_IMAGES)
+  const [currentHero, setCurrentHero] = useState(0)
+  const [fadeIn, setFadeIn] = useState(true)
 
-/* HERO */
-.hero {
-  position: relative;
-  min-height: 480px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  overflow: hidden;
-}
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-}
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 1;
-}
-.hero-content {
-  position: relative;
-  z-index: 2;
-  padding: 48px 24px;
-  width: 100%;
-}
-.hero h1 {
-  font-size: 48px;
-  font-weight: 800;
-  color: var(--white);
-  line-height: 1.1;
-  margin-bottom: 14px;
-  max-width: 760px;
-  margin-left: auto;
-  margin-right: auto;
-}
-.hero h1 span { color: var(--green); }
-.hero p {
-  font-size: 16px;
-  color: rgba(255,255,255,0.92);
-  max-width: 540px;
-  margin: 0 auto 32px;
-  line-height: 1.6;
-}
+  useEffect(() => { loadData() }, [])
 
-/* SEARCH */
-.search-pill {
-  background: var(--white);
-  border-radius: 16px;
-  display: flex;
-  align-items: stretch;
-  max-width: 720px;
-  margin: 0 auto;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-  overflow: hidden;
-}
-.sf {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 12px 18px;
-  border-right: 1px solid var(--border);
-  min-width: 0;
-  text-align: left;
-}
-.sf:last-of-type { border-right: none; }
-.sf-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 4px;
-  text-transform: uppercase;
-}
-.sf input {
-  border: none;
-  outline: none;
-  font-size: 14px;
-  color: var(--text-muted);
-  background: transparent;
-  width: 100%;
-  font-family: inherit;
-}
-.search-btn {
-  background: var(--green);
-  border: none;
-  width: 60px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.search-btn:hover { background: var(--green-dark); }
-.search-btn svg { width: 22px; height: 22px; }
-
-/* SECTION */
-.section {
-  padding: 48px 28px;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-.sec-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 24px;
-}
-
-/* CATEGORIES */
-.cat-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-}
-.cat-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 24px 16px;
-  border-radius: 14px;
-  border: 1.5px solid var(--border);
-  cursor: pointer;
-  background: var(--white);
-  transition: all 0.2s;
-}
-.cat-card:hover {
-  border-color: var(--green);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(163,230,53,0.15);
-}
-.cat-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-}
-.cat-name {
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-}
-
-/* CARDS */
-.cards-3col {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-.cards-2col {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-.card {
-  background: var(--white);
-  border-radius: 14px;
-  border: 1.5px solid var(--border);
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.card:hover {
-  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
-}
-.card img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-  display: block;
-}
-.card-body { padding: 14px 16px; }
-.card-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-.card-loc { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
-.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.tag {
-  font-size: 11px;
-  background: #f0fdf4;
-  color: #2d7a2d;
-  border-radius: 100px;
-  padding: 3px 10px;
-  font-weight: 500;
-}
-.card-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.card-price { font-size: 15px; font-weight: 700; color: var(--green-dark); }
-.card-cap { font-size: 12px; color: var(--text-muted); }
-
-/* CTA HOST */
-.cta-host {
-  background: #1a1a1a;
-  border-radius: 16px;
-  padding: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.cta-title { font-size: 22px; font-weight: 800; color: var(--green); margin-bottom: 8px; }
-.cta-desc { font-size: 14px; color: #aaa; max-width: 380px; line-height: 1.6; }
-
-/* FOOTER */
-.footer {
-  padding: 24px 28px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 1280px;
-  margin: 0 auto;
-  font-size: 12px;
-  color: #999;
-}
-
-/* MINI SEARCH */
-.mini-search {
-  padding: 16px 28px;
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.mini-search input,
-.mini-search select {
-  padding: 10px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: inherit;
-  background: var(--white);
-}
-.mini-search input { width: 160px; }
-
-/* LISTING */
-.listing-wrap {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-.filters-sidebar {
-  padding: 24px 20px;
-  border-right: 1px solid var(--border);
-  background: var(--white);
-}
-.sf-group { margin-bottom: 24px; }
-.sf-group-title {
-  font-size: 11px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.filters-sidebar input,
-.filters-sidebar select {
-  width: 100%;
-  padding: 9px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
-  font-family: inherit;
-  background: var(--white);
-}
-.chk-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-.chk-row input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--green);
-  cursor: pointer;
-}
-.results-area {
-  padding: 24px;
-  background: var(--white);
-}
-.results-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
-.results-bar span { font-size: 14px; color: var(--text-muted); }
-.results-bar strong { color: var(--text); }
-
-/* DETAIL */
-.back-bar {
-  padding: 16px 28px;
-  border-bottom: 1px solid var(--border);
-  background: var(--white);
-}
-.back-bar a {
-  color: var(--green-dark);
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-}
-.det-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 32px;
-  padding: 28px;
-  max-width: 1280px;
-  margin: 0 auto;
-}
-.det-main-img {
-  width: 100%;
-  height: 320px;
-  object-fit: cover;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  display: block;
-}
-.det-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
-.det-loc { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; }
-.det-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 20px;
-}
-.stat-item {
-  background: #f5f5f5;
-  border-radius: 10px;
-  padding: 14px;
-  text-align: center;
-}
-.stat-val { font-size: 18px; font-weight: 700; }
-.stat-lab { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.attrs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.attr {
-  background: #f9ffe6;
-  border: 1px solid #d9f99d;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 12px;
-  color: #1a5a05;
-  font-weight: 500;
-}
-.quote-box {
-  background: var(--white);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
-  padding: 24px;
-  position: sticky;
-  top: 80px;
-}
-.qb-price { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
-.qb-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
-.qb-sec {
-  margin-top: 14px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 1.5;
-}
-
-/* AUTH */
-.auth-wrap {
-  min-height: calc(100vh - 64px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-  background: #f9fafb;
-}
-.auth-card {
-  background: var(--white);
-  border-radius: 16px;
-  padding: 40px;
-  width: 100%;
-  max-width: 440px;
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-}
-.auth-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
-.auth-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 28px; }
-.fg { margin-bottom: 16px; }
-.fg label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-.fg input {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 8px;
-  font-size: 14px;
-  font-family: inherit;
-  background: var(--white);
-  outline: none;
-}
-.fg input:focus { border-color: var(--green); }
-.role-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.role-btn {
-  padding: 12px 8px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  background: var(--white);
-  color: var(--text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-}
-.role-btn:hover { border-color: var(--green); }
-.role-btn.on {
-  background: var(--green);
-  border-color: var(--green-dark);
-  color: #1a2e05;
-  font-weight: 600;
-}
-.chip-btn {
-  padding: 6px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 100px;
-  background: var(--white);
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-}
-.chip-btn:hover { border-color: var(--green); }
-.chip-btn.on {
-  background: var(--green);
-  border-color: var(--green-dark);
-  color: #1a2e05;
-  font-weight: 600;
-}
-.auth-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin: 12px 0;
-}
-.auth-success {
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin: 12px 0;
-}
-.auth-switch {
-  text-align: center;
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-  font-size: 14px;
-  color: var(--text-muted);
-}
-.auth-switch a {
-  color: var(--green-dark);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* HOST DASHBOARD */
-.stat-card {
-  background: var(--white);
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-}
-.stat-num { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
-.stat-lab2 { font-size: 12px; color: var(--text-muted); }
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .hero h1 { font-size: 32px; }
-  .nav-center { display: none; }
-  .cat-grid { grid-template-columns: repeat(2, 1fr); }
-  .cards-3col, .cards-2col { grid-template-columns: 1fr; }
-  .listing-wrap { grid-template-columns: 1fr; }
-  .filters-sidebar { border-right: none; border-bottom: 1px solid var(--border); }
-  .det-layout { grid-template-columns: 1fr; }
-  .search-pill { flex-direction: column; }
-  .sf { border-right: none; border-bottom: 1px solid var(--border); }
-  .search-btn { width: 100%; padding: 14px; }
-  .user-greeting { display: none; }
-}
-
-/* BADGE COUNT (notificações no nav) */
-.badge-count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #ef4444;
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 100px;
-  margin-left: 4px;
-}
-
-/* SUPPLIER AUTH PAGES */
-@media (max-width: 768px) {
-  .supplier-side {
-    display: none !important;
+  const loadData = async () => {
+    const [{ data: spacesData }, { data: suppData }] = await Promise.all([
+      supabase
+        .from('spaces')
+        .select('id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, event_types, host_id, min_hours, address, description, attributes, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(6),
+      supabase
+        .from('suppliers')
+        .select('id, owner_id, name, category, subcategory, state, cities, neighborhood, media_urls, price_info, description, attributes, event_types, whatsapp, email, instagram, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(6)
+    ])
+    if (spacesData && spacesData.length > 0) setFeaturedSpaces(spacesData)
+    if (suppData && suppData.length > 0) setFeaturedSuppliers(suppData)
   }
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return
+    const interval = setInterval(() => {
+      setFadeIn(false)
+      setTimeout(() => { setCurrentHero(i => (i + 1) % heroImages.length); setFadeIn(true) }, 600)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [heroImages])
+
+  const goToImage = useCallback((i: number) => {
+    setFadeIn(false)
+    setTimeout(() => { setCurrentHero(i); setFadeIn(true) }, 300)
+  }, [])
+
+  return (
+    <>
+      {/* HERO */}
+      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', maxWidth: '100vw' }}>
+        {heroImages.map((img, i) => (
+          <div key={img} style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center',
+            opacity: i === currentHero ? (fadeIn ? 1 : 0) : 0,
+            transition: 'opacity 0.8s ease-in-out', zIndex: i === currentHero ? 1 : 0
+          }} />
+        ))}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.65) 100%)' }} />
+
+        <div style={{ position: 'relative', zIndex: 3, padding: '60px 24px', width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            O marketplace de eventos do Brasil
+          </div>
+          <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 780, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
+            Seu evento merece o{' '}
+            <span style={{ color: '#a3e635' }}>espaço perfeito</span>
+          </h1>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
+            Compare chácaras, salões, hotéis, restaurantes e muito mais. Solicite orçamentos diretamente com os anunciantes — grátis e sem compromisso.
+          </p>
+
+          <div className="search-pill">
+            <div className="sf">
+              <div className="sf-label">Onde</div>
+              <input placeholder="Cidade ou região" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+            </div>
+            <div className="sf">
+              <div className="sf-label">Data do evento</div>
+              <input
+                type="date"
+                value={filterDate}
+                onChange={e => setFilterDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                style={{ colorScheme: 'light' }}
+              />
+            </div>
+            <div className="sf">
+              <div className="sf-label">Convidados</div>
+              <input type="number" placeholder="Quantidade" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
+            </div>
+            <button className="search-btn" onClick={() => goToPage('listing')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+          </div>
+
+          {heroImages.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
+              {heroImages.map((_, i) => (
+                <button key={i} onClick={() => goToImage(i)} style={{
+                  width: i === currentHero ? 24 : 8, height: 8, borderRadius: 100,
+                  background: i === currentHero ? '#a3e635' : 'rgba(255,255,255,0.5)',
+                  border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s', flexShrink: 0
+                }} />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {heroImages.length > 1 && (
+          <>
+            <button onClick={() => goToImage((currentHero - 1 + heroImages.length) % heroImages.length)}
+className="hero-arrow hero-arrow-left"
+              style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+            <button onClick={() => goToImage((currentHero + 1) % heroImages.length)}
+className="hero-arrow hero-arrow-right"
+              style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+          </>
+        )}
+      </section>
+
+      {/* PROPOSTA DE VALOR */}
+      <section style={{ background: '#f9fafb', padding: '32px 24px', borderBottom: '1px solid #e8e8e8' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
+          {[
+            { icon: '🔍', title: 'Compare opções', desc: 'Veja vários espaços lado a lado antes de decidir' },
+            { icon: '💬', title: 'Orçamento direto', desc: 'Fale diretamente com o anunciante, sem intermediários' },
+            { icon: '💸', title: 'Grátis para quem busca', desc: 'Nenhuma taxa para quem organiza eventos' },
+            { icon: '⚡', title: 'Resposta rápida', desc: 'Anunciantes respondem em até 24 horas' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 3 }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5 }}>{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CATEGORIAS */}
+      <section className="section">
+        <h2 className="sec-title">Explore por categoria</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
+          {CATEGORIES.map(c => (
+            <div key={c.name} onClick={() => goToPage('listing')}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 8px', borderRadius: 12, border: '1.5px solid #e8e8e8', cursor: 'pointer', background: '#fff', transition: 'all 0.2s', textAlign: 'center' }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#a3e635'; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 4px 12px rgba(163,230,53,0.15)' }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#e8e8e8'; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none' }}
+            >
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{c.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#2d2d2d', lineHeight: 1.3 }}>{c.name}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ESPAÇOS EM DESTAQUE */}
+      {featuredSpaces.length > 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>Espaços em destaque</h2>
+            <button onClick={() => goToPage('listing')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Ver todos →
+            </button>
+          </div>
+          <div className="cards-3col">
+            {featuredSpaces.slice(0, 3).map(s => (
+              <div key={s.id} className="card" onClick={() => goToPage('detail', s)}>
+                <img src={s.media_urls[0] || 'https://via.placeholder.com/400x220?text=Sem+foto'} alt={s.name} loading="lazy" />
+                <div className="card-body">
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">📍 {s.city}, {s.state}</div>
+                  <div className="card-tags">
+                    {s.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+                  </div>
+                  <div className="card-foot">
+                    <span className="card-price">{s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}</span>
+                    <span className="card-cap">👥 até {s.capacity}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {featuredSpaces.length === 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '48px 40px', textAlign: 'center', border: '1px solid #d9f99d' }}>
+            <div style={{ fontSize: 42, marginBottom: 14 }}>🎪</div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros anunciantes!</h3>
+            <p style={{ fontSize: 14, color: '#365314', marginBottom: 20, lineHeight: 1.6, maxWidth: 460, margin: '0 auto 20px' }}>
+              Estamos recebendo os primeiros cadastros de espaços. Garanta visibilidade desde o início e comece a receber orçamentos.
+            </p>
+            <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage(userRole === 'supplier' ? 'new-supplier' : 'signup')}>
+              {userRole === 'supplier' ? 'Cadastrar meu serviço' : 'Cadastrar meu espaço gratuitamente'}
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* FORNECEDORES EM DESTAQUE */}
+      {featuredSuppliers.length > 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>Fornecedores em destaque</h2>
+            <button onClick={() => goToPage('suppliers')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Ver todos →
+            </button>
+          </div>
+          <div className="cards-3col">
+            {featuredSuppliers.slice(0, 3).map(s => (
+              <div key={s.id} className="card" onClick={() => goToPage('supplier-detail', s)}>
+                {s.media_urls?.[0]
+                  ? <img src={s.media_urls[0]} alt={s.name} loading="lazy" />
+                  : <div style={{ height: 180, background: 'linear-gradient(135deg, #f0fdf4, #ecfccb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🛠️</div>
+                }
+                <div className="card-body">
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">📍 {s.cities?.[0] || s.state} · {s.category}</div>
+                  <div className="card-tags">
+                    <span className="tag">🛠️ Fornecedor</span>
+                    {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
+                  </div>
+                  <div className="card-foot">
+                    <span className="card-price">{s.price_info
+                      ? (isNaN(Number(s.price_info.replace(/[^0-9.,]/g, ''))) || !s.price_info.trim()
+                          ? s.price_info
+                          : s.price_info.toLowerCase().includes('r$')
+                            ? s.price_info
+                            : `R$ ${s.price_info}`)
+                      : 'Consultar valor'}</span>
+                    <span className="card-cap">Ver perfil →</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {featuredSuppliers.length === 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '40px 36px', textAlign: 'center', border: '1px solid #d9f99d' }}>
+            <div style={{ fontSize: 38, marginBottom: 12 }}>🛠️</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros fornecedores!</h3>
+            <p style={{ fontSize: 13, color: '#365314', marginBottom: 18, lineHeight: 1.6, maxWidth: 420, margin: '0 auto 18px' }}>
+              Fotógrafos, DJs, decoradores e confeiteiros — cadastre seu serviço e comece a receber orçamentos.
+            </p>
+            <button className="btn-primary" style={{ padding: '11px 24px', fontSize: 14 }} onClick={() => goToPage('signup')}>
+              Cadastrar meu serviço gratuitamente
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* CTA HOST */}
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div className="cta-host">
+          <div>
+            <div className="cta-title">Tem um espaço para eventos?</div>
+            <div className="cta-desc">
+              Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
+            </div>
+          </div>
+          <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage(userRole === 'supplier' ? 'new-supplier' : 'signup')}>
+            {userRole === 'supplier' ? 'Anunciar meu serviço →' : 'Anunciar meu espaço →'}
+          </button>
+        </div>
+      </section>
+
+      {/* CTA FORNECEDOR */}
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', borderRadius: 16, padding: '36px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ fontSize: 48 }}>🛠️</div>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#a3e635', marginBottom: 8 }}>
+                Você é fotógrafo, DJ, cerimonialista, buffet ou fornecedor de serviços?
+              </div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', maxWidth: 500, lineHeight: 1.7 }}>
+                Crie seu perfil profissional no Ewind, exiba seu portfólio e seja encontrado por quem está organizando o evento perfeito. Sem custo.
+              </div>
+            </div>
+          </div>
+          <button
+            style={{ padding: '14px 28px', fontSize: 15, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 10, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
+            onClick={() => goToPage('supplier-signup')}
+          >
+            Sou fornecedor →
+          </button>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <img src="/logo.png" alt="Ewind" className="logo-img-sm" />
+        <span>© 2025 Ewind — O marketplace de espaços e serviços para eventos</span>
+      </footer>
+    </>
+  )
 }
