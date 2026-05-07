@@ -48,6 +48,24 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   // Máscara preço: R$ formatado
   const maskPrice = (v: string) => v.replace(/[^0-9.]/g, '')
 
+
+  // Capitalizar primeira letra de cada palavra
+  const capitalizeWords = (v: string) =>
+    v.replace(/\b\w/g, c => c.toUpperCase())
+
+  // Capitalizar só a primeira letra
+  const capitalizeFirst = (v: string) =>
+    v.charAt(0).toUpperCase() + v.slice(1)
+
+  // Apenas números inteiros positivos
+  const onlyInt = (v: string) => v.replace(/[^0-9]/g, '')
+
+  // Apenas números com decimal
+  const onlyDecimal = (v: string) => v.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
+
+  // UF — sempre maiúsculo, só letras
+  const onlyUF = (v: string) => v.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2)
+
   // Extrair @handle do Instagram colado com URL completa
   const cleanInstagram = (v: string) => {
     const match = v.match(/instagram\.com\/([^/?]+)/)
@@ -213,7 +231,7 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📋 Informações básicas</h2>
             <div className="fg">
               <label>Nome do espaço *</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Chácara Vila Verde" />
+              <input type="text" value={name} onChange={e => setName(capitalizeFirst(e.target.value))} placeholder="Ex: Chácara Vila Verde" />
             </div>
             <div className="fg">
               <label>Descrição</label>
@@ -250,11 +268,11 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📍 Localização</h2>
             <div className="fg">
               <label>Cidade *</label>
-              <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder="Ex: Curitiba" />
+              <input type="text" value={city} onChange={e => setCity(capitalizeWords(e.target.value))} placeholder="Ex: Curitiba" />
             </div>
             <div className="fg">
               <label>Estado *</label>
-              <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="PR" maxLength={2} />
+              <input type="text" value={state} onChange={e => setState(onlyUF(e.target.value))} placeholder="PR" maxLength={2} />
             </div>
             <div className="fg">
               <label>CEP (opcional)</label>
@@ -282,11 +300,11 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
             </div>
             <div className="fg">
               <label>Bairro (opcional)</label>
-              <input type="text" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} placeholder="Ex: Batel, Água Verde" />
+              <input type="text" value={neighborhood} onChange={e => setNeighborhood(capitalizeWords(e.target.value))} placeholder="Ex: Batel, Água Verde" />
             </div>
             <div className="fg">
               <label>Endereço completo (opcional)</label>
-              <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder="Rua, número" />
+              <input type="text" value={address} onChange={e => setAddress(capitalizeFirst(e.target.value))} placeholder="Rua, número" />
               <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>💡 Compartilhado apenas com clientes que fecharem negócio.</p>
             </div>
           </>
@@ -300,12 +318,14 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
               <div className="fg">
                 <label>Capacidade máxima *</label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={capacity}
                   onChange={e => {
-                    setCapacity(e.target.value)
+                    const v = onlyInt(e.target.value)
+                    setCapacity(v)
                     // Sugestão automática de preço baseada na capacidade
-                    const cap = parseInt(e.target.value)
+                    const cap = parseInt(v)
                     if (cap > 0 && !pricePerHour && !pricePerDay) {
                       if (cap <= 50) setPricePerHour('500')
                       else if (cap <= 100) setPricePerHour('800')
@@ -324,15 +344,15 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
               </div>
               <div className="fg">
                 <label>Mínimo de horas</label>
-                <input type="number" value={minHours} onChange={e => setMinHours(e.target.value)} placeholder="3" min={1} />
+                <input type="text" inputMode="numeric" value={minHours} onChange={e => setMinHours(onlyInt(e.target.value))} placeholder="3" />
               </div>
               <div className="fg">
                 <label>💰 Preço por hora (R$)</label>
-                <input type="number" value={pricePerHour} onChange={e => setPricePerHour(e.target.value)} placeholder="Ex: 800" min={0} step={0.01} />
+                <input type="text" inputMode="decimal" value={pricePerHour} onChange={e => setPricePerHour(onlyDecimal(e.target.value))} placeholder="Ex: 800,00" />
               </div>
               <div className="fg">
                 <label>💰 Preço por dia (R$)</label>
-                <input type="number" value={pricePerDay} onChange={e => setPricePerDay(e.target.value)} placeholder="Ex: 5000" min={0} step={0.01} />
+                <input type="text" inputMode="decimal" value={pricePerDay} onChange={e => setPricePerDay(onlyDecimal(e.target.value))} placeholder="Ex: 5000,00" />
               </div>
             </div>
             <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #f3f4f6', paddingTop: 12, marginTop: 4 }}>
@@ -464,7 +484,16 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
             )}
 
             <label style={{ display: 'block', border: '2px dashed #e8e8e8', borderRadius: 12, padding: 32, textAlign: 'center', cursor: 'pointer', background: '#fafafa' }}>
-              <input type="file" multiple accept="image/*,video/*" onChange={e => e.target.files && setFiles(Array.from(e.target.files).slice(0, 8))} style={{ display: 'none' }} />
+              <input type="file" multiple accept="image/*,video/*" onChange={e => {
+                  if (!e.target.files) return
+                  const newFiles = Array.from(e.target.files)
+                  setFiles(prev => {
+                    const all = [...prev, ...newFiles]
+                    const unique = all.filter((f, i, arr) => arr.findIndex(x => x.name === f.name && x.size === f.size) === i)
+                    return unique.slice(0, 8)
+                  })
+                  e.target.value = '' // permite selecionar o mesmo arquivo novamente
+                }} style={{ display: 'none' }} />
               <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
                 {files.length > 0 ? `${files.length} arquivo(s) selecionado(s)` : 'Clique para adicionar fotos e vídeos'}

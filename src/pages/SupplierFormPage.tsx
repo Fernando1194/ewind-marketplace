@@ -13,6 +13,34 @@ interface Props {
 
 export default function SupplierFormPage({ user, goToPage, editingSupplier }: Props) {
   const isEditing = !!editingSupplier
+
+  const capitalizeWords = (v: string) => v.replace(/\b\w/g, c => c.toUpperCase())
+  const capitalizeFirst = (v: string) => v.charAt(0).toUpperCase() + v.slice(1)
+  const onlyInt = (v: string) => v.replace(/[^0-9]/g, '')
+  const onlyDecimal = (v: string) => v.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
+  const onlyUF = (v: string) => v.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2)
+
+  // Máscara de telefone
+  const maskPhone = (v: string) => {
+    const d = v.replace(/\D/g, '').slice(0, 11)
+    if (d.length <= 2) return d
+    if (d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2)}`
+    return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+  }
+
+  // Limpar Instagram — aceita URL completa ou @handle
+  const cleanInstagram = (v: string) => {
+    const match = v.match(/instagram\.com\/([^/?]+)/)
+    if (match) return '@' + match[1]
+    return v.startsWith('@') ? v : v ? '@' + v.replace('@', '') : ''
+  }
+
+  // Limpar site — adiciona https:// se faltar
+  const cleanWebsite = (v: string) => {
+    if (!v) return ''
+    if (v.startsWith('http')) return v
+    return 'https://' + v
+  }
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -147,7 +175,7 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📋 Informações básicas</h2>
             <div className="fg">
               <label>Nome profissional / empresa *</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: João Silva Fotografia" />
+              <input type="text" value={name} onChange={e => setName(capitalizeFirst(e.target.value))} placeholder="Ex: João Silva Fotografia" />
             </div>
             <div className="fg">
               <label>Categoria *</label>
@@ -219,7 +247,7 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             </div>
             <div className="fg">
               <label>Estado principal</label>
-              <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="PR" maxLength={2} />
+              <input type="text" value={state} onChange={e => setState(onlyUF(e.target.value))} placeholder="PR" maxLength={2} />
             </div>
             <div className="fg">
               <label>Bairro principal de atuação (opcional)</label>
@@ -257,8 +285,9 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
               <input
                 type="tel"
                 value={whatsapp}
-                onChange={e => setWhatsapp(e.target.value)}
+                onChange={e => setWhatsapp(maskPhone(e.target.value))}
                 placeholder="(41) 99999-9999"
+                maxLength={16}
                 style={{ borderColor: !whatsapp ? '#fca5a5' : undefined }}
               />
               {!whatsapp && (
@@ -275,7 +304,13 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             </div>
             <div className="fg">
               <label>Instagram</label>
-              <input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="@seuperfil" />
+              <input
+                type="text"
+                value={instagram}
+                onChange={e => setInstagram(e.target.value)}
+                onBlur={e => setInstagram(cleanInstagram(e.target.value))}
+                placeholder="@seuperfil ou cole o link completo"
+              />
             </div>
             <div className="fg">
               <label>Email</label>
@@ -352,7 +387,16 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             )}
 
             <label style={{ display: 'block', border: '2px dashed #e8e8e8', borderRadius: 12, padding: 32, textAlign: 'center', cursor: 'pointer', background: '#fafafa' }}>
-              <input type="file" multiple accept="image/*,video/*" onChange={e => e.target.files && setFiles(Array.from(e.target.files).slice(0, 8))} style={{ display: 'none' }} />
+              <input type="file" multiple accept="image/*,video/*" onChange={e => {
+                  if (!e.target.files) return
+                  const newFiles = Array.from(e.target.files)
+                  setFiles(prev => {
+                    const all = [...prev, ...newFiles]
+                    const unique = all.filter((f, i, arr) => arr.findIndex(x => x.name === f.name && x.size === f.size) === i)
+                    return unique.slice(0, 8)
+                  })
+                  e.target.value = ''
+                }} style={{ display: 'none' }} />
               <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
               <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
                 {files.length > 0 ? `${files.length} arquivo(s) selecionado(s)` : 'Clique para adicionar fotos e vídeos e vídeos do portfólio'}
