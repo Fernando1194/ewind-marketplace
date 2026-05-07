@@ -1,3 +1,4 @@
+import Reviews from '../components/Reviews'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'

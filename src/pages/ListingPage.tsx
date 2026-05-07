@@ -44,6 +44,15 @@ const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
         <span className="card-price">{space.price_per_hour ? `R$${space.price_per_hour.toLocaleString('pt-BR')}/h` : `R$${space.price_per_day?.toLocaleString('pt-BR')}/dia`}</span>
         <span className="card-cap">👥 até {space.capacity}</span>
       </div>
+      {(space as any).avg_response_hours !== undefined && (space as any).avg_response_hours !== null && (
+        <div style={{ marginTop: 6 }}>
+          {(space as any).avg_response_hours < 6
+            ? <span style={{ fontSize: 10, fontWeight: 700, color: '#16a34a', background: '#f0fdf4', padding: '2px 8px', borderRadius: 100 }}>⚡ Resposta rápida</span>
+            : (space as any).avg_response_hours < 24
+            ? <span style={{ fontSize: 10, fontWeight: 700, color: '#d97706', background: '#fffbeb', padding: '2px 8px', borderRadius: 100 }}>🕐 Responde em até 24h</span>
+            : null}
+        </div>
+      )}
     </div>
   </div>
 ))

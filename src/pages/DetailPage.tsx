@@ -1,3 +1,4 @@
+import Reviews from '../components/Reviews'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import MediaCarousel from '../components/MediaCarousel'
@@ -352,7 +353,12 @@ export default function DetailPage({ space, user, goToPage }: Props) {
               </form>
             )}
 
-            {/* Links do espaço */}
+            {/* Avaliações */}
+      <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid #e8e8e8' }}>
+        <Reviews spaceId={space.id} user={user} />
+      </div>
+
+      {/* Links do espaço */}
             {(space.whatsapp || space.instagram || space.facebook || space.website || space.cardapio_url) && (
               <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: '#2d2d2d', marginBottom: 4 }}>🔗 Links e contatos</div>

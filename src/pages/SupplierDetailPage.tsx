@@ -1,3 +1,4 @@
+import Reviews from '../components/Reviews'
 import { useState, useEffect } from 'react'
 import type { Supplier } from '../types'
 import MediaCarousel from '../components/MediaCarousel'
@@ -178,6 +179,10 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
               </div>
             </div>
           )}
+        {/* Avaliações */}
+        <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid #e8e8e8' }}>
+          <Reviews supplierId={supplier.id} user={user} />
+        </div>
         </div>
 
         {/* Sidebar contato */}
