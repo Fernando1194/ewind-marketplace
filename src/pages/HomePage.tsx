@@ -51,7 +51,7 @@ export default function HomePage({ goToPage }: Props) {
         .limit(6),
       supabase
         .from('suppliers')
-        .select('id, name, category, state, cities, media_urls, price_info, description, whatsapp, instagram, status, created_at')
+        .select('id, owner_id, name, category, subcategory, state, cities, neighborhood, media_urls, price_info, description, attributes, event_types, whatsapp, email, instagram, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(6)
