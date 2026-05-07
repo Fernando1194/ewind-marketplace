@@ -308,7 +308,7 @@ function App() {
         {page === 'detail' && selectedSpace && (
           <DetailPage space={selectedSpace} goToPage={goToPage} user={user} />
         )}
-        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} />}
+        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} />}
         {page === 'supplier-detail' && selectedSupplier && (
           <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} />
         )}
