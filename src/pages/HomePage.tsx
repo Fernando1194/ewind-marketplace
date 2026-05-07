@@ -257,7 +257,13 @@ className="hero-arrow hero-arrow-right"
                     {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
                   </div>
                   <div className="card-foot">
-                    <span className="card-price">{s.price_info ? s.price_info : 'Consultar valor'}</span>
+                    <span className="card-price">{s.price_info
+                      ? (isNaN(Number(s.price_info.replace(/[^0-9.,]/g, ''))) || !s.price_info.trim()
+                          ? s.price_info
+                          : s.price_info.toLowerCase().includes('r$')
+                            ? s.price_info
+                            : `R$ ${s.price_info}`)
+                      : 'Consultar valor'}</span>
                     <span className="card-cap">Ver perfil →</span>
                   </div>
                 </div>
