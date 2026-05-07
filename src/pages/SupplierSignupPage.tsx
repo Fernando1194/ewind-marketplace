@@ -52,6 +52,16 @@ export default function SupplierSignupPage({ goToPage }: Props) {
       })
       if (error) throw error
       if (data.user) {
+        // Criar perfil com role = supplier imediatamente
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          full_name: name,
+          email,
+          role: 'supplier',
+          is_supplier: true,
+          is_host: false,
+          updated_at: new Date().toISOString()
+        })
         setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
         setName(''); setEmail(''); setPassword(''); setCategory('')
       }

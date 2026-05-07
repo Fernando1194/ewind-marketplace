@@ -64,6 +64,17 @@ export default function SignupPage({ goToPage }: Props) {
       })
       if (error) throw error
       if (data.user) {
+        // Criar perfil com role correto imediatamente
+        const finalRole = extraRoles.includes('host') ? 'host' : extraRoles.includes('supplier') ? 'supplier' : role
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          full_name: name,
+          email,
+          role: finalRole,
+          is_host: extraRoles.includes('host') || role === 'host',
+          is_supplier: extraRoles.includes('supplier') || role === 'supplier',
+          updated_at: new Date().toISOString()
+        })
         setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
         setEmail(''); setPassword(''); setConfirmPassword(''); setName('')
       }
