@@ -1,3 +1,4 @@
+import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -114,6 +115,10 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   const [website, setWebsite] = useState(editingSpace?.website || '')
   const [cardapioUrl, setCardapioUrl] = useState(editingSpace?.cardapio_url || '')
 
+  // Disponibilidade
+  const [availableDates, setAvailableDates] = useState<string[]>((editingSpace as any)?.available_dates || [])
+  const [availabilityNote, setAvailabilityNote] = useState<string>((editingSpace as any)?.availability_note || '')
+
   // Etapa 6 — Fotos
   const [files, setFiles] = useState<File[]>([])
   const [existingUrls, setExistingUrls] = useState<string[]>(editingSpace?.media_urls || [])
@@ -173,6 +178,8 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
         price_per_day: pricePerDay ? parseFloat(pricePerDay) : null,
         attributes,
         whatsapp: whatsapp || null,
+        available_dates: availableDates.length > 0 ? availableDates : null,
+        availability_note: availabilityNote || null,
         instagram: instagram || null,
         facebook: facebook || null,
         website: website || null,
@@ -464,6 +471,28 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
 
         {/* ETAPA 6 — FOTOS */}
         {step === 6 && (
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>📅 Disponibilidade</h3>
+            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20, lineHeight: 1.5 }}>
+              Marque as datas em que você está disponível para receber eventos. Clientes só poderão solicitar orçamentos nessas datas. Se não marcar nenhuma, qualquer data poderá ser solicitada.
+            </p>
+            <AvailabilityCalendar
+              availableDates={availableDates}
+              onChange={setAvailableDates}
+            />
+            <div className="fg" style={{ marginTop: 20 }}>
+              <label>Observação sobre disponibilidade (opcional)</label>
+              <input
+                type="text"
+                value={availabilityNote}
+                onChange={e => setAvailabilityNote(e.target.value)}
+                placeholder="Ex: Disponível apenas fins de semana · Mínimo 30 dias de antecedência"
+              />
+            </div>
+          </div>
+        )}
+
+        {step === 7 && (
           <>
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>📸 Fotos do espaço</h2>
             <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 18 }}>Adicione até 8 fotos. Boas fotos aumentam muito as chances de contato!</p>

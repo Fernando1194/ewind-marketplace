@@ -1,3 +1,4 @@
+import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import Reviews from '../components/Reviews'
 import { useState } from 'react'
 import { supabase } from '../supabase'
@@ -353,7 +354,19 @@ export default function DetailPage({ space, user, goToPage }: Props) {
               </form>
             )}
 
-            {/* Avaliações */}
+            {/* Disponibilidade */}
+      {((space as any).available_dates?.length > 0 || (space as any).availability_note) && (
+        <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 Disponibilidade</h3>
+          <AvailabilityCalendar
+            availableDates={(space as any).available_dates || []}
+            readOnly
+            availabilityNote={(space as any).availability_note}
+          />
+        </div>
+      )}
+
+      {/* Avaliações */}
       <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid #e8e8e8' }}>
         <Reviews spaceId={space.id} user={user} />
       </div>

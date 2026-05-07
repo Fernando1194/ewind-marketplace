@@ -1,3 +1,4 @@
+import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -127,6 +128,8 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
         category, subcategory: subcategory || null,
         cities, state,
         whatsapp: whatsapp || null,
+        available_dates: availableDates.length > 0 ? availableDates : null,
+        availability_note: availabilityNote || null,
         instagram: instagram || null,
         email: email || null,
         website: website || null,
@@ -379,6 +382,28 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
 
         {/* STEP 5: Fotos portfólio */}
         {step === 5 && (
+          <div>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>📅 Disponibilidade</h3>
+            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20, lineHeight: 1.5 }}>
+              Marque as datas em que você está disponível para trabalhar. Isso evita pedidos de orçamento em datas já ocupadas. Se não marcar nenhuma, qualquer data poderá ser solicitada.
+            </p>
+            <AvailabilityCalendar
+              availableDates={availableDates}
+              onChange={setAvailableDates}
+            />
+            <div className="fg" style={{ marginTop: 20 }}>
+              <label>Observação sobre disponibilidade (opcional)</label>
+              <input
+                type="text"
+                value={availabilityNote}
+                onChange={e => setAvailabilityNote(e.target.value)}
+                placeholder="Ex: Disponível apenas fins de semana · Agenda cheia em dezembro"
+              />
+            </div>
+          </div>
+        )}
+
+        {step === 6 && (
           <>
             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>📸 Fotos do portfólio</h2>
             <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 18 }}>Adicione fotos do seu trabalho (até 8).</p>

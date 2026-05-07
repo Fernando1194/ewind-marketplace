@@ -1,3 +1,4 @@
+import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import Reviews from '../components/Reviews'
 import { useState, useEffect } from 'react'
 import type { Supplier } from '../types'
@@ -179,6 +180,18 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
               </div>
             </div>
           )}
+        {/* Disponibilidade */}
+        {((supplier as any).available_dates?.length > 0 || (supplier as any).availability_note) && (
+          <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 Disponibilidade</h3>
+            <AvailabilityCalendar
+              availableDates={(supplier as any).available_dates || []}
+              readOnly
+              availabilityNote={(supplier as any).availability_note}
+            />
+          </div>
+        )}
+
         {/* Avaliações */}
         <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid #e8e8e8' }}>
           <Reviews supplierId={supplier.id} user={user} />
