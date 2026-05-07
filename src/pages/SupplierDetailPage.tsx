@@ -303,6 +303,14 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
                         onChange={e => setGuestsCount(e.target.value.replace(/[^0-9]/g, ''))}
                         placeholder="Ex: 100"
                         style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />
+                      <div style={{ display: 'flex', gap: 5, marginTop: 5, flexWrap: 'wrap' }}>
+                        {[20,50,100,150,200,300].map(n => (
+                          <button key={n} type="button" onClick={() => setGuestsCount(n.toString())}
+                            style={{ padding: '2px 8px', fontSize: 10, fontWeight: 600, background: guestsCount === n.toString() ? '#a3e635' : '#f3f4f6', border: 'none', borderRadius: 100, cursor: 'pointer', color: guestsCount === n.toString() ? '#1a2e05' : '#6b7280' }}>
+                            {n}
+                          </button>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="fg" style={{ marginBottom: 12 }}>

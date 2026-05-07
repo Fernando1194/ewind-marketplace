@@ -250,7 +250,12 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
             </div>
             <div className="fg">
               <label>Estado principal</label>
-              <input type="text" value={state} onChange={e => setState(onlyUF(e.target.value))} placeholder="PR" maxLength={2} />
+              <select value={state} onChange={e => setState(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
+                <option value="">Selecione o estado...</option>
+                {[['AC','Acre'],['AL','Alagoas'],['AP','Amapá'],['AM','Amazonas'],['BA','Bahia'],['CE','Ceará'],['DF','Distrito Federal'],['ES','Espírito Santo'],['GO','Goiás'],['MA','Maranhão'],['MT','Mato Grosso'],['MS','Mato Grosso do Sul'],['MG','Minas Gerais'],['PA','Pará'],['PB','Paraíba'],['PR','Paraná'],['PE','Pernambuco'],['PI','Piauí'],['RJ','Rio de Janeiro'],['RN','Rio Grande do Norte'],['RS','Rio Grande do Sul'],['RO','Rondônia'],['RR','Roraima'],['SC','Santa Catarina'],['SP','São Paulo'],['SE','Sergipe'],['TO','Tocantins']].map(([uf, nome]) => (
+                  <option key={uf} value={uf}>{uf} — {nome}</option>
+                ))}
+              </select>
             </div>
             <div className="fg">
               <label>Bairro principal de atuação (opcional)</label>

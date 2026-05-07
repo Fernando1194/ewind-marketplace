@@ -279,7 +279,12 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
             </div>
             <div className="fg">
               <label>Estado *</label>
-              <input type="text" value={state} onChange={e => setState(onlyUF(e.target.value))} placeholder="PR" maxLength={2} />
+              <select value={state} onChange={e => setState(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
+                <option value="">Selecione o estado...</option>
+                {[['AC','Acre'],['AL','Alagoas'],['AP','Amapá'],['AM','Amazonas'],['BA','Bahia'],['CE','Ceará'],['DF','Distrito Federal'],['ES','Espírito Santo'],['GO','Goiás'],['MA','Maranhão'],['MT','Mato Grosso'],['MS','Mato Grosso do Sul'],['MG','Minas Gerais'],['PA','Pará'],['PB','Paraíba'],['PR','Paraná'],['PE','Pernambuco'],['PI','Piauí'],['RJ','Rio de Janeiro'],['RN','Rio Grande do Norte'],['RS','Rio Grande do Sul'],['RO','Rondônia'],['RR','Roraima'],['SC','Santa Catarina'],['SP','São Paulo'],['SE','Sergipe'],['TO','Tocantins']].map(([uf, nome]) => (
+                  <option key={uf} value={uf}>{uf} — {nome}</option>
+                ))}
+              </select>
             </div>
             <div className="fg">
               <label>CEP (opcional)</label>
@@ -343,15 +348,27 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
                   placeholder="Ex: 200"
                   min={1}
                 />
+                <div style={{ display: 'flex', gap: 6, marginTop: 6, flexWrap: 'wrap' }}>
+                  {[20, 50, 100, 150, 200, 300, 500].map(n => (
+                    <button key={n} type="button" onClick={() => setCapacity(n.toString())}
+                      style={{ padding: '3px 10px', fontSize: 11, fontWeight: 600, background: capacity === n.toString() ? '#a3e635' : '#f3f4f6', border: 'none', borderRadius: 100, cursor: 'pointer', color: capacity === n.toString() ? '#1a2e05' : '#6b7280' }}>
+                      {n}
+                    </button>
+                  ))}
+                </div>
                 {capacity && (
-                  <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>
+                  <p style={{ fontSize: 11, color: '#6b7280', marginTop: 6 }}>
                     💡 Capacidade de {capacity} pessoas — verifique se o preço sugerido está correto
                   </p>
                 )}
               </div>
               <div className="fg">
                 <label>Mínimo de horas</label>
-                <input type="text" inputMode="numeric" value={minHours} onChange={e => setMinHours(onlyInt(e.target.value))} placeholder="3" />
+                <select value={minHours} onChange={e => setMinHours(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
+                  {['1','2','3','4','5','6','8','10','12','24'].map(h => (
+                    <option key={h} value={h}>{h} hora{parseInt(h) > 1 ? 's' : ''}</option>
+                  ))}
+                </select>
               </div>
               <div className="fg">
                 <label>💰 Preço por hora (R$)</label>
