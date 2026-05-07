@@ -4,7 +4,7 @@ import type { User } from '@supabase/supabase-js'
 import type { Space, Supplier } from './types'
 import './App.css'
 
-const HomePage = lazy(() => import('./pages/HomePage'))
+const HomePage = lazy(() => import('./pages/HomePageNew'))
 const ListingPage = lazy(() => import('./pages/ListingPage'))
 const DetailPage = lazy(() => import('./pages/DetailPage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
@@ -308,7 +308,7 @@ function App() {
 
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
-        {page === 'home' && <HomePage goToPage={goToPage} userRole={userRole} user={user} />}
+        {page === 'home' && <HomePage goToPage={goToPage} />}
         {page === 'listing' && (
           <ListingPage
             goToPage={goToPage}
