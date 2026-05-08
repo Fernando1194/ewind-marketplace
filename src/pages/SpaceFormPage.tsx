@@ -139,7 +139,7 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
       if (!capacity || parseInt(capacity) < 1) { setError('Informe a capacidade'); return false }
       if (!pricePerHour && !pricePerDay) { setError('Informe pelo menos um preço'); return false }
     }
-    if (step === 5 && !whatsapp.trim()) {
+    if (step === 6 && !whatsapp.trim()) {
       setError('O WhatsApp é obrigatório — é por onde os clientes vão te contatar via Ewind'); return false
     }
     return true
