@@ -203,7 +203,7 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
     }
   }
 
-  const steps = ['Informações', 'Localização', 'Capacidade', 'Atributos', 'Links', 'Fotos']
+  const steps = ['Informações', 'Localização', 'Capacidade', 'Atributos', 'Links', 'Disponibilidade', 'Fotos']
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: 24 }}>
