@@ -486,7 +486,7 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
           </>
         )}
 
-        {/* ETAPA 6 — FOTOS */}
+        {/* ETAPA 6 — DISPONIBILIDADE */}
         {step === 6 && (
           <div>
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>📅 Disponibilidade</h3>

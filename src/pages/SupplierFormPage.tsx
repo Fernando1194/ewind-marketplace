@@ -69,7 +69,7 @@ export default function SupplierFormPage({ user, goToPage, editingSupplier }: Pr
   const [files, setFiles] = useState<File[]>([])
   const [existingUrls, setExistingUrls] = useState<string[]>(editingSupplier?.media_urls || [])
 
-  const totalSteps = 5
+  const totalSteps = 6
 
   const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) => {
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
