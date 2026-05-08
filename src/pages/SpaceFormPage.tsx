@@ -81,7 +81,7 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   const [error, setError] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0)
 
-  const totalSteps = 6
+  const totalSteps = 7
 
   // Etapa 1 — Informações
   const [name, setName] = useState(editingSpace?.name || '')
@@ -139,7 +139,7 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
       if (!capacity || parseInt(capacity) < 1) { setError('Informe a capacidade'); return false }
       if (!pricePerHour && !pricePerDay) { setError('Informe pelo menos um preço'); return false }
     }
-    if (step === 6 && !whatsapp.trim()) {
+    if (step === 5 && !whatsapp.trim()) {
       setError('O WhatsApp é obrigatório — é por onde os clientes vão te contatar via Ewind'); return false
     }
     return true
