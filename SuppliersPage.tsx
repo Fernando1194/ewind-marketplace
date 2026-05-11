@@ -1,355 +1,329 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
-import type { User } from '@supabase/supabase-js'
-import { SUPPLIER_CATEGORIES, SUPPLIER_ATTRIBUTES, EVENT_TYPES } from '../types'
-import type { Supplier } from '../types'
+import { CATEGORIES } from '../types'
+import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  user: User
-  goToPage: (page: Page) => void
-  editingSupplier?: Supplier | null
+  goToPage: (page: Page, space?: Space) => void
 }
 
-export default function SupplierFormPage({ user, goToPage, editingSupplier }: Props) {
-  const isEditing = !!editingSupplier
-  const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [uploadProgress, setUploadProgress] = useState(0)
+const HERO_IMAGES = [
+  // Casal dançando no casamento — momento mágico
+  'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=1600&h=800&fit=crop&q=90',
+  // Noiva com buquê — sorriso e emoção
+  'https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=1600&h=800&fit=crop&q=90',
+  // Mesa de casamento decorada com flores e velas
+  'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&h=800&fit=crop&q=90',
+  // Festa de aniversário com confetes e celebração
+  'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1600&h=800&fit=crop&q=90',
+  // Fotógrafo capturando o momento perfeito
+  'https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=1600&h=800&fit=crop&q=90',
+  // Maquiagem artística — making of da noiva
+  'https://images.unsplash.com/photo-1457972729786-0411a3b2b626?w=1600&h=800&fit=crop&q=90',
+  // Festa com luzes, música e alegria
+  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=800&fit=crop&q=90',
+  // Convidados brindando e celebrando
+  'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&h=800&fit=crop&q=90',
+  // Bolo de casamento decorado com flores
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
+]
 
-  const [name, setName] = useState(editingSupplier?.name || '')
-  const [description, setDescription] = useState(editingSupplier?.description || '')
-  const [category, setCategory] = useState(editingSupplier?.category || '')
-  const [subcategory, setSubcategory] = useState(editingSupplier?.subcategory || '')
-  const [cityInput, setCityInput] = useState('')
-  const [cities, setCities] = useState<string[]>(editingSupplier?.cities || [])
-  const [state, setState] = useState(editingSupplier?.state || 'PR')
-  const [whatsapp, setWhatsapp] = useState(editingSupplier?.whatsapp || '')
-  const [instagram, setInstagram] = useState(editingSupplier?.instagram || '')
-  const [email, setEmail] = useState(editingSupplier?.email || '')
-  const [website, setWebsite] = useState(editingSupplier?.website || '')
-  const [priceInfo, setPriceInfo] = useState(editingSupplier?.price_info || '')
-  const [eventTypes, setEventTypes] = useState<string[]>(editingSupplier?.event_types || [])
-  const [attributes, setAttributes] = useState<string[]>(editingSupplier?.attributes || [])
-  const [files, setFiles] = useState<File[]>([])
-  const [existingUrls, setExistingUrls] = useState<string[]>(editingSupplier?.media_urls || [])
+export default function HomePage({ goToPage }: Props) {
+  const [filterCity, setFilterCity] = useState('')
+  const [filterGuests, setFilterGuests] = useState('')
+  const [filterDate, setFilterDate] = useState('')
+  const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
+  const [featuredSuppliers, setFeaturedSuppliers] = useState<any[]>([])
+  const [heroImages] = useState<string[]>(HERO_IMAGES)
+  const [currentHero, setCurrentHero] = useState(0)
+  const [fadeIn, setFadeIn] = useState(true)
 
-  const totalSteps = 5
+  useEffect(() => { loadData() }, [])
 
-  const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) => {
-    set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
+  const loadData = async () => {
+    const [{ data: spacesData }, { data: suppData }] = await Promise.all([
+      supabase
+        .from('spaces')
+        .select('id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, event_types, host_id, min_hours, address, description, attributes, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(6),
+      supabase
+        .from('suppliers')
+        .select('id, owner_id, name, category, subcategory, state, cities, neighborhood, media_urls, price_info, description, attributes, event_types, whatsapp, email, instagram, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(6)
+    ])
+    if (spacesData && spacesData.length > 0) setFeaturedSpaces(spacesData)
+    if (suppData && suppData.length > 0) setFeaturedSuppliers(suppData)
   }
 
-  const addCity = () => {
-    const trimmed = cityInput.trim()
-    if (trimmed && !cities.includes(trimmed)) {
-      setCities([...cities, trimmed])
-      setCityInput('')
-    }
-  }
+  useEffect(() => {
+    if (heroImages.length <= 1) return
+    const interval = setInterval(() => {
+      setFadeIn(false)
+      setTimeout(() => { setCurrentHero(i => (i + 1) % heroImages.length); setFadeIn(true) }, 600)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [heroImages])
 
-  const removeCity = (city: string) => setCities(cities.filter(c => c !== city))
-
-  const validateStep = () => {
-    setError('')
-    if (step === 1 && (!name || !category)) {
-      setError('Preencha o nome e a categoria')
-      return false
-    }
-    if (step === 2 && cities.length === 0) {
-      setError('Adicione pelo menos uma cidade de atendimento')
-      return false
-    }
-    if (step === 3 && !whatsapp && !email) {
-      setError('Informe pelo menos um contato (WhatsApp ou email)')
-      return false
-    }
-    return true
-  }
-
-  const nextStep = () => {
-    if (validateStep()) setStep(step + 1)
-  }
-
-  const handleSubmit = async () => {
-    setError('')
-    setLoading(true)
-    try {
-      const newUrls: string[] = []
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const ext = file.name.split('.').pop()
-        const fileName = `suppliers/${user.id}/${Date.now()}-${i}.${ext}`
-        const { error: upErr } = await supabase.storage.from('space-media').upload(fileName, file)
-        if (upErr) throw upErr
-        const { data: urlData } = supabase.storage.from('space-media').getPublicUrl(fileName)
-        newUrls.push(urlData.publicUrl)
-        setUploadProgress(((i + 1) / files.length) * 100)
-      }
-
-      const data = {
-        owner_id: user.id,
-        name, description: description || null,
-        category, subcategory: subcategory || null,
-        cities, state,
-        whatsapp: whatsapp || null,
-        instagram: instagram || null,
-        email: email || null,
-        website: website || null,
-        price_info: priceInfo || null,
-        event_types: eventTypes,
-        attributes,
-        media_urls: [...existingUrls, ...newUrls],
-        status: 'active'
-      }
-
-      const result = isEditing && editingSupplier
-        ? await supabase.from('suppliers').update(data).eq('id', editingSupplier.id)
-        : await supabase.from('suppliers').insert(data)
-
-      if (result.error) throw result.error
-
-      alert(isEditing ? '✅ Serviço atualizado!' : '✅ Serviço cadastrado com sucesso!')
-      goToPage('supplier-dashboard')
-    } catch (err: any) {
-      setError(err.message || 'Erro ao salvar')
-    } finally {
-      setLoading(false)
-      setUploadProgress(0)
-    }
-  }
+  const goToImage = useCallback((i: number) => {
+    setFadeIn(false)
+    setTimeout(() => { setCurrentHero(i); setFadeIn(true) }, 300)
+  }, [])
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: 24 }}>
-      <a onClick={() => goToPage('supplier-dashboard')} style={{ color: '#5aa800', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'block', marginBottom: 8 }}>
-        ← Voltar ao painel
-      </a>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
-        {isEditing ? 'Editar serviço' : 'Anunciar meu serviço'}
-      </h1>
-      <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Etapa {step} de {totalSteps}</p>
+    <>
+      {/* HERO */}
+      <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', maxWidth: '100vw' }}>
+        {heroImages.map((img, i) => (
+          <div key={img} style={{
+            position: 'absolute', inset: 0,
+            backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center',
+            opacity: i === currentHero ? (fadeIn ? 1 : 0) : 0,
+            transition: 'opacity 0.8s ease-in-out', zIndex: i === currentHero ? 1 : 0
+          }} />
+        ))}
+        <div style={{ position: 'absolute', inset: 0, zIndex: 2, background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.3) 60%, rgba(0,0,0,0.65) 100%)' }} />
 
-      <div style={{ background: '#e8e8e8', height: 4, borderRadius: 100, marginBottom: 24, overflow: 'hidden' }}>
-        <div style={{ background: '#a3e635', height: '100%', width: `${(step / totalSteps) * 100}%`, transition: 'width 0.3s' }} />
-      </div>
+        <div style={{ position: 'relative', zIndex: 3, padding: '60px 24px', width: '100%', textAlign: 'center' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            O marketplace de eventos do Brasil
+          </div>
+          <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 780, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
+            Seu evento merece o{' '}
+            <span style={{ color: '#a3e635' }}>espaço perfeito</span>
+          </h1>
+          <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
+            Compare chácaras, salões, hotéis, restaurantes e muito mais. Solicite orçamentos diretamente com os anunciantes — grátis e sem compromisso.
+          </p>
 
-      <div style={{ background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 14, padding: 28 }}>
-
-        {/* STEP 1: Info básica */}
-        {step === 1 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📋 Informações básicas</h2>
-            <div className="fg">
-              <label>Nome profissional / empresa *</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: João Silva Fotografia" />
+          <div className="search-pill">
+            <div className="sf">
+              <div className="sf-label">Onde</div>
+              <input placeholder="Cidade ou região" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
             </div>
-            <div className="fg">
-              <label>Categoria *</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
-                {SUPPLIER_CATEGORIES.map(c => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onClick={() => setCategory(c.name)}
-                    className={`role-btn ${category === c.name ? 'on' : ''}`}
-                    style={{ fontSize: 12 }}
-                  >
-                    {c.icon} {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="fg">
-              <label>Especialidade (opcional)</label>
-              <input type="text" value={subcategory} onChange={e => setSubcategory(e.target.value)} placeholder="Ex: Foto documental, DJ para casamentos..." />
-            </div>
-            <div className="fg">
-              <label>Descrição</label>
-              <textarea
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Fale sobre seu trabalho, experiência e diferenciais..."
-                rows={4}
-                style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }}
+            <div className="sf">
+              <div className="sf-label">Data do evento</div>
+              <input
+                type="date"
+                value={filterDate}
+                onChange={e => setFilterDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                style={{ colorScheme: 'light' }}
               />
             </div>
-          </>
-        )}
+            <div className="sf">
+              <div className="sf-label">Convidados</div>
+              <input type="number" placeholder="Quantidade" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
+            </div>
+            <button className="search-btn" onClick={() => goToPage('listing')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+          </div>
 
-        {/* STEP 2: Localização */}
-        {step === 2 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📍 Onde você atende</h2>
-            <div className="fg">
-              <label>Cidades de atendimento *</label>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <input
-                  type="text"
-                  value={cityInput}
-                  onChange={e => setCityInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addCity()}
-                  placeholder="Digite uma cidade e pressione Enter"
-                  style={{ flex: 1 }}
-                />
-                <button type="button" className="btn-primary" onClick={addCity} style={{ whiteSpace: 'nowrap' }}>
-                  + Adicionar
-                </button>
-              </div>
-              {cities.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {cities.map(c => (
-                    <span key={c} style={{
-                      background: '#f0fdf4', border: '1px solid #a3e635',
-                      borderRadius: 20, padding: '4px 10px', fontSize: 12,
-                      fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6
-                    }}>
-                      {c}
-                      <button onClick={() => removeCity(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', fontSize: 14 }}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 6 }}>💡 Adicione todas as cidades que você atende</p>
-            </div>
-            <div className="fg">
-              <label>Estado principal</label>
-              <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="PR" maxLength={2} />
-            </div>
-            <div className="fg">
-              <label>Tipos de evento que atende</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {EVENT_TYPES.map(t => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleArr(eventTypes, t, setEventTypes)}
-                    className={`chip-btn ${eventTypes.includes(t) ? 'on' : ''}`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* STEP 3: Contato */}
-        {step === 3 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📞 Contato e redes sociais</h2>
-            <div className="fg">
-              <label>WhatsApp</label>
-              <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="(41) 99999-9999" />
-            </div>
-            <div className="fg">
-              <label>Instagram</label>
-              <input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="@seuperfil" />
-            </div>
-            <div className="fg">
-              <label>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="contato@email.com" />
-            </div>
-            <div className="fg">
-              <label>Site (opcional)</label>
-              <input type="text" value={website} onChange={e => setWebsite(e.target.value)} placeholder="www.seusite.com.br" />
-            </div>
-            <div className="fg">
-              <label>Faixa de preço (opcional)</label>
-              <input type="text" value={priceInfo} onChange={e => setPriceInfo(e.target.value)} placeholder="Ex: A partir de R$ 800 · Pacotes a partir de R$ 2.500" />
-            </div>
-          </>
-        )}
-
-        {/* STEP 4: Atributos */}
-        {step === 4 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>✨ Diferenciais do seu serviço</h2>
-            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 18 }}>Marque os que se aplicam ao seu trabalho.</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {SUPPLIER_ATTRIBUTES.map(a => (
-                <button
-                  key={a}
-                  type="button"
-                  onClick={() => toggleArr(attributes, a, setAttributes)}
-                  className={`chip-btn ${attributes.includes(a) ? 'on' : ''}`}
-                >
-                  {attributes.includes(a) ? '✓ ' : ''}{a}
-                </button>
+          {heroImages.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 24 }}>
+              {heroImages.map((_, i) => (
+                <button key={i} onClick={() => goToImage(i)} style={{
+                  width: i === currentHero ? 24 : 8, height: 8, borderRadius: 100,
+                  background: i === currentHero ? '#a3e635' : 'rgba(255,255,255,0.5)',
+                  border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s', flexShrink: 0
+                }} />
               ))}
             </div>
-          </>
-        )}
-
-        {/* STEP 5: Fotos portfólio */}
-        {step === 5 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>📸 Fotos do portfólio</h2>
-            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 18 }}>Adicione fotos do seu trabalho (até 8).</p>
-
-            {existingUrls.length > 0 && (
-              <>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Fotos atuais:</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 8, marginBottom: 16 }}>
-                  {existingUrls.map((url, i) => (
-                    <div key={i} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', height: 85 }}>
-                      <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <button
-                        onClick={() => setExistingUrls(existingUrls.filter((_, idx) => idx !== i))}
-                        style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12 }}
-                      >×</button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            <label style={{ display: 'block', border: '2px dashed #e8e8e8', borderRadius: 12, padding: 32, textAlign: 'center', cursor: 'pointer', background: '#fafafa' }}>
-              <input type="file" multiple accept="image/*" onChange={e => e.target.files && setFiles(Array.from(e.target.files).slice(0, 8))} style={{ display: 'none' }} />
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
-                {files.length > 0 ? `${files.length} foto(s) selecionada(s)` : 'Clique para escolher fotos do portfólio'}
-              </div>
-              <div style={{ fontSize: 12, color: '#6b7280' }}>JPG, PNG até 50MB cada</div>
-            </label>
-
-            {files.length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 8, marginTop: 12 }}>
-                {files.map((f, i) => (
-                  <div key={i} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', height: 85 }}>
-                    <img src={URL.createObjectURL(f)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button
-                      onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
-                      style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12 }}
-                    >×</button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {loading && uploadProgress > 0 && (
-              <div style={{ marginTop: 16, padding: 12, background: '#f0fdf4', borderRadius: 8 }}>
-                <div style={{ fontSize: 12, marginBottom: 6 }}>Enviando fotos... {uploadProgress.toFixed(0)}%</div>
-                <div style={{ height: 4, background: '#e8e8e8', borderRadius: 100, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#a3e635', transition: 'width 0.3s' }} />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {error && <div className="auth-error" style={{ marginTop: 16 }}>⚠️ {error}</div>}
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 18, borderTop: '1px solid #e8e8e8' }}>
-          {step > 1
-            ? <button onClick={() => setStep(step - 1)} style={{ padding: '10px 20px', fontSize: 14, fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer' }}>← Anterior</button>
-            : <div />}
-          {step < totalSteps
-            ? <button onClick={nextStep} className="btn-primary">Próximo →</button>
-            : <button onClick={handleSubmit} className="btn-primary" disabled={loading}>{loading ? 'Salvando...' : (isEditing ? '✓ Salvar alterações' : '✓ Publicar serviço')}</button>
-          }
+          )}
         </div>
-      </div>
-    </div>
+
+        {heroImages.length > 1 && (
+          <>
+            <button onClick={() => goToImage((currentHero - 1 + heroImages.length) % heroImages.length)}
+className="hero-arrow hero-arrow-left"
+              style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+            <button onClick={() => goToImage((currentHero + 1) % heroImages.length)}
+className="hero-arrow hero-arrow-right"
+              style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', zIndex: 4, background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 22, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+          </>
+        )}
+      </section>
+
+      {/* PROPOSTA DE VALOR */}
+      <section style={{ background: '#f9fafb', padding: '32px 24px', borderBottom: '1px solid #e8e8e8' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
+          {[
+            { icon: '🔍', title: 'Compare opções', desc: 'Veja vários espaços lado a lado antes de decidir' },
+            { icon: '💬', title: 'Orçamento direto', desc: 'Fale diretamente com o anunciante, sem intermediários' },
+            { icon: '💸', title: 'Grátis para quem busca', desc: 'Nenhuma taxa para quem organiza eventos' },
+            { icon: '⚡', title: 'Resposta rápida', desc: 'Anunciantes respondem em até 24 horas' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+              <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 3 }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5 }}>{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CATEGORIAS */}
+      <section className="section">
+        <h2 className="sec-title">Explore por categoria</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
+          {CATEGORIES.map(c => (
+            <div key={c.name} onClick={() => goToPage('listing')}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 8px', borderRadius: 12, border: '1.5px solid #e8e8e8', cursor: 'pointer', background: '#fff', transition: 'all 0.2s', textAlign: 'center' }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#a3e635'; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 4px 12px rgba(163,230,53,0.15)' }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#e8e8e8'; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none' }}
+            >
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{c.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#2d2d2d', lineHeight: 1.3 }}>{c.name}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ESPAÇOS EM DESTAQUE */}
+      {featuredSpaces.length > 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>Espaços em destaque</h2>
+            <button onClick={() => goToPage('listing')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Ver todos →
+            </button>
+          </div>
+          <div className="cards-3col">
+            {featuredSpaces.slice(0, 3).map(s => (
+              <div key={s.id} className="card" onClick={() => goToPage('detail', s)}>
+                <img src={s.media_urls[0] || 'https://via.placeholder.com/400x220?text=Sem+foto'} alt={s.name} loading="lazy" />
+                <div className="card-body">
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">📍 {s.city}, {s.state}</div>
+                  <div className="card-tags">
+                    {s.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+                  </div>
+                  <div className="card-foot">
+                    <span className="card-price" style={{ fontSize: 11 }}>{s.price_per_hour ? `A partir de R$ ${s.price_per_hour.toLocaleString('pt-BR')}` : s.price_per_day ? `A partir de R$ ${s.price_per_day.toLocaleString('pt-BR')}` : 'Consulte o valor'}</span>
+                    <span className="card-cap">👥 até {s.capacity}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {featuredSpaces.length === 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '48px 40px', textAlign: 'center', border: '1px solid #d9f99d' }}>
+            <div style={{ fontSize: 42, marginBottom: 14 }}>🎪</div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros anunciantes!</h3>
+            <p style={{ fontSize: 14, color: '#365314', marginBottom: 20, lineHeight: 1.6, maxWidth: 460, margin: '0 auto 20px' }}>
+              Estamos recebendo os primeiros cadastros de espaços. Garanta visibilidade desde o início e comece a receber orçamentos.
+            </p>
+            <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage('signup')}>
+              Cadastrar meu espaço gratuitamente
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* FORNECEDORES EM DESTAQUE */}
+      {featuredSuppliers.length > 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>Fornecedores em destaque</h2>
+            <button onClick={() => goToPage('suppliers')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+              Ver todos →
+            </button>
+          </div>
+          <div className="cards-3col">
+            {featuredSuppliers.slice(0, 3).map(s => (
+              <div key={s.id} className="card" onClick={() => goToPage('supplier-detail', s)}>
+                {s.media_urls?.[0]
+                  ? <img src={s.media_urls[0]} alt={s.name} loading="lazy" />
+                  : <div style={{ height: 180, background: 'linear-gradient(135deg, #f0fdf4, #ecfccb)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40 }}>🛠️</div>
+                }
+                <div className="card-body">
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">📍 {s.cities?.[0] || s.state} · {s.category}</div>
+                  <div className="card-tags">
+                    <span className="tag">🛠️ Fornecedor</span>
+                    {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
+                  </div>
+                  <div className="card-foot">
+                    <span className="card-price" style={{ fontSize: 11 }}>{s.price_info ? `A partir de ${s.price_info.toLowerCase().includes('r$') ? s.price_info : `R$ ${s.price_info}`}` : 'Consulte o valor'}</span>
+                    <span className="card-cap">Ver perfil →</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {featuredSuppliers.length === 0 && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '40px 36px', textAlign: 'center', border: '1px solid #d9f99d' }}>
+            <div style={{ fontSize: 38, marginBottom: 12 }}>🛠️</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros fornecedores!</h3>
+            <p style={{ fontSize: 13, color: '#365314', marginBottom: 18, lineHeight: 1.6, maxWidth: 420, margin: '0 auto 18px' }}>
+              Fotógrafos, DJs, decoradores e confeiteiros — cadastre seu serviço e comece a receber orçamentos.
+            </p>
+            <button className="btn-primary" style={{ padding: '11px 24px', fontSize: 14 }} onClick={() => goToPage('signup')}>
+              Cadastrar meu serviço gratuitamente
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* CTA HOST */}
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div className="cta-host">
+          <div>
+            <div className="cta-title">Tem um espaço para eventos?</div>
+            <div className="cta-desc">
+              Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
+            </div>
+          </div>
+          <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage('signup')}>
+            Anunciar meu espaço →
+          </button>
+        </div>
+      </section>
+
+      {/* CTA FORNECEDOR */}
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', borderRadius: 16, padding: '36px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div style={{ fontSize: 48 }}>🛠️</div>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: '#a3e635', marginBottom: 8 }}>
+                Você é fotógrafo, DJ, cerimonialista, buffet ou fornecedor de serviços?
+              </div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', maxWidth: 500, lineHeight: 1.7 }}>
+                Crie seu perfil profissional no Ewind, exiba seu portfólio e seja encontrado por quem está organizando o evento perfeito. Sem custo.
+              </div>
+            </div>
+          </div>
+          <button
+            style={{ padding: '14px 28px', fontSize: 15, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 10, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
+            onClick={() => goToPage('supplier-signup')}
+          >
+            Sou fornecedor →
+          </button>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <img src="/logo.png" alt="Ewind" className="logo-img-sm" />
+        <span>© 2025 Ewind — O marketplace de espaços e serviços para eventos</span>
+      </footer>
+    </>
   )
 }

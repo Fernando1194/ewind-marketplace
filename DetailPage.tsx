@@ -1,268 +1,378 @@
+import AvailabilityCalendar from '../components/AvailabilityCalendar'
+import Reviews from '../components/Reviews'
 import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
-import type { User } from '@supabase/supabase-js'
-import type { Quote } from '../types'
-import { QUOTE_STATUS_LABELS } from '../types'
+import type { Supplier } from '../types'
+import MediaCarousel from '../components/MediaCarousel'
+import { SUPPLIER_CATEGORIES, EVENT_TYPES } from '../types'
 import type { Page } from '../App'
+import { supabase } from '../supabase'
 
 interface Props {
-  user: User
+  supplier: Supplier
   goToPage: (page: Page) => void
+  user?: any
 }
 
-export default function HostQuotesPage({ user, goToPage }: Props) {
-  const [quotes, setQuotes] = useState<Quote[]>([])
-  const [loading, setLoading] = useState(true)
-  const [respondingTo, setRespondingTo] = useState<string | null>(null)
-  const [responseText, setResponseText] = useState('')
-  const [proposedPrice, setProposedPrice] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+export default function SupplierDetailPage({ supplier, goToPage, user }: Props) {
+  const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
 
-  useEffect(() => {
-    loadQuotes()
-  }, [])
+  // Quote form state
+  const [showQuoteForm, setShowQuoteForm] = useState(false)
+  const [eventType, setEventType] = useState('')
+  const [eventDate, setEventDate] = useState('')
+  const [eventTime, setEventTime] = useState('')
+  const [guestsCount, setGuestsCount] = useState('')
+  const [message, setMessage] = useState('')
+  const [quoteLoading, setQuoteLoading] = useState(false)
+  const [quoteError, setQuoteError] = useState('')
+  const [quoteSuccess, setQuoteSuccess] = useState(false)
+  const [waMsg, setWaMsg] = useState('')
 
-  const loadQuotes = async () => {
-    setLoading(true)
-    const { data } = await supabase
-      .from('quotes')
-      .select(`
-        *,
-        spaces (
-          id, name, city, state, category, media_urls
-        )
-      `)
-      .eq('host_id', user.id)
-      .order('created_at', { ascending: false })
-
-    if (data) setQuotes(data as any)
-    setLoading(false)
+  const handleWhatsApp = () => {
+    if (!supplier.whatsapp) return
+    const num = supplier.whatsapp.replace(/\D/g, '')
+    const msg = encodeURIComponent(
+      `Olá! Te encontrei na plataforma Ewind e gostaria de um orçamento do seu serviço de *${supplier.category}*. 🎉\n\n` +
+      `Vi seu perfil como *${supplier.name}* na plataforma e adorei o trabalho!\n\n` +
+      `Poderia me passar mais informações sobre disponibilidade e valores? 😊`
+    )
+    window.open(`https://wa.me/55${num}?text=${msg}`, '_blank')
   }
 
-  const markAsViewed = async (id: string) => {
-    await supabase
-      .from('quotes')
-      .update({ status: 'viewed' })
-      .eq('id', id)
-      .eq('status', 'pending')
+  const handleQuickWhatsApp = () => {
+    if (!supplier.whatsapp) return
+    const num = supplier.whatsapp.replace(/\D/g, '')
+    const msg = encodeURIComponent(
+      `Olá! Acabei de solicitar um orçamento pelo *Ewind* para o serviço *${supplier.name}*. 🎉\n\n` +
+      `📌 *Serviço:* ${supplier.category}\n` +
+      (eventType ? `🎉 *Evento:* ${eventType}\n` : '') +
+      (eventDate ? `📅 *Data:* ${new Date(eventDate + 'T12:00:00').toLocaleDateString('pt-BR')}\n` : '') +
+      (guestsCount ? `👥 *Convidados:* ${guestsCount} pessoas\n` : '') +
+      (message ? `\n💬 *Obs:* ${message}\n` : '') +
+      `\nMeu orçamento já foi enviado pela plataforma. Aguardo seu retorno! 😊`
+    )
+    window.open(`https://wa.me/55${num}?text=${msg}`, '_blank')
   }
 
-  const startResponse = (quote: Quote) => {
-    setRespondingTo(quote.id)
-    setResponseText('')
-    setProposedPrice('')
-    if (quote.status === 'pending') {
-      markAsViewed(quote.id)
-    }
-  }
-
-  const submitResponse = async (id: string) => {
-    if (!responseText.trim()) {
-      alert('Por favor, escreva uma resposta')
-      return
-    }
-    setSubmitting(true)
+  const submitQuote = async () => {
+    if (!user) { goToPage('login'); return }
+    if (!eventType || !eventDate) { setQuoteError('Preencha o tipo de evento e a data'); return }
+    setQuoteLoading(true)
+    setQuoteError('')
     try {
-      const { error } = await supabase
-        .from('quotes')
-        .update({
-          host_response: responseText,
-          proposed_price: proposedPrice ? parseFloat(proposedPrice) : null,
-          status: 'responded',
-          responded_at: new Date().toISOString()
-        })
-        .eq('id', id)
-
+      const { error } = await supabase.from('quotes').insert({
+        supplier_id: supplier.id,
+        space_id: null,
+        guest_id: user.id,
+        host_id: supplier.owner_id,
+        event_type: eventType,
+        event_date: eventDate,
+        event_time: eventTime || null,
+        guests_count: guestsCount ? parseInt(guestsCount) : null,
+        duration_hours: null,
+        message: message || null,
+        status: 'pending'
+      })
       if (error) throw error
-
-      setRespondingTo(null)
-      setResponseText('')
-      setProposedPrice('')
-      await loadQuotes()
-      alert('✅ Resposta enviada!')
+      setQuoteSuccess(true)
+      // Build WhatsApp message for after success
+      if (supplier.whatsapp) {
+        const num = supplier.whatsapp.replace(/\D/g, '')
+        const wm = encodeURIComponent(
+          `Olá! Acabei de solicitar um orçamento pelo *Ewind* para o serviço *${supplier.name}*. 🎉\n\n` +
+          `📌 *Serviço:* ${supplier.category}\n` +
+          (eventType ? `🎉 *Evento:* ${eventType}\n` : '') +
+          (eventDate ? `📅 *Data:* ${new Date(eventDate + 'T12:00:00').toLocaleDateString('pt-BR')}\n` : '') +
+          (guestsCount ? `👥 *Convidados:* ${guestsCount} pessoas\n` : '') +
+          (message ? `\n💬 *Obs:* ${message}\n` : '') +
+          `\nMeu orçamento já foi enviado pela plataforma. Aguardo seu retorno! 😊`
+        )
+        setWaMsg(`https://wa.me/55${num}?text=${wm}`)
+      }
     } catch (err: any) {
-      alert('Erro: ' + err.message)
-    } finally {
-      setSubmitting(false)
+      setQuoteError(err.message || 'Erro ao enviar orçamento')
     }
+    setQuoteLoading(false)
   }
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('pt-BR')
-  }
-
-  const stats = {
-    total: quotes.length,
-    pending: quotes.filter(q => q.status === 'pending').length,
-    responded: quotes.filter(q => q.status === 'responded' || q.status === 'accepted').length,
+  const handleInstagram = () => {
+    if (!supplier.instagram) return
+    const handle = supplier.instagram.replace('@', '')
+    window.open(`https://instagram.com/${handle}`, '_blank')
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 12 }}>
+    <>
+      <div className="back-bar">
+        <a onClick={() => goToPage('suppliers')}>← Voltar aos fornecedores</a>
+      </div>
+
+      <div className="det-layout">
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Orçamentos recebidos</h1>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>Responda às solicitações dos clientes</p>
-        </div>
-        <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>
-          ← Voltar ao painel
-        </button>
-      </div>
+          {/* Galeria */}
+          <MediaCarousel urls={supplier.media_urls} alt={supplier.name} height={340} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24, marginTop: 20 }}>
-        <div className="stat-card">
-          <div className="stat-num">{stats.total}</div>
-          <div className="stat-lab2">Total</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: '#c05621' }}>{stats.pending}</div>
-          <div className="stat-lab2">Pendentes</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: '#5aa800' }}>{stats.responded}</div>
-          <div className="stat-lab2">Respondidos</div>
-        </div>
-      </div>
+          {/* Badge categoria */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+            <span style={{
+              background: cat?.bg || '#f0fdf4', fontSize: 13, fontWeight: 700,
+              padding: '5px 14px', borderRadius: 20
+            }}>
+              {cat?.icon} {supplier.category}
+            </span>
+            {supplier.subcategory && (
+              <span style={{ fontSize: 13, color: '#5aa800', fontWeight: 600 }}>
+                · {supplier.subcategory}
+              </span>
+            )}
+          </div>
 
-      {loading && <p>Carregando...</p>}
+          <h1 className="det-title">{supplier.name}</h1>
+          <div className="det-loc">
+            📍 {supplier.cities.join(', ')}, {supplier.state}
+            {supplier.neighborhood && (
+              <span style={{ marginLeft: 6, color: '#9ca3af' }}>· {supplier.neighborhood}</span>
+            )}
+          </div>
 
-      {!loading && quotes.length === 0 && (
-        <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Sem orçamentos ainda</h3>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>Quando alguém solicitar um orçamento, aparecerá aqui.</p>
-        </div>
-      )}
+          {/* Stats */}
+          <div className="stats-row" style={{ marginTop: 16 }}>
+            <div className="stat-item">
+              <div className="stat-val">{supplier.cities.length}</div>
+              <div className="stat-lab">{supplier.cities.length === 1 ? 'Cidade' : 'Cidades'}</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-val">{supplier.event_types.length || '—'}</div>
+              <div className="stat-lab">Tipos de evento</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-val" style={{ color: '#5aa800' }}>Ativo</div>
+              <div className="stat-lab">Status</div>
+            </div>
+          </div>
 
-      <div style={{ display: 'grid', gap: 16 }}>
-        {quotes.map(q => {
-          const status = QUOTE_STATUS_LABELS[q.status]
-          const isResponding = respondingTo === q.id
-          const canRespond = q.status === 'pending' || q.status === 'viewed'
+          {/* Descrição */}
+          {supplier.description && (
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>Sobre o serviço</h3>
+              <p className="det-desc">{supplier.description}</p>
+            </div>
+          )}
 
-          return (
-            <div key={q.id} style={{ background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 14, padding: 20 }}>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {q.spaces && (
-                  <img
-                    src={(q.spaces as any).media_urls?.[0] || 'https://via.placeholder.com/120x90?text=Sem+foto'}
-                    alt={(q.spaces as any).name}
-                    style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 10 }}
-                  />
-                )}
-
-                <div style={{ flex: 1, minWidth: 240 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                    <div>
-                      <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>{(q.spaces as any)?.name || 'Espaço'}</h3>
-                      <div style={{ fontSize: 12, color: '#6b7280' }}>Recebido em {formatDate(q.created_at)}</div>
-                    </div>
-                    <span style={{
-                      fontSize: 11, fontWeight: 600, padding: '3px 10px',
-                      borderRadius: 100, background: status.bg, color: status.color
-                    }}>{status.label}</span>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Evento</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{q.event_type}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Data</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{formatDate(q.event_date)}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Convidados</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{q.guests_count}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: 11, color: '#6b7280' }}>Duração</div>
-                      <div style={{ fontSize: 13, fontWeight: 600 }}>{q.duration_hours}h</div>
-                    </div>
-                  </div>
-
-                  {q.message && (
-                    <div style={{ marginTop: 10, padding: 10, background: '#f9fafb', borderRadius: 8, fontSize: 12, color: '#4b5563' }}>
-                      <strong>Mensagem do cliente:</strong> {q.message}
-                    </div>
-                  )}
-
-                  {q.host_response && !isResponding && (
-                    <div style={{ marginTop: 10, padding: 12, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#166534', marginBottom: 4 }}>💬 Sua resposta:</div>
-                      <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.5 }}>{q.host_response}</div>
-                      {q.proposed_price && (
-                        <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#166534' }}>
-                          💰 R$ {q.proposed_price.toLocaleString('pt-BR')}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {isResponding && (
-                    <div style={{ marginTop: 14, padding: 14, background: '#fafafa', borderRadius: 10 }}>
-                      <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Sua resposta *</label>
-                      <textarea
-                        value={responseText}
-                        onChange={e => setResponseText(e.target.value)}
-                        placeholder="Olá! Temos disponibilidade para a data..."
-                        rows={4}
-                        style={{ width: '100%', padding: 10, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical', marginBottom: 10 }}
-                      />
-                      <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Preço proposto (R$)</label>
-                      <input
-                        type="number"
-                        value={proposedPrice}
-                        onChange={e => setProposedPrice(e.target.value)}
-                        placeholder="Ex: 4500"
-                        style={{ width: '100%', padding: 10, border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', marginBottom: 12 }}
-                      />
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          onClick={() => submitResponse(q.id)}
-                          className="btn-primary"
-                          disabled={submitting}
-                          style={{ flex: 1 }}
-                        >
-                          {submitting ? 'Enviando...' : '✓ Enviar resposta'}
-                        </button>
-                        <button
-                          onClick={() => setRespondingTo(null)}
-                          style={{
-                            padding: '10px 16px', fontSize: 13, fontWeight: 600,
-                            background: '#fff', border: '1.5px solid #e8e8e8',
-                            borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
-                          }}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {!isResponding && canRespond && (
-                    <div style={{ marginTop: 12 }}>
-                      <button
-                        onClick={() => startResponse(q)}
-                        className="btn-primary"
-                      >
-                        💬 Responder orçamento
-                      </button>
-                    </div>
-                  )}
-
-                  {!isResponding && !canRespond && q.status === 'responded' && (
-                    <div style={{ marginTop: 10, fontSize: 12, color: '#6b7280' }}>
-                      ✓ Aguardando retorno do cliente
-                    </div>
-                  )}
-                </div>
+          {/* Tipos de evento */}
+          {supplier.event_types.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>Tipos de evento atendidos</h3>
+              <div className="card-tags">
+                {supplier.event_types.map(t => <span key={t} className="tag">{t}</span>)}
               </div>
             </div>
-          )
-        })}
+          )}
+
+          {/* Atributos */}
+          {supplier.attributes.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>Diferenciais</h3>
+              <div className="attrs">
+                {supplier.attributes.map(a => (
+                  <div key={a} className="attr">✓ {a}</div>
+                ))}
+              </div>
+            </div>
+          )}
+        {/* Disponibilidade */}
+        {((supplier as any).available_dates?.length > 0 || (supplier as any).availability_note) && (
+          <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 Disponibilidade</h3>
+            <AvailabilityCalendar
+              availableDates={(supplier as any).available_dates || []}
+              readOnly
+              availabilityNote={(supplier as any).availability_note}
+            />
+          </div>
+        )}
+
+        {/* Avaliações */}
+        <div style={{ marginTop: 32, paddingTop: 28, borderTop: '1px solid #e8e8e8' }}>
+          <Reviews supplierId={supplier.id} user={user} />
+        </div>
+        </div>
+
+        {/* Sidebar contato */}
+        <aside>
+          <div className="quote-box">
+            {supplier.price_info && (
+              <>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2, fontWeight: 500 }}>Preços a partir de</div>
+                <div className="qb-price" style={{ fontSize: 18 }}>
+                  {supplier.price_info.toLowerCase().includes('r$') ? supplier.price_info : `R$ ${supplier.price_info}`}
+                </div>
+                <div className="qb-sub">Solicite um orçamento para saber o valor exato</div>
+              </>
+            )}
+
+            {/* Quote form */}
+            {!quoteSuccess ? (
+              <>
+                {!showQuoteForm ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+                    <button onClick={() => user ? setShowQuoteForm(true) : goToPage('login')}
+                      style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 8, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit' }}>
+                      📋 Solicitar orçamento pelo Ewind
+                    </button>
+                    {supplier.whatsapp && (
+                      <button onClick={handleWhatsApp}
+                        style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 700, background: '#25d366', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        💬 Contato rápido pelo WhatsApp
+                      </button>
+                    )}
+
+              {supplier.instagram && (
+                <button
+                  onClick={handleInstagram}
+                  style={{
+                    width: '100%', padding: 13, fontSize: 14, fontWeight: 700,
+                    background: 'linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045)',
+                    border: 'none', borderRadius: 8,
+                    color: '#fff', cursor: 'pointer', fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                  }}
+                >
+                  📸 Ver Instagram
+                </button>
+              )}
+
+              {supplier.email && (
+                <a
+                  href={`mailto:${supplier.email}`}
+                  style={{
+                    width: '100%', padding: 13, fontSize: 14, fontWeight: 700,
+                    background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8,
+                    color: '#2d2d2d', textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                  }}
+                >
+                  ✉️ Enviar email
+                </a>
+              )}
+
+              {supplier.website && (
+                <a
+                  href={supplier.website.startsWith('http') ? supplier.website : `https://${supplier.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    width: '100%', padding: 13, fontSize: 14, fontWeight: 700,
+                    background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8,
+                    color: '#2d2d2d', textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8
+                  }}
+                >
+                  🌐 Visitar site
+                </a>
+              )}
+
+                  </div>
+                ) : (
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#2d2d2d' }}>📋 Solicitar orçamento</div>
+
+                    <div className="fg" style={{ marginBottom: 10 }}>
+                      <label style={{ fontSize: 12 }}>Tipo de evento *</label>
+                      <select value={eventType} onChange={e => setEventType(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+                        <option value="">Selecione...</option>
+                        {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                      <div className="fg">
+                        <label style={{ fontSize: 12 }}>Data *</label>
+                        <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)}
+                          min={new Date().toISOString().split('T')[0]}
+                          style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />
+                      </div>
+                      <div className="fg">
+                        <label style={{ fontSize: 12 }}>Horário</label>
+                        <input type="time" value={eventTime} onChange={e => setEventTime(e.target.value)}
+                          style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />
+                      </div>
+                    </div>
+
+                    <div className="fg" style={{ marginBottom: 10 }}>
+                      <label style={{ fontSize: 12 }}>Nº de convidados</label>
+                      <input type="text" inputMode="numeric" value={guestsCount}
+                        onChange={e => setGuestsCount(e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="Ex: 100"
+                        style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />
+                      <div style={{ display: 'flex', gap: 5, marginTop: 5, flexWrap: 'wrap' }}>
+                        {[20,50,100,150,200,300].map(n => (
+                          <button key={n} type="button" onClick={() => setGuestsCount(n.toString())}
+                            style={{ padding: '2px 8px', fontSize: 10, fontWeight: 600, background: guestsCount === n.toString() ? '#a3e635' : '#f3f4f6', border: 'none', borderRadius: 100, cursor: 'pointer', color: guestsCount === n.toString() ? '#1a2e05' : '#6b7280' }}>
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="fg" style={{ marginBottom: 12 }}>
+                      <label style={{ fontSize: 12 }}>Mensagem (opcional)</label>
+                      <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3}
+                        placeholder="Detalhes do evento, dúvidas..."
+                        style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
+                    </div>
+
+                    {quoteError && <div style={{ fontSize: 12, color: '#dc2626', marginBottom: 8, padding: '6px 10px', background: '#fef2f2', borderRadius: 6 }}>⚠️ {quoteError}</div>}
+
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => setShowQuoteForm(false)}
+                        style={{ flex: 1, padding: 10, fontSize: 13, fontWeight: 600, background: '#f9fafb', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Voltar
+                      </button>
+                      <button onClick={submitQuote} disabled={quoteLoading}
+                        style={{ flex: 2, padding: 10, fontSize: 13, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 8, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        {quoteLoading ? 'Enviando...' : '✓ Enviar orçamento'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ marginTop: 12, padding: 16, background: '#f0fdf4', borderRadius: 10, textAlign: 'center' }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>🎉</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#166534', marginBottom: 6 }}>Orçamento enviado!</div>
+                <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 12, lineHeight: 1.5 }}>
+                  O fornecedor receberá seu pedido. Você pode acompanhar na aba Orçamentos.
+                </p>
+                {waMsg && (
+                  <>
+                    <a href={waMsg} target="_blank" rel="noopener noreferrer"
+                      style={{ display: 'block', width: '100%', padding: '10px', background: '#25d366', color: '#fff', borderRadius: 8, fontSize: 13, fontWeight: 700, textDecoration: 'none', marginBottom: 8 }}>
+                      💬 Notificar pelo WhatsApp também
+                    </a>
+                    <div style={{ fontSize: 10, color: '#9ca3af', marginBottom: 8 }}>Acelera a resposta em até 3x</div>
+                  </>
+                )}
+                <button onClick={() => goToPage('my-quotes')}
+                  style={{ width: '100%', padding: 9, fontSize: 12, fontWeight: 700, background: '#111', border: 'none', borderRadius: 8, color: '#a3e635', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  Ver meus orçamentos →
+                </button>
+              </div>
+            )}
+
+            {!quoteSuccess && !showQuoteForm && !supplier.whatsapp && !supplier.instagram && !supplier.email && !supplier.website && (
+                <div style={{ textAlign: 'center', padding: 16, fontSize: 13, color: '#6b7280' }}>
+                  Nenhum contato disponível
+                </div>
+              )}
+
+            <div className="qb-sec" style={{ marginTop: 16 }}>
+              🔒 Contrate com segurança. Verifique referências antes de fechar contrato.
+            </div>
+          </div>
+        </aside>
       </div>
-    </div>
+    </>
   )
 }
