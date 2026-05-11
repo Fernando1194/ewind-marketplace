@@ -36,7 +36,10 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
           📍 {supplier.cities.slice(0, 2).join(', ')}{supplier.cities.length > 2 ? ` +${supplier.cities.length - 2}` : ''}, {supplier.state}
         </div>
         {supplier.price_info && (
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>💰 {supplier.price_info}</div>
+          <div style={{ marginTop: 6 }}>
+            <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
+            <span style={{ fontSize: 14, color: '#5aa800', fontWeight: 800 }}>{supplier.price_info.toLowerCase().includes('r$') ? supplier.price_info : `R$ ${supplier.price_info}`}</span>
+          </div>
         )}
         <div className="card-tags" style={{ marginTop: 8 }}>
           {supplier.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}

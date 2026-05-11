@@ -208,7 +208,10 @@ className="hero-arrow hero-arrow-right"
                     {s.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
                   </div>
                   <div className="card-foot">
-                    <span className="card-price">{s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}</span>
+                    <div style={{ marginTop: 4 }}>
+                      <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
+                      <span className="card-price">{s.price_per_hour ? `R$ ${s.price_per_hour.toLocaleString('pt-BR')}` : s.price_per_day ? `R$ ${s.price_per_day.toLocaleString('pt-BR')}` : 'Consulte o valor'}</span>
+                    </div>
                     <span className="card-cap">👥 até {s.capacity}</span>
                   </div>
                 </div>
@@ -257,13 +260,10 @@ className="hero-arrow hero-arrow-right"
                     {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
                   </div>
                   <div className="card-foot">
-                    <span className="card-price">{s.price_info
-                      ? (isNaN(Number(s.price_info.replace(/[^0-9.,]/g, ''))) || !s.price_info.trim()
-                          ? s.price_info
-                          : s.price_info.toLowerCase().includes('r$')
-                            ? s.price_info
-                            : `R$ ${s.price_info}`)
-                      : 'Consultar valor'}</span>
+                    <div style={{ marginTop: 4 }}>
+                      <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
+                      <span className="card-price">{s.price_info ? (s.price_info.toLowerCase().includes('r$') ? s.price_info : `R$ ${s.price_info}`) : 'Consulte o valor'}</span>
+                    </div>
                     <span className="card-cap">Ver perfil →</span>
                   </div>
                 </div>

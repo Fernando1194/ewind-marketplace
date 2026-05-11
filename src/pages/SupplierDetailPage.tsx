@@ -203,8 +203,11 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
           <div className="quote-box">
             {supplier.price_info && (
               <>
-                <div className="qb-price" style={{ fontSize: 18 }}>{supplier.price_info}</div>
-                <div className="qb-sub">Valor orientativo · sujeito a negociação</div>
+                <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>Preços a partir de</div>
+                <div className="qb-price" style={{ fontSize: 26 }}>
+                  {supplier.price_info.toLowerCase().includes('r$') ? supplier.price_info : `R$ ${supplier.price_info}`}
+                </div>
+                <div className="qb-sub">Solicite um orçamento para o valor exato</div>
               </>
             )}
 

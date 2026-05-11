@@ -41,7 +41,10 @@ const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
         {space.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
       </div>
       <div className="card-foot">
-        <span className="card-price">{space.price_per_hour ? `R$${space.price_per_hour.toLocaleString('pt-BR')}/h` : `R$${space.price_per_day?.toLocaleString('pt-BR')}/dia`}</span>
+        <div style={{ marginTop: 4 }}>
+          <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
+          <span className="card-price">{space.price_per_hour ? `R$ ${space.price_per_hour.toLocaleString('pt-BR')}` : space.price_per_day ? `R$ ${space.price_per_day.toLocaleString('pt-BR')}` : 'Consulte o valor'}</span>
+        </div>
         <span className="card-cap">👥 até {space.capacity}</span>
       </div>
       {(space as any).avg_response_hours !== undefined && (space as any).avg_response_hours !== null && (

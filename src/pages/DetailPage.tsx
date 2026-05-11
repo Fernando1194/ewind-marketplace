@@ -179,9 +179,13 @@ export default function DetailPage({ space, user, goToPage }: Props) {
 
         <aside>
           <div className="quote-box">
+            <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>Preços a partir de</div>
             <div className="qb-price">
-              {space.price_per_hour ? `R$ ${space.price_per_hour}/hora` : `R$ ${space.price_per_day}/dia`}
+              {space.price_per_hour
+                ? `R$ ${Number(space.price_per_hour).toLocaleString('pt-BR')}`
+                : `R$ ${Number(space.price_per_day).toLocaleString('pt-BR')}`}
             </div>
+            <div className="qb-sub">Solicite um orçamento para o valor exato</div>
             <div className="qb-sub">Preço orientativo · sujeito a negociação</div>
 
             {success && quoteData && (() => {
