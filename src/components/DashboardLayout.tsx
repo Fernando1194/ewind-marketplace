@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { supabase } from '../supabase'
+import type { ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 
 interface Tab {
@@ -15,8 +14,8 @@ interface Props {
   onTabChange: (tab: string) => void
   title: string
   subtitle: string
-  headerAction?: React.ReactNode
-  children: React.ReactNode
+  headerAction?: ReactNode
+  children: ReactNode
 }
 
 export default function DashboardLayout({ user, tabs, activeTab, onTabChange, title, subtitle, headerAction, children }: Props) {
