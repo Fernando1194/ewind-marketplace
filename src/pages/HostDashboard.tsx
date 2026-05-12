@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import DashboardLayout from '../components/DashboardLayout'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Space } from '../types'
@@ -12,7 +13,7 @@ interface Props {
 export default function HostDashboard({ user, goToPage }: Props) {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'espacos' | 'dados' | 'sac' | 'chat'>('espacos')
+  const [tab, setTab] = useState('espacos')
   const [fullName, setFullName] = useState(user.user_metadata?.full_name || '')
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
@@ -20,10 +21,8 @@ export default function HostDashboard({ user, goToPage }: Props) {
   const [sacSubject, setSacSubject] = useState('')
   const [sacMsg, setSacMsg] = useState('')
   const [sacSent, setSacSent] = useState(false)
-  const [chatMsgs, setChatMsgs] = useState<{role:'user'|'assistant',text:string}[]>([{role:'assistant',text:'Olá! 👋 Sou o assistente do Ewind. Como posso ajudar com seu painel hoje?'}])
+  const [chatMsgs, setChatMsgs] = useState([{ role: 'assistant' as const, text: 'Olá! 👋 Como posso ajudar com seu painel de espaços hoje?' }])
   const [chatInput, setChatInput] = useState('')
-  const [chatLoading, setChatLoading] = useState(false)
-  const chatEndRef = useRef<HTMLDivElement>(null)
 
   const loadMySpaces = useCallback(async () => {
     setLoading(true)
@@ -77,26 +76,32 @@ export default function HostDashboard({ user, goToPage }: Props) {
     await supabase.from('profiles').update({ full_name: fullName, updated_at: new Date().toISOString() }).eq('id', user.id)
     setSaveMsg('✓ Salvo!'); setSaving(false); setTimeout(() => setSaveMsg(''), 3000)
   }
-
-  const sendSac = async () => {
-    await new Promise(r => setTimeout(r, 800))
-    setSacSent(true)
-  }
-
   const sendChat = () => {
     if (!chatInput.trim()) return
     const msg = chatInput.trim(); setChatInput('')
-    setChatMsgs(p => [...p, { role: 'user', text: msg }])
+    setChatMsgs(p => [...p, { role: 'user' as const, text: msg }])
     setTimeout(() => {
-      const lower = msg.toLowerCase()
-      let reply = 'Para dúvidas específicas, use a aba Suporte. Respondemos em até 24h! 😊'
-      if (lower.includes('plano') || lower.includes('preço')) reply = 'Os planos Ewind começam em R$49/mês. Novos anunciantes têm 90 dias gratuitos!'
-      if (lower.includes('orçamento')) reply = 'Orçamentos recebidos ficam na aba "Meus serviços" ou acesse via botão "Ver orçamentos recebidos".'
-      if (lower.includes('cadastro') || lower.includes('espaço') || lower.includes('serviço')) reply = 'Para cadastrar um novo anúncio, clique em "+ Cadastrar" no painel. São 90 dias gratuitos!'
-      setChatMsgs(p => [...p, { role: 'assistant', text: reply }])
-    }, 600)
+      const l = msg.toLowerCase()
+      let r = 'Para dúvidas específicas, use a aba Suporte. Respondemos em até 24h!'
+      if (l.includes('plano') || l.includes('preço')) r = 'Os planos Ewind começam em R$59/mês para espaços. Novos anunciantes têm 90 dias gratuitos!'
+      if (l.includes('orçamento')) r = 'Os orçamentos recebidos ficam no botão "Ver orçamentos" no topo do seu painel.'
+      if (l.includes('foto') || l.includes('imagem')) r = 'Para adicionar fotos, edite seu anúncio e vá até a etapa de Fotos. Você pode adicionar até 8 imagens!'
+      setChatMsgs(p => [...p, { role: 'assistant' as const, text: r }])
+    }, 500)
   }
 
+  const TABS = [
+    { key: 'espacos', icon: '🏢', label: 'Meus espaços' },
+    { key: 'dados', icon: '👤', label: 'Meus dados' },
+    { key: 'sac', icon: '🎧', label: 'Suporte' },
+    { key: 'chat', icon: '💬', label: 'Chat Ewind' },
+  ]
+  const TITLES: Record<string, {title:string;subtitle:string}> = {
+    espacos: { title: 'Meus espaços', subtitle: 'Gerencie seus anúncios de espaços para eventos' },
+    dados: { title: 'Meus dados', subtitle: 'Atualize suas informações de cadastro' },
+    sac: { title: 'Central de suporte', subtitle: 'Nossa equipe responde em até 24h úteis' },
+    chat: { title: 'Chat Ewind', subtitle: 'Tire dúvidas sobre a plataforma' },
+  }
 
   return (
       <span style={{
@@ -107,100 +112,56 @@ export default function HostDashboard({ user, goToPage }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 28px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
-            Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]} 👋
-          </h1>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus espaços</p>
+    <DashboardLayout user={user} tabs={TABS} activeTab={tab} onTabChange={setTab}
+      title={TITLES[tab]?.title||''} subtitle={TITLES[tab]?.subtitle||''}
+      headerAction={tab === 'espacos' ? (
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d', fontFamily: 'inherit' }}>📋 Ver orçamentos</button>
+          <button className="btn-primary" onClick={() => goToPage('new-space')}>+ Novo espaço</button>
         </div>
-        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => goToPage('supplier-dashboard')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
-            🛠️ Painel fornecedor
-          </button>
-          <button className="btn-primary" onClick={() => goToPage('new-space')}>
-            + Cadastrar novo espaço
-          </button>
-        </div>
-      </div>
+      ) : tab === 'dados' ? undefined : undefined}>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 24, borderBottom: '1px solid #e8e8e8' }}>
-        {([['espacos','🏢 Meus espaços'],['dados','👤 Meus dados'],['sac','🎧 Suporte'],['chat','💬 Chat Ewind']] as const).map(([k, l]) => (
-          <button key={k} onClick={() => setTab(k)}
-            style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: 'none', borderBottom: tab === k ? '2.5px solid #a3e635' : '2.5px solid transparent', background: 'none', color: tab === k ? '#2d2d2d' : '#9ca3af', cursor: 'pointer', fontFamily: 'inherit' }}>
-            {l}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab: Dados */}
       {tab === 'dados' && (
-        <div style={{ maxWidth: 480, background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Meus dados</h3>
-          <div className="fg"><label>Nome completo</label><input type="text" value={fullName} onChange={e => setFullName(e.target.value)} /></div>
-          <div className="fg"><label>Email</label><input type="email" value={user.email || ''} disabled style={{ background: '#f9fafb', color: '#9ca3af' }} /></div>
-          <div className="fg"><label>WhatsApp</label><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
-          {saveMsg && <div style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>{saveMsg}</div>}
-          <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{ alignSelf: 'flex-start', padding: '9px 22px' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
+        <div style={{maxWidth:480,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28,display:'flex',flexDirection:'column',gap:16}}>
+          <div className="fg"><label>Nome completo</label><input type="text" value={fullName} onChange={e=>setFullName(e.target.value)} /></div>
+          <div className="fg"><label>Email</label><input type="email" value={user.email||''} disabled style={{background:'#f9fafb',color:'#9ca3af'}} /></div>
+          <div className="fg"><label>WhatsApp</label><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
+          {saveMsg && <div style={{fontSize:13,color:'#16a34a',fontWeight:600}}>{saveMsg}</div>}
+          <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>{saving?'Salvando...':'Salvar'}</button>
         </div>
       )}
-
-      {/* Tab: SAC */}
       {tab === 'sac' && (
-        <div style={{ maxWidth: 520, background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 28 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Central de suporte</h3>
+        <div style={{maxWidth:520,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28}}>
           {sacSent ? (
-            <div style={{ textAlign: 'center', padding: 24 }}>
-              <div style={{ fontSize: 36, marginBottom: 10 }}>✅</div>
-              <p style={{ fontSize: 14, color: '#166534', fontWeight: 700 }}>Mensagem enviada!</p>
-              <p style={{ fontSize: 13, color: '#6b7280' }}>Responderemos em até 24h no email cadastrado.</p>
-              <button onClick={() => { setSacSent(false); setSacSubject(''); setSacMsg('') }} style={{ marginTop: 12, fontSize: 12, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Enviar outra mensagem</button>
-            </div>
+            <div style={{textAlign:'center',padding:24}}><div style={{fontSize:40,marginBottom:10}}>✅</div><p style={{fontSize:14,color:'#166534',fontWeight:700}}>Mensagem enviada!</p><p style={{fontSize:13,color:'#6b7280'}}>Responderemos em até 24h.</p><button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:12,fontSize:12,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}}>Enviar outra</button></div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div className="fg">
-                <label>Assunto</label>
-                <select value={sacSubject} onChange={e => setSacSubject(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
-                  <option value="">Selecione...</option>
-                  <option>Dúvida sobre planos</option>
-                  <option>Problema com orçamento</option>
-                  <option>Erro no cadastro de espaço</option>
-                  <option>Cobrança</option>
-                  <option>Outro</option>
-                </select>
-              </div>
-              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e => setSacMsg(e.target.value)} rows={4} placeholder="Descreva o problema..." style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} /></div>
-              <button onClick={sendSac} disabled={!sacSubject || !sacMsg.trim()} className="btn-primary" style={{ alignSelf: 'flex-start', padding: '9px 22px' }}>📨 Enviar</button>
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              <div className="fg"><label>Assunto</label><select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}><option value="">Selecione...</option><option>Dúvida sobre planos</option><option>Problema com orçamento</option><option>Erro no cadastro</option><option>Cobrança</option><option>Outro</option></select></div>
+              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={4} placeholder="Descreva o problema..." style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
+              <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'9px 22px'}}>📨 Enviar</button>
             </div>
           )}
         </div>
       )}
-
-      {/* Tab: Chat */}
       {tab === 'chat' && (
-        <div style={{ maxWidth: 600, background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', overflow: 'hidden' }}>
-          <div style={{ height: 380, overflowY: 'auto', padding: '20px 20px 12px' }}>
-            {chatMsgs.map((m, i) => (
-              <div key={i} style={{ marginBottom: 12, display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                {m.role === 'assistant' && <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#a3e635', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, marginRight: 8, flexShrink: 0, alignSelf: 'flex-end', fontWeight: 800 }}>E</div>}
-                <div style={{ maxWidth: '78%', padding: '9px 13px', borderRadius: m.role === 'user' ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: m.role === 'user' ? '#a3e635' : '#f3f4f6', color: m.role === 'user' ? '#1a2e05' : '#2d2d2d', fontSize: 13, lineHeight: 1.55 }}>{m.text}</div>
+        <div style={{maxWidth:600,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',overflow:'hidden'}}>
+          <div style={{height:380,overflowY:'auto',padding:'20px'}}>
+            {chatMsgs.map((m,i) => (
+              <div key={i} style={{marginBottom:12,display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start',alignItems:'flex-end',gap:8}}>
+                {m.role==='assistant' && <div style={{width:30,height:30,borderRadius:'50%',background:'#a3e635',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,flexShrink:0}}>E</div>}
+                <div style={{maxWidth:'78%',padding:'9px 13px',fontSize:13,lineHeight:1.55,borderRadius:m.role==='user'?'13px 13px 4px 13px':'13px 13px 13px 4px',background:m.role==='user'?'#a3e635':'#f3f4f6',color:m.role==='user'?'#1a2e05':'#2d2d2d'}}>{m.text}</div>
               </div>
             ))}
-            {false && <div style={{ display: 'flex', gap: 8 }}><div style={{ width: 30, height: 30, borderRadius: '50%', background: '#a3e635', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>E</div><div style={{ background: '#f3f4f6', padding: '9px 14px', borderRadius: '13px 13px 13px 4px', fontSize: 12, color: '#9ca3af' }}>digitando...</div></div>}
-            <div ref={chatEndRef} />
           </div>
-          <div style={{ borderTop: '1px solid #e8e8e8', padding: '10px 14px', display: 'flex', gap: 8 }}>
-            <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()} placeholder="Escreva sua dúvida..." style={{ flex: 1, padding: '9px 13px', border: '1.5px solid #e8e8e8', borderRadius: 9, fontSize: 13, fontFamily: 'inherit' }} />
-            <button onClick={sendChat} disabled={!chatInput.trim()} style={{ padding: '9px 16px', background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Enviar</button>
+          <div style={{borderTop:'1px solid #e8e8e8',padding:'10px 14px',display:'flex',gap:8}}>
+            <input type="text" value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendChat()} placeholder="Escreva sua dúvida..." style={{flex:1,padding:'9px 13px',border:'1.5px solid #e8e8e8',borderRadius:9,fontSize:13,fontFamily:'inherit'}} />
+            <button onClick={sendChat} disabled={!chatInput.trim()} style={{padding:'9px 16px',background:'#a3e635',color:'#1a2e05',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Enviar</button>
           </div>
         </div>
       )}
 
-      {/* Tab: Espaços */}
-      {tab === 'espacos' && <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+      {tab === 'espacos' && <div>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
         <div className="stat-card">
           <div className="stat-num">{stats.total}</div>
           <div className="stat-lab2">Total</div>
@@ -314,8 +275,7 @@ export default function HostDashboard({ user, goToPage }: Props) {
           </div>
         ))}
       </div>
-      </>
-      }
-    </div>
+    </div>}
+    </DashboardLayout>
   )
 }
