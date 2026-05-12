@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Space } from '../types'
@@ -12,6 +12,18 @@ interface Props {
 export default function HostDashboard({ user, goToPage }: Props) {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<'espacos' | 'dados' | 'sac' | 'chat'>('espacos')
+  const [fullName, setFullName] = useState(user.user_metadata?.full_name || '')
+  const [phone, setPhone] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveMsg, setSaveMsg] = useState('')
+  const [sacSubject, setSacSubject] = useState('')
+  const [sacMsg, setSacMsg] = useState('')
+  const [sacSent, setSacSent] = useState(false)
+  const [chatMsgs, setChatMsgs] = useState<{role:'user'|'assistant',text:string}[]>([{role:'assistant',text:'Olá! 👋 Sou o assistente do Ewind. Como posso ajudar com seu painel hoje?'}])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
 
   const loadMySpaces = useCallback(async () => {
     setLoading(true)
@@ -60,7 +72,33 @@ export default function HostDashboard({ user, goToPage }: Props) {
       rejected: { bg: '#fef2f2', color: '#991b1b', label: 'Rejeitado' }
     }
     const c = config[status] || config.pending
-    return (
+    const saveProfile = async () => {
+    setSaving(true)
+    await supabase.from('profiles').update({ full_name: fullName, updated_at: new Date().toISOString() }).eq('id', user.id)
+    setSaveMsg('✓ Salvo!'); setSaving(false); setTimeout(() => setSaveMsg(''), 3000)
+  }
+
+  const sendSac = async () => {
+    await new Promise(r => setTimeout(r, 800))
+    setSacSent(true)
+  }
+
+  const sendChat = async () => {
+    if (!chatInput.trim() || chatLoading) return
+    const msg = chatInput.trim(); setChatInput('')
+    setChatMsgs(p => [...p, { role: 'user', text: msg }]); setChatLoading(true)
+    try {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 500, system: 'Você é o assistente do Ewind, marketplace de espaços para eventos em Curitiba. Responda em português, de forma amigável e concisa.', messages: [...chatMsgs.slice(-6).map(m => ({ role: m.role, content: m.text })), { role: 'user', content: msg }] })
+      })
+      const d = await r.json()
+      setChatMsgs(p => [...p, { role: 'assistant', text: d.content?.[0]?.text || 'Tente novamente.' }])
+    } catch { setChatMsgs(p => [...p, { role: 'assistant', text: 'Erro técnico. Tente novamente.' }]) }
+    setChatLoading(false)
+  }
+
+  return (
       <span style={{
         fontSize: 11, fontWeight: 600, padding: '3px 10px',
         borderRadius: 100, background: c.bg, color: c.color
@@ -78,8 +116,8 @@ export default function HostDashboard({ user, goToPage }: Props) {
           <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus espaços</p>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d', fontFamily: 'inherit' }}>
-            📋 Ver orçamentos recebidos
+          <button onClick={() => goToPage('supplier-dashboard')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
+            🛠️ Painel fornecedor
           </button>
           <button className="btn-primary" onClick={() => goToPage('new-space')}>
             + Cadastrar novo espaço
@@ -87,6 +125,81 @@ export default function HostDashboard({ user, goToPage }: Props) {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 24, borderBottom: '1px solid #e8e8e8' }}>
+        {([['espacos','🏢 Meus espaços'],['dados','👤 Meus dados'],['sac','🎧 Suporte'],['chat','💬 Chat Ewind']] as const).map(([k, l]) => (
+          <button key={k} onClick={() => setTab(k)}
+            style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: 'none', borderBottom: tab === k ? '2.5px solid #a3e635' : '2.5px solid transparent', background: 'none', color: tab === k ? '#2d2d2d' : '#9ca3af', cursor: 'pointer', fontFamily: 'inherit' }}>
+            {l}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab: Dados */}
+      {tab === 'dados' && (
+        <div style={{ maxWidth: 480, background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Meus dados</h3>
+          <div className="fg"><label>Nome completo</label><input type="text" value={fullName} onChange={e => setFullName(e.target.value)} /></div>
+          <div className="fg"><label>Email</label><input type="email" value={user.email || ''} disabled style={{ background: '#f9fafb', color: '#9ca3af' }} /></div>
+          <div className="fg"><label>WhatsApp</label><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
+          {saveMsg && <div style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>{saveMsg}</div>}
+          <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{ alignSelf: 'flex-start', padding: '9px 22px' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
+        </div>
+      )}
+
+      {/* Tab: SAC */}
+      {tab === 'sac' && (
+        <div style={{ maxWidth: 520, background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 28 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Central de suporte</h3>
+          {sacSent ? (
+            <div style={{ textAlign: 'center', padding: 24 }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>✅</div>
+              <p style={{ fontSize: 14, color: '#166534', fontWeight: 700 }}>Mensagem enviada!</p>
+              <p style={{ fontSize: 13, color: '#6b7280' }}>Responderemos em até 24h no email cadastrado.</p>
+              <button onClick={() => { setSacSent(false); setSacSubject(''); setSacMsg('') }} style={{ marginTop: 12, fontSize: 12, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Enviar outra mensagem</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="fg">
+                <label>Assunto</label>
+                <select value={sacSubject} onChange={e => setSacSubject(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
+                  <option value="">Selecione...</option>
+                  <option>Dúvida sobre planos</option>
+                  <option>Problema com orçamento</option>
+                  <option>Erro no cadastro de espaço</option>
+                  <option>Cobrança</option>
+                  <option>Outro</option>
+                </select>
+              </div>
+              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e => setSacMsg(e.target.value)} rows={4} placeholder="Descreva o problema..." style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }} /></div>
+              <button onClick={sendSac} disabled={!sacSubject || !sacMsg.trim()} className="btn-primary" style={{ alignSelf: 'flex-start', padding: '9px 22px' }}>📨 Enviar</button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab: Chat */}
+      {tab === 'chat' && (
+        <div style={{ maxWidth: 600, background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', overflow: 'hidden' }}>
+          <div style={{ height: 380, overflowY: 'auto', padding: '20px 20px 12px' }}>
+            {chatMsgs.map((m, i) => (
+              <div key={i} style={{ marginBottom: 12, display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                {m.role === 'assistant' && <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#a3e635', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, marginRight: 8, flexShrink: 0, alignSelf: 'flex-end', fontWeight: 800 }}>E</div>}
+                <div style={{ maxWidth: '78%', padding: '9px 13px', borderRadius: m.role === 'user' ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: m.role === 'user' ? '#a3e635' : '#f3f4f6', color: m.role === 'user' ? '#1a2e05' : '#2d2d2d', fontSize: 13, lineHeight: 1.55 }}>{m.text}</div>
+              </div>
+            ))}
+            {chatLoading && <div style={{ display: 'flex', gap: 8 }}><div style={{ width: 30, height: 30, borderRadius: '50%', background: '#a3e635', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>E</div><div style={{ background: '#f3f4f6', padding: '9px 14px', borderRadius: '13px 13px 13px 4px', fontSize: 12, color: '#9ca3af' }}>digitando...</div></div>}
+            <div ref={chatEndRef} />
+          </div>
+          <div style={{ borderTop: '1px solid #e8e8e8', padding: '10px 14px', display: 'flex', gap: 8 }}>
+            <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()} placeholder="Escreva sua dúvida..." style={{ flex: 1, padding: '9px 13px', border: '1.5px solid #e8e8e8', borderRadius: 9, fontSize: 13, fontFamily: 'inherit' }} />
+            <button onClick={sendChat} disabled={!chatInput.trim() || chatLoading} style={{ padding: '9px 16px', background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Enviar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Tab: Espaços */}
+      {tab === 'espacos' && <>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
         <div className="stat-card">
           <div className="stat-num">{stats.total}</div>
@@ -201,6 +314,8 @@ export default function HostDashboard({ user, goToPage }: Props) {
           </div>
         ))}
       </div>
+      </>
+      }
     </div>
   )
 }

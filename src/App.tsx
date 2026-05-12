@@ -20,6 +20,7 @@ const SuppliersPage = lazy(() => import('./pages/SuppliersPage'))
 const SupplierDetailPage = lazy(() => import('./pages/SupplierDetailPage'))
 const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
+const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
 const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
 const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
@@ -31,7 +32,7 @@ export type Page =
   | 'home' | 'listing' | 'detail'
   | 'login' | 'signup'
   | 'host-dashboard' | 'new-space' | 'edit-space'
-  | 'my-quotes' | 'host-quotes'
+  | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
@@ -248,8 +249,8 @@ function App() {
               )}
               {/* Meu painel para visitante */}
               {user && userRole === 'guest' && (
-                <button className="btn-primary" onClick={() => goToPage('my-quotes')}>
-                  📋 Meus orçamentos
+                <button className="btn-primary" onClick={() => goToPage('guest-dashboard')}>
+                  👤 Meu painel
                 </button>
               )}
 
@@ -281,7 +282,7 @@ function App() {
           </a>
         )}
         {user && userRole === 'guest' && (
-          <a onClick={() => goToPage('my-quotes')}>📋 Meus orçamentos</a>
+          <a onClick={() => goToPage('guest-dashboard')}>👤 Meu painel</a>
         )}
 
         <div className="mobile-auth">
@@ -347,6 +348,9 @@ function App() {
         )}
         {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
+        )}
+        {page === 'guest-dashboard' && user && (
+          <GuestDashboard user={user} goToPage={goToPage} />
         )}
         {page === 'my-quotes' && user && (
           <MyQuotesPage user={user} goToPage={goToPage} />
