@@ -83,20 +83,20 @@ export default function HostDashboard({ user, goToPage }: Props) {
     setSacSent(true)
   }
 
-  const sendChat = async () => {
-    if (!chatInput.trim() || chatLoading) return
+  const sendChat = () => {
+    if (!chatInput.trim()) return
     const msg = chatInput.trim(); setChatInput('')
-    setChatMsgs(p => [...p, { role: 'user', text: msg }]); setChatLoading(true)
-    try {
-      const r = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 500, system: 'Você é o assistente do Ewind, marketplace de espaços para eventos em Curitiba. Responda em português, de forma amigável e concisa.', messages: [...chatMsgs.slice(-6).map(m => ({ role: m.role, content: m.text })), { role: 'user', content: msg }] })
-      })
-      const d = await r.json()
-      setChatMsgs(p => [...p, { role: 'assistant', text: d.content?.[0]?.text || 'Tente novamente.' }])
-    } catch { setChatMsgs(p => [...p, { role: 'assistant', text: 'Erro técnico. Tente novamente.' }]) }
-    setChatLoading(false)
+    setChatMsgs(p => [...p, { role: 'user', text: msg }])
+    setTimeout(() => {
+      const lower = msg.toLowerCase()
+      let reply = 'Para dúvidas específicas, use a aba Suporte. Respondemos em até 24h! 😊'
+      if (lower.includes('plano') || lower.includes('preço')) reply = 'Os planos Ewind começam em R$49/mês. Novos anunciantes têm 90 dias gratuitos!'
+      if (lower.includes('orçamento')) reply = 'Orçamentos recebidos ficam na aba "Meus serviços" ou acesse via botão "Ver orçamentos recebidos".'
+      if (lower.includes('cadastro') || lower.includes('espaço') || lower.includes('serviço')) reply = 'Para cadastrar um novo anúncio, clique em "+ Cadastrar" no painel. São 90 dias gratuitos!'
+      setChatMsgs(p => [...p, { role: 'assistant', text: reply }])
+    }, 600)
   }
+
 
   return (
       <span style={{
@@ -188,12 +188,12 @@ export default function HostDashboard({ user, goToPage }: Props) {
                 <div style={{ maxWidth: '78%', padding: '9px 13px', borderRadius: m.role === 'user' ? '13px 13px 4px 13px' : '13px 13px 13px 4px', background: m.role === 'user' ? '#a3e635' : '#f3f4f6', color: m.role === 'user' ? '#1a2e05' : '#2d2d2d', fontSize: 13, lineHeight: 1.55 }}>{m.text}</div>
               </div>
             ))}
-            {chatLoading && <div style={{ display: 'flex', gap: 8 }}><div style={{ width: 30, height: 30, borderRadius: '50%', background: '#a3e635', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>E</div><div style={{ background: '#f3f4f6', padding: '9px 14px', borderRadius: '13px 13px 13px 4px', fontSize: 12, color: '#9ca3af' }}>digitando...</div></div>}
+            {false && <div style={{ display: 'flex', gap: 8 }}><div style={{ width: 30, height: 30, borderRadius: '50%', background: '#a3e635', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>E</div><div style={{ background: '#f3f4f6', padding: '9px 14px', borderRadius: '13px 13px 13px 4px', fontSize: 12, color: '#9ca3af' }}>digitando...</div></div>}
             <div ref={chatEndRef} />
           </div>
           <div style={{ borderTop: '1px solid #e8e8e8', padding: '10px 14px', display: 'flex', gap: 8 }}>
             <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendChat()} placeholder="Escreva sua dúvida..." style={{ flex: 1, padding: '9px 13px', border: '1.5px solid #e8e8e8', borderRadius: 9, fontSize: 13, fontFamily: 'inherit' }} />
-            <button onClick={sendChat} disabled={!chatInput.trim() || chatLoading} style={{ padding: '9px 16px', background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Enviar</button>
+            <button onClick={sendChat} disabled={!chatInput.trim()} style={{ padding: '9px 16px', background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 9, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Enviar</button>
           </div>
         </div>
       )}

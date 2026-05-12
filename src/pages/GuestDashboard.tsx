@@ -32,7 +32,6 @@ export default function GuestDashboard({ user, goToPage }: Props) {
     { role: 'assistant', text: 'Olá! 👋 Sou o assistente do Ewind. Como posso te ajudar hoje? Posso tirar dúvidas sobre espaços, fornecedores, orçamentos ou qualquer coisa relacionada à plataforma.' }
   ])
   const [chatInput, setChatInput] = useState('')
-  const [chatLoading, setChatLoading] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -78,39 +77,25 @@ export default function GuestDashboard({ user, goToPage }: Props) {
     setSacLoading(false)
   }
 
-  const sendChat = async () => {
-    if (!chatInput.trim() || chatLoading) return
+  const sendChat = () => {
+    if (!chatInput.trim()) return
     const userMsg = chatInput.trim()
     setChatInput('')
     setMessages(prev => [...prev, { role: 'user', text: userMsg }])
-    setChatLoading(true)
-
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 500,
-          system: `Você é o assistente virtual do Ewind, marketplace de espaços e serviços para eventos em Curitiba, Brasil.
-Responda sempre em português, de forma amigável, concisa e prestativa.
-O Ewind conecta quem organiza eventos a espaços (salões, chácaras, buffets) e fornecedores (fotógrafos, DJs, decoradores).
-O cliente solicita orçamentos diretamente — sem comissão, sem intermediários.
-Os anunciantes têm 90 dias gratuitos. Os planos são: Espaços R$59/mês, Fornecedor R$49/mês, Pro Completo R$89/mês.
-Para problemas técnicos sérios, oriente o usuário a usar a aba "SAC".`,
-          messages: [
-            ...messages.slice(-6).map(m => ({ role: m.role, content: m.text })),
-            { role: 'user', content: userMsg }
-          ]
-        })
-      })
-      const data = await response.json()
-      const reply = data.content?.[0]?.text || 'Desculpe, não consegui processar sua mensagem. Tente novamente.'
+    // Auto-reply
+    setTimeout(() => {
+      const replies: Record<string, string> = {
+        'plano': 'Os planos Ewind começam em R$49/mês para fornecedores e R$59/mês para espaços. Novos anunciantes têm 90 dias gratuitos! Acesse a aba Planos para saber mais.',
+        'preço': 'Os planos Ewind começam em R$49/mês para fornecedores e R$59/mês para espaços. Novos anunciantes têm 90 dias gratuitos!',
+        'orçamento': 'Para solicitar um orçamento, acesse a página de um espaço ou fornecedor e clique em "Solicitar orçamento". É gratuito!',
+        'cadastro': 'Para se cadastrar como anunciante, clique em "Criar conta" e selecione o tipo de perfil desejado. São 90 dias gratuitos!',
+        'contato': 'Para falar com nossa equipe, use a aba "Suporte" neste painel. Respondemos em até 24h úteis.',
+      }
+      const lower = userMsg.toLowerCase()
+      const key = Object.keys(replies).find(k => lower.includes(k))
+      const reply = key ? replies[key] : 'Olá! Para dúvidas específicas, use a aba Suporte e nossa equipe responderá em até 24h. Para problemas urgentes, envie um email para suporte@ewind.com.br 😊'
       setMessages(prev => [...prev, { role: 'assistant', text: reply }])
-    } catch {
-      setMessages(prev => [...prev, { role: 'assistant', text: 'Ops! Tive um problema técnico. Tente novamente em instantes.' }])
-    }
-    setChatLoading(false)
+    }, 600)
   }
 
   const STATUS_COLOR: Record<string, string> = { pending: '#d97706', viewed: '#7c3aed', responded: '#2563eb', accepted: '#16a34a', closed: '#6b7280', rejected: '#dc2626' }
@@ -292,12 +277,7 @@ Para problemas técnicos sérios, oriente o usuário a usar a aba "SAC".`,
                     </div>
                   </div>
                 ))}
-                {chatLoading && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#a3e635', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>E</div>
-                    <div style={{ background: '#f3f4f6', padding: '10px 16px', borderRadius: '14px 14px 14px 4px', fontSize: 13, color: '#9ca3af' }}>digitando...</div>
-                  </div>
-                )}
+                
                 <div ref={chatEndRef} />
               </div>
               {/* Input */}
@@ -308,7 +288,7 @@ Para problemas técnicos sérios, oriente o usuário a usar a aba "SAC".`,
                   placeholder="Escreva sua dúvida..."
                   style={{ flex: 1, padding: '10px 14px', border: '1.5px solid #e8e8e8', borderRadius: 10, fontSize: 14, fontFamily: 'inherit', outline: 'none' }}
                 />
-                <button onClick={sendChat} disabled={!chatInput.trim() || chatLoading}
+                <button onClick={sendChat} disabled={!chatInput.trim()}
                   style={{ padding: '10px 16px', background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14 }}>
                   Enviar
                 </button>
