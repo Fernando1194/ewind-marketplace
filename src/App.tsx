@@ -194,18 +194,6 @@ function App() {
           <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
 
           {/* Nav items por role */}
-          {user && userRole === 'guest' && !isHost && !isSupplier && (
-            <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>
-              Meus orçamentos
-              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-            </a>
-          )}
-          {user && (userRole === 'host' || userRole === 'supplier' || isHost || isSupplier) && (
-            <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-              Orçamentos
-              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-            </a>
-          )}
 
           <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
           <a onClick={() => goToPage('pricing')}>Planos</a>
@@ -253,8 +241,15 @@ function App() {
             <>
               {/* Meu painel */}
               {user && userRole !== 'guest' && (
-                <button className="btn-primary" onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+                <button className="btn-primary" onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
                   {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+                  {pendingQuotesCount > 0 && <span className="badge-count" style={{ marginLeft: 6, background: '#fff', color: '#5aa800' }}>{pendingQuotesCount}</span>}
+                </button>
+              )}
+              {/* Meu painel para visitante */}
+              {user && userRole === 'guest' && (
+                <button className="btn-primary" onClick={() => goToPage('my-quotes')}>
+                  📋 Meus orçamentos
                 </button>
               )}
 
@@ -278,20 +273,17 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {user && userRole === 'guest' && !isHost && !isSupplier && (
-          <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
-        )}
+
         {user && userRole !== 'guest' && (
-          <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+          <a onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
             {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+            {pendingQuotesCount > 0 && <span className="badge-count" style={{ marginLeft: 6 }}>{pendingQuotesCount}</span>}
           </a>
         )}
-        {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
-          <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-            📋 Orçamentos recebidos
-            {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-          </a>
+        {user && userRole === 'guest' && (
+          <a onClick={() => goToPage('my-quotes')}>📋 Meus orçamentos</a>
         )}
+
         <div className="mobile-auth">
           {!user ? (
             <>
