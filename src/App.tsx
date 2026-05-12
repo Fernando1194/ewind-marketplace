@@ -241,14 +241,18 @@ function App() {
           {user ? (
             <>
               {/* Meu painel */}
-              {user && userRole !== 'guest' && (
+              {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+                <button className="btn-primary" onClick={() => goToPage('admin')}>
+                  ⚙️ Admin
+                </button>
+              )}
+              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
                 <button className="btn-primary" onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
                   {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
                   {pendingQuotesCount > 0 && <span className="badge-count" style={{ marginLeft: 6, background: '#fff', color: '#5aa800' }}>{pendingQuotesCount}</span>}
                 </button>
               )}
-              {/* Meu painel para visitante */}
-              {user && userRole === 'guest' && (
+              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole === 'guest' && (
                 <button className="btn-primary" onClick={() => goToPage('guest-dashboard')}>
                   👤 Meu painel
                 </button>
@@ -275,13 +279,15 @@ function App() {
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
 
-        {user && userRole !== 'guest' && (
+        {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+          <a onClick={() => goToPage('admin')}>⚙️ Admin</a>
+        )}
+        {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
           <a onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
             {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
-            {pendingQuotesCount > 0 && <span className="badge-count" style={{ marginLeft: 6 }}>{pendingQuotesCount}</span>}
           </a>
         )}
-        {user && userRole === 'guest' && (
+        {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole === 'guest' && (
           <a onClick={() => goToPage('guest-dashboard')}>👤 Meu painel</a>
         )}
 
