@@ -242,9 +242,14 @@ function App() {
             <>
               {/* Meu painel */}
               {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-                <button className="btn-primary" onClick={() => goToPage('admin')}>
-                  ⚙️ Admin
-                </button>
+                <>
+                  <button onClick={() => goToPage('host-dashboard')} style={{ fontSize: 12, padding: '9px 14px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
+                    🏢 Meus espaços
+                  </button>
+                  <button className="btn-primary" onClick={() => goToPage('admin')}>
+                    ⚙️ Admin
+                  </button>
+                </>
               )}
               {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
                 <button className="btn-primary" onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
@@ -280,7 +285,10 @@ function App() {
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
 
         {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-          <a onClick={() => goToPage('admin')}>⚙️ Admin</a>
+          <>
+            <a onClick={() => goToPage('host-dashboard')}>🏢 Meus espaços</a>
+            <a onClick={() => goToPage('admin')}>⚙️ Admin</a>
+          </>
         )}
         {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
           <a onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
