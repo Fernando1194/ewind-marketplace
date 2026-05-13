@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
 import { CATEGORIES } from '../types'
@@ -5,7 +6,8 @@ import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  goToPage: (page: Page, space?: Space) => void
+  goToPage: (page: Page, space?: Space | any) => void
+  lang?: Lang
 }
 
 const HERO_IMAGES = [
@@ -29,7 +31,7 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
 ]
 
-export default function HomePage({ goToPage }: Props) {
+export default function HomePage({ goToPage, lang = 'pt' }: Props) {
   const [filterCity, setFilterCity] = useState('')
   const [filterGuests, setFilterGuests] = useState('')
   const [filterDate, setFilterDate] = useState('')
@@ -90,23 +92,23 @@ export default function HomePage({ goToPage }: Props) {
 
         <div style={{ position: 'relative', zIndex: 3, padding: '60px 24px', width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            O marketplace de eventos do Brasil
+            {t[lang].hero_badge}
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 780, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
-            Tudo para o seu evento{' '}
-            <span style={{ color: '#a3e635' }}>em um só lugar</span>
+            {t[lang].hero_title_1}{' '}
+            <span style={{ color: '#a3e635' }}>{t[lang].hero_title_2}</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
-            Espaços, fotógrafos, DJs, decoradores e muito mais. Compare opções, solicite orçamentos e feche direto com o anunciante — de graça e sem complicação.
+            {t[lang].hero_sub}
           </p>
 
           <div className="search-pill">
             <div className="sf">
-              <div className="sf-label">Onde</div>
-              <input placeholder="Cidade ou região" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+              <div className="sf-label">{t[lang].hero_where}</div>
+              <input placeholder={t[lang].hero_where_ph} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
             </div>
             <div className="sf">
-              <div className="sf-label">Data do evento</div>
+              <div className="sf-label">{t[lang].hero_date}</div>
               <input
                 type="date"
                 value={filterDate}
@@ -116,8 +118,8 @@ export default function HomePage({ goToPage }: Props) {
               />
             </div>
             <div className="sf">
-              <div className="sf-label">Convidados</div>
-              <input type="number" placeholder="Quantidade" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
+              <div className="sf-label">{t[lang].hero_guests}</div>
+              <input type="number" placeholder={t[lang].hero_guests_ph} value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
             </div>
             <button className="search-btn" onClick={() => goToPage('listing')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
@@ -173,7 +175,7 @@ className="hero-arrow hero-arrow-right"
 
       {/* CATEGORIAS */}
       <section className="section">
-        <h2 className="sec-title">Explore por categoria</h2>
+        <h2 className="sec-title">{t[lang].cat_title}</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
           {CATEGORIES.map(c => (
             <div key={c.name} onClick={() => goToPage('listing')}
@@ -192,7 +194,7 @@ className="hero-arrow hero-arrow-right"
       {featuredSpaces.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 className="sec-title" style={{ marginBottom: 0 }}>Espaços em destaque</h2>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>{t[lang].spaces_title}</h2>
             <button onClick={() => goToPage('listing')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Ver todos →
             </button>
@@ -240,7 +242,7 @@ className="hero-arrow hero-arrow-right"
       {featuredSuppliers.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 className="sec-title" style={{ marginBottom: 0 }}>Fornecedores em destaque</h2>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>{t[lang].suppliers_title}</h2>
             <button onClick={() => goToPage('suppliers')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Ver todos →
             </button>
@@ -292,7 +294,7 @@ className="hero-arrow hero-arrow-right"
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="cta-host">
           <div>
-            <div className="cta-title">Você tem um espaço ou oferece serviços para eventos?</div>
+            <div className="cta-title">{t[lang].cta_host_title}</div>
             <div className="cta-desc">
               Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
             </div>

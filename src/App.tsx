@@ -1,3 +1,4 @@
+import { t, type Lang } from './translations'
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
@@ -54,6 +55,7 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
+  const [lang, setLang] = useState<Lang>('pt')
   const [isHost, setIsHost] = useState(false)
   const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -190,12 +192,12 @@ function App() {
         </div>
 
         <div className="nav-center" style={{ flex: 1, justifyContent: 'center' }}>
-          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
-          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
-          <a onClick={() => goToPage('listing')}>Espaços</a>
-          <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
-          <a onClick={() => goToPage('pricing')}>Planos</a>
-          <a onClick={() => goToPage('about')}>Quem somos</a>
+          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>{t[lang].nav_home}</a>
+          <a onClick={() => goToPage('how-it-works')}>{t[lang].nav_how}</a>
+          <a onClick={() => goToPage('listing')}>{t[lang].nav_spaces}</a>
+          <a onClick={() => goToPage('suppliers')}>{t[lang].nav_suppliers}</a>
+          <a onClick={() => goToPage('pricing')}>{t[lang].nav_pricing}</a>
+          <a onClick={() => goToPage('about')}>{t[lang].nav_about}</a>
         </div>
 
         <div className="nav-right">
@@ -228,7 +230,7 @@ function App() {
               )}
               {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
                 <button className="btn-primary" onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
-                  {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+                  {userRole === 'supplier' ? '🛠️' : '🏢'} {t[lang].nav_panel}
                   {pendingQuotesCount > 0 && <span className="badge-count" style={{ marginLeft: 6, background: '#fff', color: '#5aa800' }}>{pendingQuotesCount}</span>}
                 </button>
               )}
@@ -238,8 +240,14 @@ function App() {
                 </button>
               )}
 
-              <span className="user-greeting">Olá, {userName}</span>
-              <button className="btn-link" onClick={handleLogout}>Sair</button>
+              {/* Language toggle */}
+              <button onClick={() => setLang(l => l === 'pt' ? 'en' : 'pt')}
+                title={lang === 'pt' ? 'Switch to English' : 'Mudar para Português'}
+                style={{ background: 'none', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4, fontSize: 18, lineHeight: 1 }}>
+                {lang === 'pt' ? '🇧🇷' : '🇺🇸'}
+              </button>
+              <span className="user-greeting">{t[lang].nav_hi} {userName}</span>
+              <button className="btn-link" onClick={handleLogout}>{t[lang].nav_logout}</button>
             </>
           ) : (
             <>
@@ -287,7 +295,7 @@ function App() {
 
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
-        {page === 'home' && <HomePage goToPage={goToPage} />}
+        {page === 'home' && <HomePage goToPage={goToPage} lang={lang} />}
         {page === 'listing' && (
           <ListingPage
             goToPage={goToPage}
