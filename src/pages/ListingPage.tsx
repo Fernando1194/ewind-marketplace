@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react'
 import { supabase } from '../supabase'
 import { CATEGORIES, ATTRIBUTES, EVENT_TYPES } from '../types'
@@ -9,6 +10,7 @@ interface Props {
   compareSpaces: Space[]
   onCompareToggle: (space: Space) => void
   onClearCompare: () => void
+  lang?: Lang
 }
 
 const STATES = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
@@ -60,7 +62,7 @@ const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
   </div>
 ))
 
-export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, onClearCompare }: Props) {
+export default function ListingPage({  goToPage, compareSpaces, onCompareToggle, onClearCompare, lang = 'pt' }: Props) {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -155,7 +157,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
   return (
     <>
       <div className="mini-search">
-        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+        <input placeholder={t[lang].listing_city} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
         <select value={filterState} onChange={e => setFilterState(e.target.value)}
           style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
           <option value="">Estado</option>
@@ -173,7 +175,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
           <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
           <div className="sf-group">
             <div className="sf-group-title">Localização</div>
-            <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <input type="text" placeholder={t[lang].listing_city} value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
             <select value={filterState} onChange={e => setFilterState(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
               <option value="">Todos os estados</option>
@@ -262,12 +264,12 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
           {!loading && filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: 40, background: '#f9fafb', borderRadius: 12 }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Nenhum espaço encontrado</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{t[lang].listing_no_results}</h3>
               <p style={{ fontSize: 13, color: '#6b7280' }}>
                 {spaces.length === 0 ? 'Ainda não há espaços cadastrados.' : 'Tente ajustar os filtros.'}
               </p>
               {activeFiltersCount > 0 && (
-                <button className="btn-primary" style={{ marginTop: 12 }} onClick={clearFilters}>Limpar filtros</button>
+                <button className="btn-primary" style={{ marginTop: 12 }} onClick={clearFilters}>{t[lang].listing_clear}</button>
               )}
             </div>
           )}
@@ -337,7 +339,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
           </div>
           <div style={{ display: 'flex', gap: 8, marginLeft: 4 }}>
             <button onClick={() => goToPage('comparison')} className="btn-primary" style={{ padding: '8px 18px', fontSize: 13, whiteSpace: 'nowrap' }}>Ver comparação →</button>
-            <button onClick={onClearCompare} style={{ padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #444', borderRadius: 8, cursor: 'pointer', color: '#aaa' }}>Limpar</button>
+            <button onClick={onClearCompare} style={{ padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #444', borderRadius: 8, cursor: 'pointer', color: '#aaa' }}>{t[lang].listing_clear}</button>
           </div>
         </div>
       )}

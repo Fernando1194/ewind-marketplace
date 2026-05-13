@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -9,9 +10,10 @@ interface Props {
   goToPage: (page: Page) => void
   onQuoteCountChange?: () => void
   userRole?: string
+  lang?: Lang
 }
 
-export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, userRole = 'host' }: Props) {
+export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, userRole = 'host', lang = 'pt' }: Props) {
   const [quotes, setQuotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [respondingId, setRespondingId] = useState<string | null>(null)
@@ -116,7 +118,7 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Orçamentos recebidos</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{t[lang].host_quotes_title}</h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>Responda em até 24h para melhor experiência</p>
         </div>
         <button onClick={loadQuotes} style={{ padding: '8px 16px', fontSize: 12, fontWeight: 600, background: '#f9fafb', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>

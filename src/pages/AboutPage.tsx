@@ -1,10 +1,12 @@
+import { t, type Lang } from '../translations'
 import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
+  lang?: Lang
 }
 
-export default function AboutPage({ goToPage }: Props) {
+export default function AboutPage({  goToPage, lang = 'pt' }: Props) {
   const values = [
     { icon: '🤝', title: 'Conexão direta', desc: 'Acreditamos que os melhores negócios acontecem quando as pessoas falam diretamente umas com as outras. Por isso eliminamos intermediários e deixamos anunciantes e clientes se comunicarem livremente.' },
     { icon: '🔒', title: 'Transparência', desc: 'Cada orçamento enviado, cada proposta recebida e cada negociação acontece de forma clara e rastreável. Você sempre sabe com quem está falando e o que está contratando.' },
@@ -27,9 +29,9 @@ export default function AboutPage({ goToPage }: Props) {
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.12em' }}>QUEM SOMOS</div>
           <h1 style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.15, marginBottom: 20 }}>
-            Mais visibilidade para quem anuncia.{' '}
-            <span style={{ color: '#a3e635' }}>Mais facilidade</span>{' '}
-            para quem organiza eventos
+            {t[lang].about_title_1}{' '}
+            <span style={{ color: '#a3e635' }}>{t[lang].about_title_2}</span>{' '}
+            {t[lang].about_title_3}
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, maxWidth: 580, margin: '0 auto 32px' }}>
             O Ewind nasceu de uma crença simples: organizar um evento especial não precisa ser sinônimo de ansiedade, pesquisa interminável e orçamentos que nunca chegam.

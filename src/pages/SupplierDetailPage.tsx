@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import Reviews from '../components/Reviews'
 import { useState, useEffect } from 'react'
@@ -11,9 +12,10 @@ interface Props {
   supplier: Supplier
   goToPage: (page: Page) => void
   user?: any
+  lang?: Lang
 }
 
-export default function SupplierDetailPage({ supplier, goToPage, user }: Props) {
+export default function SupplierDetailPage({  supplier, goToPage, user, lang = 'pt' }: Props) {
   const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
 
   // Quote form state
@@ -203,11 +205,11 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
           <div className="quote-box">
             {supplier.price_info && (
               <>
-                <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>Preços a partir de</div>
+                <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>{t[lang].detail_price_label}</div>
                 <div className="qb-price" style={{ fontSize: 26 }}>
                   {supplier.price_info.toLowerCase().includes('r$') ? supplier.price_info : `R$ ${supplier.price_info}`}
                 </div>
-                <div className="qb-sub">Solicite um orçamento para o valor exato</div>
+                <div className="qb-sub">{t[lang].detail_price_sub}</div>
               </>
             )}
 
@@ -218,7 +220,7 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
                     <button onClick={() => user ? setShowQuoteForm(true) : goToPage('login')}
                       style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 8, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      📋 Solicitar orçamento pelo Ewind
+                      📋 {t[lang].detail_quote_title} pelo Ewind
                     </button>
                     {supplier.whatsapp && (
                       <button onClick={handleWhatsApp}
@@ -275,10 +277,10 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
                   </div>
                 ) : (
                   <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#2d2d2d' }}>📋 Solicitar orçamento</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#2d2d2d' }}>📋 {t[lang].detail_quote_title}</div>
 
                     <div className="fg" style={{ marginBottom: 10 }}>
-                      <label style={{ fontSize: 12 }}>Tipo de evento *</label>
+                      <label style={{ fontSize: 12 }}>{t[lang].detail_event_type}</label>
                       <select value={eventType} onChange={e => setEventType(e.target.value)}
                         style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
                         <option value="">Selecione...</option>
@@ -317,7 +319,7 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
                     </div>
 
                     <div className="fg" style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 12 }}>Mensagem (opcional)</label>
+                      <label style={{ fontSize: 12 }}>{t[lang].detail_message}</label>
                       <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3}
                         placeholder="Detalhes do evento, dúvidas..."
                         style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
@@ -332,7 +334,7 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
                       </button>
                       <button onClick={submitQuote} disabled={quoteLoading}
                         style={{ flex: 2, padding: 10, fontSize: 13, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 8, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        {quoteLoading ? 'Enviando...' : '✓ Enviar orçamento'}
+                        {quoteLoading ? 'Enviando...' : '✓ {t[lang].detail_send}'}
                       </button>
                     </div>
                   </div>

@@ -305,14 +305,14 @@ function App() {
           />
         )}
         {page === 'detail' && selectedSpace && (
-          <DetailPage space={selectedSpace} goToPage={goToPage} user={user} />
+          <DetailPage space={selectedSpace} goToPage={goToPage} user={user} lang={lang} />
         )}
-        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} />}
+        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} lang={lang} />}
         {page === 'supplier-detail' && selectedSupplier && (
-          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} user={user} />
+          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} user={user} lang={lang} />
         )}
-        {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
-        {page === 'about' && <AboutPage goToPage={goToPage} />}
+        {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} lang={lang} />}
+        {page === 'about' && <AboutPage goToPage={goToPage} lang={lang} />}
         {page === 'comparison' && (
           <ComparisonPage
             spaces={compareSpaces}
@@ -322,12 +322,12 @@ function App() {
         )}
 
         {/* Auth */}
-        {page === 'login' && <LoginPage goToPage={goToPage} />}
-        {page === 'signup' && <SignupPage goToPage={goToPage} />}
+        {page === 'login' && <LoginPage goToPage={goToPage} lang={lang} />}
+        {page === 'signup' && <SignupPage goToPage={goToPage} lang={lang} />}
 
         {/* Área do Host */}
         {page === 'host-dashboard' && user && (
-          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
+          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} lang={lang} />
         )}
         {page === 'new-space' && user && userRole !== 'supplier' && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
@@ -344,25 +344,25 @@ function App() {
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
         )}
         {page === 'guest-dashboard' && user && (
-          <GuestDashboard user={user} goToPage={goToPage} />
+          <GuestDashboard user={user} goToPage={goToPage} lang={lang} />
         )}
         {page === 'my-quotes' && user && (
-          <MyQuotesPage user={user} goToPage={goToPage} />
+          <MyQuotesPage user={user} goToPage={goToPage} lang={lang} />
         )}
         {page === 'host-quotes' && user && (
           <HostQuotesPage user={user} goToPage={goToPage} userRole={userRole} />
         )}
 
         {/* Área do Fornecedor */}
-        {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} />}
-        {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
+        {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} lang={lang} />}
+        {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} lang={lang} />}
         {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
         {page === 'terms' && <TermsPage goToPage={goToPage} />}
-        {page === 'pricing' && <PricingPage goToPage={goToPage} />}
+        {page === 'pricing' && <PricingPage goToPage={goToPage} lang={lang} />}
         {page === 'admin' && user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <AdminPage goToPage={goToPage} />}
         {page === 'admin' && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <div style={{padding:40,textAlign:'center'}}><h2>Acesso negado</h2></div>}
         {page === 'supplier-dashboard' && user && (
-          <SupplierDashboard user={user} goToPage={goToPage} />
+          <SupplierDashboard user={user} goToPage={goToPage} lang={lang} />
         )}
         {page === 'new-supplier' && user && (
           <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={null} />

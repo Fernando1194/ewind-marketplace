@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import { useState, useMemo } from 'react'
 import { supabase } from '../supabase'
 import { SUPPLIER_CATEGORIES } from '../types'
@@ -5,6 +6,7 @@ import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
+  lang?: Lang
 }
 
 const EyeIcon = ({ open }: { open: boolean }) => open ? (
@@ -20,7 +22,7 @@ const EyeIcon = ({ open }: { open: boolean }) => open ? (
   </svg>
 )
 
-export default function SupplierSignupPage({ goToPage }: Props) {
+export default function SupplierSignupPage({  goToPage, lang = 'pt' }: Props) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

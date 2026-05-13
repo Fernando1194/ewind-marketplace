@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import DashboardLayout from '../components/DashboardLayout'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../supabase'
@@ -9,9 +10,10 @@ import type { Page } from '../App'
 interface Props {
   user: User
   goToPage: (page: Page, supplier?: Supplier) => void
+  lang?: Lang
 }
 
-export default function SupplierDashboard({ user, goToPage }: Props) {
+export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('servicos')
@@ -69,7 +71,7 @@ export default function SupplierDashboard({ user, goToPage }: Props) {
   const saveProfile = async () => {
     setSaving(true)
     await supabase.from('profiles').update({ full_name: fullName, updated_at: new Date().toISOString() }).eq('id', user.id)
-    setSaveMsg('✓ Salvo!'); setSaving(false); setTimeout(() => setSaveMsg(''), 3000)
+    setSaveMsg('{t[lang].dash_saved}'); setSaving(false); setTimeout(() => setSaveMsg(''), 3000)
   }
   const sendChat = () => {
     if (!chatInput.trim()) return
@@ -85,14 +87,14 @@ export default function SupplierDashboard({ user, goToPage }: Props) {
   }
 
   const TABS = [
-    { key: 'servicos', icon: '🛠️', label: 'Meus serviços' },
-    { key: 'dados', icon: '👤', label: 'Meus dados' },
-    { key: 'sac', icon: '🎧', label: 'Suporte' },
+    { key: 'servicos', icon: '🛠️', label: t[lang].supp_dash_services },
+    { key: 'dados', icon: '👤', label: t[lang].dash_my_data },
+    { key: 'sac', icon: '🎧', label: t[lang].dash_support },
     { key: 'chat', icon: '💬', label: 'Chat Ewind' },
   ]
   const TITLES: Record<string, {title:string;subtitle:string}> = {
-    servicos: { title: 'Meus serviços', subtitle: 'Gerencie seus anúncios de serviços' },
-    dados: { title: 'Meus dados', subtitle: 'Atualize suas informações de cadastro' },
+    servicos: { title: t[lang].supp_dash_services, subtitle: 'Gerencie seus anúncios de serviços' },
+    dados: { title: t[lang].dash_my_data, subtitle: 'Atualize suas informações de cadastro' },
     sac: { title: 'Central de suporte', subtitle: 'Nossa equipe responde em até 24h úteis' },
     chat: { title: 'Chat Ewind', subtitle: 'Tire dúvidas sobre a plataforma' },
   }
@@ -102,8 +104,8 @@ export default function SupplierDashboard({ user, goToPage }: Props) {
       title={TITLES[tab]?.title||''} subtitle={TITLES[tab]?.subtitle||''}
       headerAction={tab === 'servicos' ? (
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d', fontFamily: 'inherit' }}>📋 Ver orçamentos</button>
-          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>+ Novo serviço</button>
+          <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d', fontFamily: 'inherit' }}>{t[lang].supp_dash_quotes}</button>
+          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>{t[lang].supp_dash_new}</button>
         </div>
       ) : undefined}>
 
@@ -122,7 +124,7 @@ export default function SupplierDashboard({ user, goToPage }: Props) {
           ) : (<div style={{display:'flex',flexDirection:'column',gap:14}}>
               <div className="fg"><label>Assunto</label><select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}><option value="">Selecione...</option><option>Dúvida sobre planos</option><option>Problema com orçamento</option><option>Erro no cadastro</option><option>Outro</option></select></div>
               <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={4} placeholder="Descreva..." style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
-              <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'9px 22px'}}>📨 Enviar</button>
+              <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'9px 22px'}}>{t[lang].dash_sac_send}</button>
             </div>)}
         </div>
       )}

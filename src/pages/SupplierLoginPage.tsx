@@ -1,14 +1,16 @@
+import { t, type Lang } from '../translations'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
+  lang?: Lang
 }
 
 type Mode = 'login' | 'forgot' | 'forgot-sent'
 
-export default function SupplierLoginPage({ goToPage }: Props) {
+export default function SupplierLoginPage({  goToPage, lang = 'pt' }: Props) {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

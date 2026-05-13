@@ -1,13 +1,15 @@
+import { t, type Lang } from '../translations'
 import { useState } from 'react'
 import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
+  lang?: Lang
 }
 
 type Audience = 'guest' | 'host' | 'supplier'
 
-export default function HowItWorksPage({ goToPage }: Props) {
+export default function HowItWorksPage({  goToPage, lang = 'pt' }: Props) {
   const [audience, setAudience] = useState<Audience>('guest')
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 

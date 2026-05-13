@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react'
 import { supabase } from '../supabase'
 import { SUPPLIER_CATEGORIES, EVENT_TYPES } from '../types'
@@ -7,6 +8,7 @@ import type { Page } from '../App'
 interface Props {
   goToPage: (page: Page, supplier?: Supplier) => void
   user?: any
+  lang?: Lang
 }
 
 const STATES = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
@@ -49,7 +51,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
   )
 })
 
-export default function SuppliersPage({ goToPage, user }: Props) {
+export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)

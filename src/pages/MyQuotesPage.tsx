@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import Reviews from '../components/Reviews'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
@@ -8,9 +9,10 @@ import type { Page } from '../App'
 interface Props {
   user: User
   goToPage: (page: Page) => void
+  lang?: Lang
 }
 
-export default function MyQuotesPage({ user, goToPage }: Props) {
+export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
   const [quotes, setQuotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [celebrationQuote, setCelebrationQuote] = useState<any | null>(null)
@@ -100,7 +102,7 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Meus orçamentos</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{t[lang].my_quotes_title}</h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>Acompanhe e gerencie suas solicitações</p>
         </div>
         <button className="btn-primary" onClick={() => goToPage('listing')} style={{ fontSize: 13 }}>

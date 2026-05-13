@@ -1,21 +1,28 @@
+import { t, type Lang } from '../translations'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Page } from '../App'
 import DashboardLayout from '../components/DashboardLayout'
 
-interface Props { user: User; goToPage: (page: Page) => void }
+interface Props { user: User; goToPage: (page: Page) => void; lang?: Lang }
 
-const TABS = [
+const TABS_PT = [
   { key: 'orcamentos', icon: '📋', label: 'Meus orçamentos' },
   { key: 'dados', icon: '👤', label: 'Meus dados' },
   { key: 'sac', icon: '🎧', label: 'Suporte' },
   { key: 'chat', icon: '💬', label: 'Chat Ewind' },
 ]
+const TABS_EN = [
+  { key: 'orcamentos', icon: '📋', label: 'My quotes' },
+  { key: 'dados', icon: '👤', label: 'My profile' },
+  { key: 'sac', icon: '🎧', label: 'Support' },
+  { key: 'chat', icon: '💬', label: 'Ewind Chat' },
+]
 const SC: Record<string, string> = { pending:'#d97706', viewed:'#7c3aed', responded:'#2563eb', accepted:'#16a34a', closed:'#6b7280', rejected:'#dc2626' }
 const SL: Record<string, string> = { pending:'Aguardando', viewed:'Visto', responded:'Respondido', accepted:'Aceito', closed:'Fechado', rejected:'Recusado' }
 
-export default function GuestDashboard({ user, goToPage }: Props) {
+export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) {
   const [tab, setTab] = useState('orcamentos')
   const [quotes, setQuotes] = useState<any[]>([])
   const [loadingQ, setLoadingQ] = useState(true)
@@ -38,7 +45,7 @@ export default function GuestDashboard({ user, goToPage }: Props) {
   const saveProfile = async () => {
     setSaving(true)
     await supabase.from('profiles').update({ full_name: fullName, updated_at: new Date().toISOString() }).eq('id', user.id)
-    setSaveMsg('✓ Dados salvos!'); setSaving(false); setTimeout(() => setSaveMsg(''), 3000)
+    setSaveMsg('{t[lang].dash_saved}'); setSaving(false); setTimeout(() => setSaveMsg(''), 3000)
   }
 
   const sendChat = () => {
@@ -56,10 +63,10 @@ export default function GuestDashboard({ user, goToPage }: Props) {
   }
 
   const T: Record<string, {title:string;subtitle:string}> = {
-    orcamentos: { title: 'Meus orçamentos', subtitle: 'Acompanhe os orçamentos que você solicitou' },
-    dados: { title: 'Meus dados', subtitle: 'Atualize suas informações de cadastro' },
+    orcamentos: { title: t[lang].my_quotes_title, subtitle: 'Acompanhe os orçamentos que você solicitou' },
+    dados: { title: t[lang].dash_my_data, subtitle: 'Atualize suas informações de cadastro' },
     sac: { title: 'Central de suporte', subtitle: 'Nossa equipe responde em até 24h úteis' },
-    chat: { title: 'Chat Ewind', subtitle: 'Tire dúvidas sobre a plataforma' },
+    chat: { title: t[lang].dash_chat, subtitle: 'Tire dúvidas sobre a plataforma' },
   }
 
   return (
@@ -73,7 +80,7 @@ export default function GuestDashboard({ user, goToPage }: Props) {
           {!loadingQ && quotes.length === 0 && (
             <div style={{textAlign:'center',padding:'60px 24px',background:'#fff',borderRadius:14,border:'1px solid #e8e8e8'}}>
               <div style={{fontSize:48,marginBottom:12}}>📋</div>
-              <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>Nenhum orçamento ainda</h3>
+              <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>{t[lang].my_quotes_none}</h3>
               <p style={{fontSize:14,color:'#6b7280',marginBottom:20}}>Busque espaços ou fornecedores e solicite orçamentos gratuitos.</p>
               <button className="btn-primary" onClick={() => goToPage('spaces')}>Buscar espaços →</button>
             </div>
@@ -116,7 +123,7 @@ export default function GuestDashboard({ user, goToPage }: Props) {
           {sacSent ? (
             <div style={{background:'#f0fdf4',border:'1px solid #a3e635',borderRadius:14,padding:40,textAlign:'center'}}>
               <div style={{fontSize:44,marginBottom:12}}>✅</div>
-              <h3 style={{fontSize:18,fontWeight:700,color:'#166534',marginBottom:8}}>Mensagem enviada!</h3>
+              <h3 style={{fontSize:18,fontWeight:700,color:'#166534',marginBottom:8}}>{t[lang].dash_sac_sent}</h3>
               <p style={{fontSize:14,color:'#6b7280'}}>Responderemos em <strong>{user.email}</strong> em até 24h úteis.</p>
               <button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:20,fontSize:13,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600}}>Enviar outra mensagem</button>
             </div>

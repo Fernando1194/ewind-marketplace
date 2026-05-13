@@ -1,3 +1,4 @@
+import { t, type Lang } from '../translations'
 import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import Reviews from '../components/Reviews'
 import { useState } from 'react'
@@ -12,9 +13,10 @@ interface Props {
   space: Space
   user: User | null
   goToPage: (page: Page) => void
+  lang?: Lang
 }
 
-export default function DetailPage({ space, user, goToPage }: Props) {
+export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Props) {
   const [showForm, setShowForm] = useState(false)
   const [eventType, setEventType] = useState(space.event_types[0] || 'Casamento')
   const [eventDate, setEventDate] = useState('')
@@ -179,13 +181,13 @@ export default function DetailPage({ space, user, goToPage }: Props) {
 
         <aside>
           <div className="quote-box">
-            <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>Preços a partir de</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>{t[lang].detail_price_label}</div>
             <div className="qb-price">
               {space.price_per_hour
                 ? `R$ ${Number(space.price_per_hour).toLocaleString('pt-BR')}`
                 : `R$ ${Number(space.price_per_day).toLocaleString('pt-BR')}`}
             </div>
-            <div className="qb-sub">Solicite um orçamento para o valor exato</div>
+            <div className="qb-sub">{t[lang].detail_price_sub}</div>
             <div className="qb-sub">Preço orientativo · sujeito a negociação</div>
 
             {success && quoteData && (() => {
@@ -275,14 +277,14 @@ export default function DetailPage({ space, user, goToPage }: Props) {
                 style={{ width: '100%', padding: 13 }}
                 onClick={() => user ? setShowForm(true) : goToPage('login')}
               >
-                {user ? 'Solicitar orçamento' : 'Entre para solicitar'}
+                {user ? '{t[lang].detail_quote_title}' : 'Entre para solicitar'}
               </button>
             )}
 
             {showForm && (
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 8 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Tipo de evento *</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>{t[lang].detail_event_type}</label>
                   <select
                     value={eventType}
                     onChange={e => setEventType(e.target.value)}
@@ -331,7 +333,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>Mensagem (opcional)</label>
+                  <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4 }}>{t[lang].detail_message}</label>
                   <textarea
                     value={message}
                     onChange={e => setMessage(e.target.value)}

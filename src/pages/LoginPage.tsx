@@ -1,14 +1,16 @@
+import { t, type Lang } from '../translations'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
+  lang?: Lang
 }
 
 type Mode = 'login' | 'forgot' | 'forgot-sent'
 
-export default function LoginPage({ goToPage }: Props) {
+export default function LoginPage({  goToPage, lang = 'pt' }: Props) {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -61,7 +63,7 @@ export default function LoginPage({ goToPage }: Props) {
         {/* ===== LOGIN ===== */}
         {mode === 'login' && (
           <>
-            <h1 className="auth-title">Entrar</h1>
+            <h1 className="auth-title">{t[lang].login_btn}</h1>
             <p className="auth-sub">Bem-vindo de volta!</p>
 
             <form onSubmit={handleLogin}>
@@ -95,7 +97,7 @@ export default function LoginPage({ goToPage }: Props) {
                 style={{ width: '100%', padding: 13, marginTop: 8 }}
                 disabled={loading}
               >
-                {loading ? 'Entrando...' : 'Entrar'}
+                {loading ? 'Entrando...' : t[lang].login_btn}
               </button>
             </form>
 
