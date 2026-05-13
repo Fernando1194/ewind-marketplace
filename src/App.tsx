@@ -1,4 +1,3 @@
-import { t, type Lang } from './translations'
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
@@ -21,7 +20,6 @@ const SuppliersPage = lazy(() => import('./pages/SuppliersPage'))
 const SupplierDetailPage = lazy(() => import('./pages/SupplierDetailPage'))
 const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
-const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
 const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
 const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
@@ -33,7 +31,7 @@ export type Page =
   | 'home' | 'listing' | 'detail'
   | 'login' | 'signup'
   | 'host-dashboard' | 'new-space' | 'edit-space'
-  | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
+  | 'my-quotes' | 'host-quotes'
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
@@ -55,7 +53,6 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [userRole, setUserRole] = useState<string>('guest')
-  const [lang, setLang] = useState<Lang>('pt')
   const [isHost, setIsHost] = useState(false)
   const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -191,17 +188,49 @@ function App() {
           <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
 
-        <div className="nav-center" style={{ flex: 1, justifyContent: 'center' }}>
-          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>{t[lang].nav_home}</a>
-          <a onClick={() => goToPage('how-it-works')}>{t[lang].nav_how}</a>
-          <a onClick={() => goToPage('listing')}>{t[lang].nav_spaces}</a>
-          <a onClick={() => goToPage('suppliers')}>{t[lang].nav_suppliers}</a>
-          <a onClick={() => goToPage('pricing')}>{t[lang].nav_pricing}</a>
-          <a onClick={() => goToPage('about')}>{t[lang].nav_about}</a>
+        <div className="nav-center">
+          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
+          <a onClick={() => goToPage('listing')}>Espaços</a>
+          <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
+
+          {/* Nav items por role */}
+          {user && userRole === 'guest' && !isHost && !isSupplier && (
+            <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>
+              Meus orçamentos
+              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
+            </a>
+          )}
+          {user && (userRole === 'host' || userRole === 'supplier' || isHost || isSupplier) && (
+            <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
+              Orçamentos
+              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
+            </a>
+          )}
+
+          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
+          <a onClick={() => goToPage('pricing')}>Planos</a>
+          <a onClick={() => goToPage('about')}>Quem somos</a>
         </div>
 
         <div className="nav-right">
-
+          {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+            <button
+              onClick={() => goToPage('admin')}
+              title="Admin"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '6px', opacity: 0.25, transition: 'opacity 0.2s',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.25'}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d2d2d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
+          )}
           {/* Badge comparação */}
           {compareSpaces.length > 0 && (
             <button
@@ -223,32 +252,14 @@ function App() {
           {user ? (
             <>
               {/* Meu painel */}
-              {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-                <button className="btn-primary" onClick={() => goToPage('admin')}>
-                  ⚙️ Admin
-                </button>
-              )}
-              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
-                <button className="btn-primary" onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
-                  {userRole === 'supplier' ? '🛠️' : '🏢'} {t[lang].nav_panel}
-                  {pendingQuotesCount > 0 && <span className="badge-count" style={{ marginLeft: 6, background: '#fff', color: '#5aa800' }}>{pendingQuotesCount}</span>}
-                </button>
-              )}
-              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole === 'guest' && (
-                <button className="btn-primary" onClick={() => goToPage('guest-dashboard')}>
-                  👤 Meu painel
+              {user && userRole !== 'guest' && (
+                <button className="btn-primary" onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+                  {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
                 </button>
               )}
 
-              {/* Language toggle */}
-              <button onClick={() => setLang(l => l === 'pt' ? 'en' : 'pt')}
-                title={lang === 'pt' ? 'Switch to English' : 'Mudar para Português'}
-                style={{ background: 'none', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 6, lineHeight: 1, transition: 'border-color .2s' }}>
-                <span style={{ fontSize: 20 }}>{lang === 'pt' ? '🇧🇷' : '🇺🇸'}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#6b7280' }}>{lang === 'pt' ? 'PT' : 'EN'}</span>
-              </button>
-              <span className="user-greeting">{t[lang].nav_hi} {userName}</span>
-              <button className="btn-link" onClick={handleLogout}>{t[lang].nav_logout}</button>
+              <span className="user-greeting">Olá, {userName}</span>
+              <button className="btn-link" onClick={handleLogout}>Sair</button>
             </>
           ) : (
             <>
@@ -267,19 +278,20 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-
-        {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-          <a onClick={() => goToPage('admin')}>⚙️ Admin</a>
+        {user && userRole === 'guest' && !isHost && !isSupplier && (
+          <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
-        {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
-          <a onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
+        {user && userRole !== 'guest' && (
+          <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
             {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
           </a>
         )}
-        {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole === 'guest' && (
-          <a onClick={() => goToPage('guest-dashboard')}>👤 Meu painel</a>
+        {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
+          <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
+            📋 Orçamentos recebidos
+            {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
+          </a>
         )}
-
         <div className="mobile-auth">
           {!user ? (
             <>
@@ -296,7 +308,7 @@ function App() {
 
       <Suspense fallback={<PageLoader />}>
         {/* Páginas públicas */}
-        {page === 'home' && <HomePage goToPage={goToPage} lang={lang} />}
+        {page === 'home' && <HomePage goToPage={goToPage} />}
         {page === 'listing' && (
           <ListingPage
             goToPage={goToPage}
@@ -306,14 +318,14 @@ function App() {
           />
         )}
         {page === 'detail' && selectedSpace && (
-          <DetailPage space={selectedSpace} goToPage={goToPage} user={user} lang={lang} />
+          <DetailPage space={selectedSpace} goToPage={goToPage} user={user} />
         )}
-        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} lang={lang} />}
+        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} />}
         {page === 'supplier-detail' && selectedSupplier && (
-          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} user={user} lang={lang} />
+          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} user={user} />
         )}
-        {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} lang={lang} />}
-        {page === 'about' && <AboutPage goToPage={goToPage} lang={lang} />}
+        {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
+        {page === 'about' && <AboutPage goToPage={goToPage} />}
         {page === 'comparison' && (
           <ComparisonPage
             spaces={compareSpaces}
@@ -323,12 +335,12 @@ function App() {
         )}
 
         {/* Auth */}
-        {page === 'login' && <LoginPage goToPage={goToPage} lang={lang} />}
-        {page === 'signup' && <SignupPage goToPage={goToPage} lang={lang} />}
+        {page === 'login' && <LoginPage goToPage={goToPage} />}
+        {page === 'signup' && <SignupPage goToPage={goToPage} />}
 
         {/* Área do Host */}
         {page === 'host-dashboard' && user && (
-          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} lang={lang} />
+          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
         )}
         {page === 'new-space' && user && userRole !== 'supplier' && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
@@ -344,26 +356,23 @@ function App() {
         {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
         )}
-        {page === 'guest-dashboard' && user && (
-          <GuestDashboard user={user} goToPage={goToPage} lang={lang} />
-        )}
         {page === 'my-quotes' && user && (
-          <MyQuotesPage user={user} goToPage={goToPage} lang={lang} />
+          <MyQuotesPage user={user} goToPage={goToPage} />
         )}
         {page === 'host-quotes' && user && (
           <HostQuotesPage user={user} goToPage={goToPage} userRole={userRole} />
         )}
 
         {/* Área do Fornecedor */}
-        {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} lang={lang} />}
-        {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} lang={lang} />}
+        {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} />}
+        {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
         {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
         {page === 'terms' && <TermsPage goToPage={goToPage} />}
-        {page === 'pricing' && <PricingPage goToPage={goToPage} lang={lang} />}
+        {page === 'pricing' && <PricingPage goToPage={goToPage} />}
         {page === 'admin' && user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <AdminPage goToPage={goToPage} />}
         {page === 'admin' && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <div style={{padding:40,textAlign:'center'}}><h2>Acesso negado</h2></div>}
         {page === 'supplier-dashboard' && user && (
-          <SupplierDashboard user={user} goToPage={goToPage} lang={lang} />
+          <SupplierDashboard user={user} goToPage={goToPage} />
         )}
         {page === 'new-supplier' && user && (
           <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={null} />

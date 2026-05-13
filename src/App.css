@@ -20,6 +20,7 @@
 .nav {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 28px;
   height: 72px;
   background: var(--white);
@@ -27,7 +28,6 @@
   position: sticky;
   top: 0;
   z-index: 100;
-  gap: 0;
 }
 .nav-logo { cursor: pointer; }
 .logo-box {
@@ -49,13 +49,7 @@
   letter-spacing: 1px;
   display: inline-block;
 }
-.nav-center {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-  flex: 1;
-  justify-content: center;
-}
+.nav-center { display: flex; gap: 28px; align-items: center; }
 .nav-center a {
   font-size: 14px;
   color: var(--text-muted);
@@ -63,7 +57,7 @@
   font-weight: 500;
 }
 .nav-center a:hover { color: var(--text); }
-.nav-right { display: flex; gap: 12px; align-items: center; flex-shrink: 0; margin-left: 8px; }
+.nav-right { display: flex; gap: 12px; align-items: center; }
 .user-greeting { font-size: 13px; color: var(--text-muted); }
 
 .btn-link {
@@ -284,7 +278,7 @@
   justify-content: space-between;
   align-items: center;
 }
-.card-price { font-size: 13px; font-weight: 800; color: #5aa800; }
+.card-price { font-size: 15px; font-weight: 700; color: var(--green-dark); }
 .card-cap { font-size: 12px; color: var(--text-muted); }
 
 /* CTA HOST */
@@ -460,7 +454,7 @@
   position: sticky;
   top: 80px;
 }
-.qb-price { font-size: 28px; font-weight: 900; color: #5aa800; margin-bottom: 4px; }
+.qb-price { font-size: 26px; font-weight: 800; margin-bottom: 4px; }
 .qb-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
 .qb-sec {
   margin-top: 14px;
@@ -658,8 +652,6 @@
 .nav-logo {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
-  margin-right: 8px;
 }
 
 /* SHIMMER SKELETON LOADING */

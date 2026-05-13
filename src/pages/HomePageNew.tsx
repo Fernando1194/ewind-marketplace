@@ -1,4 +1,3 @@
-import { t, type Lang } from '../translations'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
 import { CATEGORIES } from '../types'
@@ -6,8 +5,7 @@ import type { Space } from '../types'
 import type { Page } from '../App'
 
 interface Props {
-  goToPage: (page: Page, space?: Space | any) => void
-  lang?: Lang
+  goToPage: (page: Page, space?: Space) => void
 }
 
 const HERO_IMAGES = [
@@ -31,7 +29,7 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
 ]
 
-export default function HomePage({ goToPage, lang = 'pt' }: Props) {
+export default function HomePage({ goToPage }: Props) {
   const [filterCity, setFilterCity] = useState('')
   const [filterGuests, setFilterGuests] = useState('')
   const [filterDate, setFilterDate] = useState('')
@@ -92,23 +90,23 @@ export default function HomePage({ goToPage, lang = 'pt' }: Props) {
 
         <div style={{ position: 'relative', zIndex: 3, padding: '60px 24px', width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            {t[lang].hero_badge}
+            O marketplace de eventos do Brasil
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 780, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
-            {t[lang].hero_title_1}{' '}
-            <span style={{ color: '#a3e635' }}>{t[lang].hero_title_2}</span>
+            Tudo para o seu evento{' '}
+            <span style={{ color: '#a3e635' }}>em um só lugar</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
-            {t[lang].hero_sub}
+            Compare chácaras, salões, hotéis, restaurantes e muito mais. Solicite orçamentos diretamente com os anunciantes — grátis e sem compromisso.
           </p>
 
           <div className="search-pill">
             <div className="sf">
-              <div className="sf-label">{t[lang].hero_where}</div>
-              <input placeholder={t[lang].hero_where_ph} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+              <div className="sf-label">Onde</div>
+              <input placeholder="Cidade ou região" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
             </div>
             <div className="sf">
-              <div className="sf-label">{t[lang].hero_date}</div>
+              <div className="sf-label">Data do evento</div>
               <input
                 type="date"
                 value={filterDate}
@@ -118,8 +116,8 @@ export default function HomePage({ goToPage, lang = 'pt' }: Props) {
               />
             </div>
             <div className="sf">
-              <div className="sf-label">{t[lang].hero_guests}</div>
-              <input type="number" placeholder={t[lang].hero_guests_ph} value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
+              <div className="sf-label">Convidados</div>
+              <input type="number" placeholder="Quantidade" value={filterGuests} onChange={e => setFilterGuests(e.target.value)} />
             </div>
             <button className="search-btn" onClick={() => goToPage('listing')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
@@ -157,10 +155,10 @@ className="hero-arrow hero-arrow-right"
       <section style={{ background: '#f9fafb', padding: '32px 24px', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
           {[
-            { icon: '🔍', title: 'Tudo em um só lugar', desc: 'Espaços, salões, chácaras, fotógrafos, DJs e decoradores — tudo aqui' },
-            { icon: '💬', title: 'Orçamento em minutos', desc: 'Preencha os dados do evento e receba propostas diretamente do anunciante' },
+            { icon: '🔍', title: 'Compare opções', desc: 'Veja vários espaços lado a lado antes de decidir' },
+            { icon: '💬', title: 'Orçamento direto', desc: 'Fale diretamente com o anunciante, sem intermediários' },
             { icon: '💸', title: 'Grátis para quem busca', desc: 'Nenhuma taxa para quem organiza eventos' },
-            { icon: '⚡', title: 'Resposta rápida', desc: 'Os melhores anunciantes respondem em até 24h — alguns em minutos' },
+            { icon: '⚡', title: 'Resposta rápida', desc: 'Anunciantes respondem em até 24 horas' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
@@ -175,7 +173,7 @@ className="hero-arrow hero-arrow-right"
 
       {/* CATEGORIAS */}
       <section className="section">
-        <h2 className="sec-title">{t[lang].cat_title}</h2>
+        <h2 className="sec-title">Explore por categoria</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
           {CATEGORIES.map(c => (
             <div key={c.name} onClick={() => goToPage('listing')}
@@ -194,7 +192,7 @@ className="hero-arrow hero-arrow-right"
       {featuredSpaces.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 className="sec-title" style={{ marginBottom: 0 }}>{t[lang].spaces_title}</h2>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>Espaços em destaque</h2>
             <button onClick={() => goToPage('listing')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Ver todos →
             </button>
@@ -202,7 +200,7 @@ className="hero-arrow hero-arrow-right"
           <div className="cards-3col">
             {featuredSpaces.slice(0, 3).map(s => (
               <div key={s.id} className="card" onClick={() => goToPage('detail', s)}>
-                <img src={s.media_urls[0] || 'https://via.placeholder.com/400x220?text=No+photo'} alt={s.name} loading="lazy" />
+                <img src={s.media_urls[0] || 'https://via.placeholder.com/400x220?text=Sem+foto'} alt={s.name} loading="lazy" />
                 <div className="card-body">
                   <div className="card-name">{s.name}</div>
                   <div className="card-loc">📍 {s.city}, {s.state}</div>
@@ -210,10 +208,7 @@ className="hero-arrow hero-arrow-right"
                     {s.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
                   </div>
                   <div className="card-foot">
-                    <div style={{ marginTop: 4 }}>
-                      <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
-                      <span className="card-price">{s.price_per_hour ? `R$ ${s.price_per_hour.toLocaleString('pt-BR')}` : s.price_per_day ? `R$ ${s.price_per_day.toLocaleString('pt-BR')}` : 'Consulte o valor'}</span>
-                    </div>
+                    <span className="card-price">{s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}</span>
                     <span className="card-cap">👥 até {s.capacity}</span>
                   </div>
                 </div>
@@ -242,7 +237,7 @@ className="hero-arrow hero-arrow-right"
       {featuredSuppliers.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 className="sec-title" style={{ marginBottom: 0 }}>{t[lang].suppliers_title}</h2>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>Fornecedores em destaque</h2>
             <button onClick={() => goToPage('suppliers')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
               Ver todos →
             </button>
@@ -258,14 +253,17 @@ className="hero-arrow hero-arrow-right"
                   <div className="card-name">{s.name}</div>
                   <div className="card-loc">📍 {s.cities?.[0] || s.state} · {s.category}</div>
                   <div className="card-tags">
-                    <span className="tag">🛠️ {lang === 'en' ? 'Supplier' : 'Fornecedor'}</span>
+                    <span className="tag">🛠️ Fornecedor</span>
                     {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
                   </div>
                   <div className="card-foot">
-                    <div style={{ marginTop: 4 }}>
-                      <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
-                      <span className="card-price">{s.price_info ? (s.price_info.toLowerCase().includes('r$') ? s.price_info : `R$ ${s.price_info}`) : 'Consulte o valor'}</span>
-                    </div>
+                    <span className="card-price">{s.price_info
+                      ? (isNaN(Number(s.price_info.replace(/[^0-9.,]/g, ''))) || !s.price_info.trim()
+                          ? s.price_info
+                          : s.price_info.toLowerCase().includes('r$')
+                            ? s.price_info
+                            : `R$ ${s.price_info}`)
+                      : 'Consultar valor'}</span>
                     <span className="card-cap">Ver perfil →</span>
                   </div>
                 </div>
@@ -294,7 +292,7 @@ className="hero-arrow hero-arrow-right"
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="cta-host">
           <div>
-            <div className="cta-title">{t[lang].cta_host_title}</div>
+            <div className="cta-title">Tem um espaço para eventos?</div>
             <div className="cta-desc">
               Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
             </div>
@@ -330,7 +328,7 @@ className="hero-arrow hero-arrow-right"
 
       <footer className="footer">
         <img src="/logo.png" alt="Ewind" className="logo-img-sm" />
-        <span>{lang === 'en' ? '© 2025 Ewind — The event spaces & services marketplace' : '© 2025 Ewind — O marketplace de espaços e serviços para eventos'}</span>
+        <span>© 2025 Ewind — O marketplace de espaços e serviços para eventos</span>
       </footer>
     </>
   )

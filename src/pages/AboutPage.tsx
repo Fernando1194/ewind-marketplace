@@ -1,15 +1,13 @@
-import { t, type Lang } from '../translations'
 import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
-  lang?: Lang
 }
 
-export default function AboutPage({  goToPage, lang = 'pt' }: Props) {
+export default function AboutPage({ goToPage }: Props) {
   const values = [
     { icon: '🤝', title: 'Conexão direta', desc: 'Acreditamos que os melhores negócios acontecem quando as pessoas falam diretamente umas com as outras. Por isso eliminamos intermediários e deixamos anunciantes e clientes se comunicarem livremente.' },
-    { icon: '🔒', title: 'Transparência', desc: 'Cada orçamento enviado, cada proposta recebida e cada negociação acontece de forma clara e rastreável. Você sempre sabe com quem está falando e o que está contratando.' },
+    { icon: '🔒', title: 'Transparência total', desc: 'Cada orçamento enviado, cada proposta recebida e cada negociação acontece de forma clara e rastreável. Você sempre sabe com quem está falando e o que está contratando.' },
     { icon: '💚', title: 'Acesso para todos', desc: 'Um casamento, um aniversário, uma formatura ou um evento corporativo — o Ewind serve todos com a mesma qualidade. Sem taxas de acesso e sem tratamento diferenciado.' },
     { icon: '🚀', title: 'Simplicidade que resolve', desc: 'Tecnologia existe para facilitar, não para complicar. Nossa plataforma foi construída para que qualquer pessoa consiga usar, sem manuais ou tutoriais.' },
   ]
@@ -29,9 +27,9 @@ export default function AboutPage({  goToPage, lang = 'pt' }: Props) {
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.12em' }}>QUEM SOMOS</div>
           <h1 style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.15, marginBottom: 20 }}>
-            {t[lang].about_title_1}{' '}
-            <span style={{ color: '#a3e635' }}>{t[lang].about_title_2}</span>{' '}
-            {t[lang].about_title_3}
+            Mais visibilidade para quem anuncia.{' '}
+            <span style={{ color: '#a3e635' }}>Mais facilidade</span>{' '}
+            para quem organiza eventos
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, maxWidth: 580, margin: '0 auto 32px' }}>
             O Ewind nasceu de uma crença simples: organizar um evento especial não precisa ser sinônimo de ansiedade, pesquisa interminável e orçamentos que nunca chegam.
@@ -91,9 +89,9 @@ export default function AboutPage({  goToPage, lang = 'pt' }: Props) {
               <div style={{ fontSize: 28, marginBottom: 12 }}>😓</div>
               <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>Antes do Ewind</h4>
               <ul style={{ fontSize: 13, color: '#6b7280', lineHeight: 2, paddingLeft: 18 }}>
-                <li>{lang === 'en' ? 'Hours searching across different websites' : 'Horas pesquisando em sites diferentes'}</li>
+                <li>Horas pesquisando em sites diferentes</li>
                 <li>Ligações sem retorno e emails ignorados</li>
-                <li>{lang === 'en' ? 'Quotes arriving days later' : 'Orçamentos chegando dias depois'}</li>
+                <li>Orçamentos chegando dias depois</li>
                 <li>Impossível comparar opções com clareza</li>
                 <li>Estresse tomando conta do planejamento</li>
               </ul>
@@ -102,10 +100,10 @@ export default function AboutPage({  goToPage, lang = 'pt' }: Props) {
               <div style={{ fontSize: 28, marginBottom: 12 }}>🎉</div>
               <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: '#1a2e05' }}>Com o Ewind</h4>
               <ul style={{ fontSize: 13, color: '#166534', lineHeight: 2, paddingLeft: 18 }}>
-                <li>{lang === 'en' ? 'Everything in one place: venues and suppliers' : 'Tudo em um lugar: espaços e fornecedores'}</li>
-                <li>{lang === 'en' ? 'Quotes sent in minutes' : 'Orçamentos enviados em minutos'}</li>
-                <li>{lang === 'en' ? 'Responses within 24 hours' : 'Respostas em até 24 horas'}</li>
-                <li>{lang === 'en' ? 'Side-by-side comparison, clear and objective' : 'Comparação lado a lado, clara e objetiva'}</li>
+                <li>Tudo em um lugar: espaços e fornecedores</li>
+                <li>Orçamentos enviados em minutos</li>
+                <li>Respostas em até 24 horas</li>
+                <li>Comparação lado a lado, clara e objetiva</li>
                 <li>Foco no que importa: o evento</li>
               </ul>
             </div>
