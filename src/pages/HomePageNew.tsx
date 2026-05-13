@@ -93,8 +93,8 @@ export default function HomePage({ goToPage }: Props) {
             O marketplace de eventos do Brasil
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 780, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
-            Seu evento merece o{' '}
-            <span style={{ color: '#a3e635' }}>espaço perfeito</span>
+            Tudo para o seu evento{' '}
+            <span style={{ color: '#a3e635' }}>em um só lugar</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
             Salões, chácaras, fotógrafos, DJs, decoradores e muito mais. Compare opções, solicite orçamentos e feche direto com o anunciante — de graça e sem complicação.
