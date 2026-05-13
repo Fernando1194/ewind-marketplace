@@ -20,7 +20,7 @@ const fmt = (d: string) => new Date(d).toLocaleDateString('pt-BR', { day: '2-dig
 const fmtFull = (d: string) => new Date(d).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 
 export default function AdminPage({ goToPage }: Props) {
-  const [tab, setTab] = useState<'overview' | 'analytics-spaces' | 'analytics-suppliers' | 'users' | 'spaces' | 'suppliers' | 'quotes' | 'logs'>('overview')
+  const [tab, setTab] = useState<'overview' | 'analytics-spaces' | 'analytics-suppliers' | 'users' | 'spaces' | 'suppliers' | 'quotes' | 'logs' | 'feedbacks'>('overview')
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -31,6 +31,8 @@ export default function AdminPage({ goToPage }: Props) {
   const [suppliers, setSuppliers] = useState<any[]>([])
   const [quotes, setQuotes] = useState<any[]>([])
   const [logs, setLogs] = useState<any[]>([])
+  const [feedbacks, setFeedbacks] = useState<any[]>([])
+  const [loadingFb, setLoadingFb] = useState(false)
 
   // Analytics
   const [catSpaceStats, setCatSpaceStats] = useState<any[]>([])
@@ -58,6 +60,13 @@ export default function AdminPage({ goToPage }: Props) {
   const addLog = (action: string, detail: string) => {
     const entry = { id: Date.now().toString(), action, detail, at: new Date().toISOString() }
     setLogs(prev => [entry, ...prev.slice(0, 99)])
+  }
+
+  const loadFeedbacks = async () => {
+    setLoadingFb(true)
+    const { data } = await supabase.from('feedbacks').select('*').order('created_at', { ascending: false })
+    setFeedbacks(data || [])
+    setLoadingFb(false)
   }
 
   const loadData = useCallback(async () => {
@@ -238,6 +247,7 @@ export default function AdminPage({ goToPage }: Props) {
     { key: 'suppliers', label: `🛠️ Fornecedores (${suppliers.length})` },
     { key: 'quotes', label: `📋 Orçamentos (${quotes.length})` },
     { key: 'logs', label: `📝 Logs (${logs.length})` },
+    { key: 'feedbacks', label: `💡 Feedbacks (${feedbacks.length})` },
   ]
 
   return (
@@ -259,7 +269,7 @@ export default function AdminPage({ goToPage }: Props) {
       <div style={{ background: '#fff', borderBottom: '1px solid #e8e8e8', overflowX: 'auto' }}>
         <div style={{ display: 'flex', minWidth: 'max-content', padding: '0 20px' }}>
           {tabs.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key as any)}
+            <button key={t.key} onClick={() => { setTab(t.key as any); if (t.key === 'feedbacks' && feedbacks.length === 0) loadFeedbacks() }}
               style={{ padding: '12px 16px', fontSize: 12, fontWeight: 600, border: 'none', background: 'none', borderBottom: tab === t.key ? '2.5px solid #a3e635' : '2.5px solid transparent', color: tab === t.key ? '#2d2d2d' : '#9ca3af', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
               {t.label}
             </button>
@@ -710,6 +720,52 @@ export default function AdminPage({ goToPage }: Props) {
             )}
 
             {/* ── LOGS ── */}
+            {tab === 'feedbacks' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700 }}>💡 Feedbacks dos usuários</h3>
+                  <button onClick={loadFeedbacks} style={{ fontSize: 12, padding: '7px 14px', background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 7, cursor: 'pointer', fontFamily: 'inherit', color: '#166534', fontWeight: 600 }}>🔄 Atualizar</button>
+                </div>
+                {loadingFb && <p style={{ color: '#9ca3af' }}>Carregando...</p>}
+                {!loadingFb && feedbacks.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: 40, color: '#9ca3af' }}>
+                    <div style={{ fontSize: 40, marginBottom: 8 }}>💡</div>
+                    <p>Nenhum feedback recebido ainda.</p>
+                  </div>
+                )}
+                {!loadingFb && feedbacks.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {feedbacks.map(fb => (
+                      <div key={fb.id} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 12, padding: 20 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#2d2d2d' }}>{fb.user_email || 'Anônimo'}</div>
+                            <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{new Date(fb.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            {fb.category && <span style={{ fontSize: 11, padding: '3px 10px', background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 100, color: '#166534', fontWeight: 600 }}>{fb.category}</span>}
+                            {fb.page && <span style={{ fontSize: 11, padding: '3px 10px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 100, color: '#1d4ed8', fontWeight: 600 }}>{fb.page}</span>}
+                          </div>
+                        </div>
+                        <p style={{ fontSize: 14, color: '#374151', lineHeight: 1.6, margin: '0 0 12px', whiteSpace: 'pre-wrap' }}>{fb.message}</p>
+                        {fb.media_urls && fb.media_urls.length > 0 && (
+                          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
+                            {fb.media_urls.map((url: string, i: number) => (
+                              url.includes('.mp4') || url.includes('.mov') || url.includes('.webm')
+                                ? <video key={i} src={url} controls style={{ maxWidth: 240, maxHeight: 160, borderRadius: 8, border: '1px solid #e8e8e8' }} />
+                                : <a key={i} href={url} target="_blank" rel="noreferrer">
+                                    <img src={url} alt={`anexo ${i+1}`} style={{ width: 120, height: 90, objectFit: 'cover', borderRadius: 8, border: '1px solid #e8e8e8', cursor: 'pointer' }} />
+                                  </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {tab === 'logs' && (
               <Card>
                 <div style={{ padding: '16px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
