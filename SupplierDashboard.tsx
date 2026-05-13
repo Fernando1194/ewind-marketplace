@@ -1,355 +1,279 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
-import { SUPPLIER_CATEGORIES, SUPPLIER_ATTRIBUTES, EVENT_TYPES } from '../types'
 import type { Supplier } from '../types'
+import { SUPPLIER_CATEGORIES } from '../types'
 import type { Page } from '../App'
 
 interface Props {
   user: User
-  goToPage: (page: Page) => void
-  editingSupplier?: Supplier | null
+  goToPage: (page: Page, supplier?: Supplier) => void
 }
 
-export default function SupplierFormPage({ user, goToPage, editingSupplier }: Props) {
-  const isEditing = !!editingSupplier
-  const [step, setStep] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [uploadProgress, setUploadProgress] = useState(0)
+export default function SupplierDashboard({ user, goToPage }: Props) {
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const [name, setName] = useState(editingSupplier?.name || '')
-  const [description, setDescription] = useState(editingSupplier?.description || '')
-  const [category, setCategory] = useState(editingSupplier?.category || '')
-  const [subcategory, setSubcategory] = useState(editingSupplier?.subcategory || '')
-  const [cityInput, setCityInput] = useState('')
-  const [cities, setCities] = useState<string[]>(editingSupplier?.cities || [])
-  const [state, setState] = useState(editingSupplier?.state || 'PR')
-  const [whatsapp, setWhatsapp] = useState(editingSupplier?.whatsapp || '')
-  const [instagram, setInstagram] = useState(editingSupplier?.instagram || '')
-  const [email, setEmail] = useState(editingSupplier?.email || '')
-  const [website, setWebsite] = useState(editingSupplier?.website || '')
-  const [priceInfo, setPriceInfo] = useState(editingSupplier?.price_info || '')
-  const [eventTypes, setEventTypes] = useState<string[]>(editingSupplier?.event_types || [])
-  const [attributes, setAttributes] = useState<string[]>(editingSupplier?.attributes || [])
-  const [files, setFiles] = useState<File[]>([])
-  const [existingUrls, setExistingUrls] = useState<string[]>(editingSupplier?.media_urls || [])
+  // Feedback states
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [fbCategory, setFbCategory] = useState('')
+  const [fbPage, setFbPage] = useState('')
+  const [fbMessage, setFbMessage] = useState('')
+  const [fbFiles, setFbFiles] = useState<File[]>([])
+  const [fbSending, setFbSending] = useState(false)
+  const [fbSent, setFbSent] = useState(false)
+  const [fbError, setFbError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const totalSteps = 5
+  const PAGES_LIST = ['Página inicial','Listagem de espaços','Listagem de fornecedores','Detalhe de espaço','Detalhe de fornecedor','Formulário de orçamento','Meu painel','Cadastro','Login','Outra']
+  const EVENT_CATS = ['Casamento','Aniversário','Confraternização corporativa','Formatura','Chá de bebê / revelação','Show / Evento cultural','Outro']
 
-  const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) => {
-    set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
-  }
-
-  const addCity = () => {
-    const trimmed = cityInput.trim()
-    if (trimmed && !cities.includes(trimmed)) {
-      setCities([...cities, trimmed])
-      setCityInput('')
-    }
-  }
-
-  const removeCity = (city: string) => setCities(cities.filter(c => c !== city))
-
-  const validateStep = () => {
-    setError('')
-    if (step === 1 && (!name || !category)) {
-      setError('Preencha o nome e a categoria')
-      return false
-    }
-    if (step === 2 && cities.length === 0) {
-      setError('Adicione pelo menos uma cidade de atendimento')
-      return false
-    }
-    if (step === 3 && !whatsapp && !email) {
-      setError('Informe pelo menos um contato (WhatsApp ou email)')
-      return false
-    }
-    return true
-  }
-
-  const nextStep = () => {
-    if (validateStep()) setStep(step + 1)
-  }
-
-  const handleSubmit = async () => {
-    setError('')
+  const load = useCallback(async () => {
     setLoading(true)
-    try {
-      const newUrls: string[] = []
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const ext = file.name.split('.').pop()
-        const fileName = `suppliers/${user.id}/${Date.now()}-${i}.${ext}`
-        const { error: upErr } = await supabase.storage.from('space-media').upload(fileName, file)
-        if (upErr) throw upErr
-        const { data: urlData } = supabase.storage.from('space-media').getPublicUrl(fileName)
-        newUrls.push(urlData.publicUrl)
-        setUploadProgress(((i + 1) / files.length) * 100)
-      }
+    const { data } = await supabase
+      .from('suppliers')
+      .select('*')
+      .eq('owner_id', user.id)
+      .order('created_at', { ascending: false })
+    if (data) setSuppliers(data)
+    setLoading(false)
+  }, [user.id])
 
-      const data = {
-        owner_id: user.id,
-        name, description: description || null,
-        category, subcategory: subcategory || null,
-        cities, state,
-        whatsapp: whatsapp || null,
-        instagram: instagram || null,
-        email: email || null,
-        website: website || null,
-        price_info: priceInfo || null,
-        event_types: eventTypes,
-        attributes,
-        media_urls: [...existingUrls, ...newUrls],
-        status: 'active'
-      }
+  useEffect(() => { load() }, [load])
 
-      const result = isEditing && editingSupplier
-        ? await supabase.from('suppliers').update(data).eq('id', editingSupplier.id)
-        : await supabase.from('suppliers').insert(data)
+  const togglePause = useCallback(async (s: Supplier) => {
+    const newStatus = s.status === 'active' ? 'paused' : 'active'
+    const { error } = await supabase.from('suppliers').update({ status: newStatus }).eq('id', s.id)
+    if (!error) setSuppliers(prev => prev.map(x => x.id === s.id ? { ...x, status: newStatus as any } : x))
+  }, [])
 
-      if (result.error) throw result.error
+  const deleteSupplier = useCallback(async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.')) return
+    const { error } = await supabase.from('suppliers').delete().eq('id', id)
+    if (!error) setSuppliers(prev => prev.filter(s => s.id !== id))
+  }, [])
 
-      alert(isEditing ? '✅ Serviço atualizado!' : '✅ Serviço cadastrado com sucesso!')
-      goToPage('supplier-dashboard')
-    } catch (err: any) {
-      setError(err.message || 'Erro ao salvar')
-    } finally {
-      setLoading(false)
-      setUploadProgress(0)
+  const stats = useMemo(() => ({
+    total: suppliers.length,
+    active: suppliers.filter(s => s.status === 'active').length,
+    pending: suppliers.filter(s => s.status === 'pending').length,
+    paused: suppliers.filter(s => s.status === 'paused').length,
+  }), [suppliers])
+
+  const statusBadge = (status: string) => {
+    const config: Record<string, { bg: string; color: string; label: string }> = {
+      active:   { bg: '#f0fdf4', color: '#166534', label: 'Ativo' },
+      pending:  { bg: '#fff7ed', color: '#c05621', label: 'Em revisão' },
+      paused:   { bg: '#f3f4f6', color: '#4b5563', label: 'Pausado' },
+      rejected: { bg: '#fef2f2', color: '#991b1b', label: 'Rejeitado' },
     }
+    const c = config[status] || config.pending
+    return <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 100, background: c.bg, color: c.color }}>{c.label}</span>
+  }
+
+  const addFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = Array.from(e.target.files || []).filter(f => f.size < 20 * 1024 * 1024)
+    setFbFiles(prev => [...prev, ...newFiles].slice(0, 5))
+    e.target.value = ''
+  }
+
+  const sendFeedback = async () => {
+    if (!fbMessage.trim()) { setFbError('Descreva seu feedback antes de enviar.'); return }
+    setFbSending(true); setFbError('')
+    try {
+      const mediaUrls: string[] = []
+      for (const file of fbFiles) {
+        const ext = file.name.split('.').pop()
+        const path = `feedback/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { data } = await supabase.storage.from('space-media').upload(path, file, { upsert: true })
+        if (data) {
+          const { data: { publicUrl } } = supabase.storage.from('space-media').getPublicUrl(path)
+          mediaUrls.push(publicUrl)
+        }
+      }
+      const { error } = await supabase.from('feedbacks').insert({
+        user_id: user.id, user_email: user.email,
+        category: fbCategory, page: fbPage,
+        message: fbMessage, media_urls: mediaUrls,
+      })
+      if (error) throw error
+      setFbSent(true)
+    } catch (err: any) {
+      setFbError(err.message || 'Erro ao enviar. Tente novamente.')
+    }
+    setFbSending(false)
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: 24 }}>
-      <a onClick={() => goToPage('supplier-dashboard')} style={{ color: '#5aa800', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'block', marginBottom: 8 }}>
-        ← Voltar ao painel
-      </a>
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
-        {isEditing ? 'Editar serviço' : 'Anunciar meu serviço'}
-      </h1>
-      <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Etapa {step} de {totalSteps}</p>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 28px' }}>
 
-      <div style={{ background: '#e8e8e8', height: 4, borderRadius: 100, marginBottom: 24, overflow: 'hidden' }}>
-        <div style={{ background: '#a3e635', height: '100%', width: `${(step / totalSteps) * 100}%`, transition: 'width 0.3s' }} />
-      </div>
-
-      <div style={{ background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 14, padding: 28 }}>
-
-        {/* STEP 1: Info básica */}
-        {step === 1 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📋 Informações básicas</h2>
-            <div className="fg">
-              <label>Nome profissional / empresa *</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: João Silva Fotografia" />
-            </div>
-            <div className="fg">
-              <label>Categoria *</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 }}>
-                {SUPPLIER_CATEGORIES.map(c => (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onClick={() => setCategory(c.name)}
-                    className={`role-btn ${category === c.name ? 'on' : ''}`}
-                    style={{ fontSize: 12 }}
-                  >
-                    {c.icon} {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="fg">
-              <label>Especialidade (opcional)</label>
-              <input type="text" value={subcategory} onChange={e => setSubcategory(e.target.value)} placeholder="Ex: Foto documental, DJ para casamentos..." />
-            </div>
-            <div className="fg">
-              <label>Descrição</label>
-              <textarea
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="Fale sobre seu trabalho, experiência e diferenciais..."
-                rows={4}
-                style={{ width: '100%', padding: '11px 14px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', resize: 'vertical' }}
-              />
-            </div>
-          </>
-        )}
-
-        {/* STEP 2: Localização */}
-        {step === 2 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📍 Onde você atende</h2>
-            <div className="fg">
-              <label>Cidades de atendimento *</label>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <input
-                  type="text"
-                  value={cityInput}
-                  onChange={e => setCityInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addCity()}
-                  placeholder="Digite uma cidade e pressione Enter"
-                  style={{ flex: 1 }}
-                />
-                <button type="button" className="btn-primary" onClick={addCity} style={{ whiteSpace: 'nowrap' }}>
-                  + Adicionar
-                </button>
-              </div>
-              {cities.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {cities.map(c => (
-                    <span key={c} style={{
-                      background: '#f0fdf4', border: '1px solid #a3e635',
-                      borderRadius: 20, padding: '4px 10px', fontSize: 12,
-                      fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6
-                    }}>
-                      {c}
-                      <button onClick={() => removeCity(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', fontSize: 14 }}>×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 6 }}>💡 Adicione todas as cidades que você atende</p>
-            </div>
-            <div className="fg">
-              <label>Estado principal</label>
-              <input type="text" value={state} onChange={e => setState(e.target.value)} placeholder="PR" maxLength={2} />
-            </div>
-            <div className="fg">
-              <label>Tipos de evento que atende</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {EVENT_TYPES.map(t => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => toggleArr(eventTypes, t, setEventTypes)}
-                    className={`chip-btn ${eventTypes.includes(t) ? 'on' : ''}`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* STEP 3: Contato */}
-        {step === 3 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>📞 Contato e redes sociais</h2>
-            <div className="fg">
-              <label>WhatsApp</label>
-              <input type="tel" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} placeholder="(41) 99999-9999" />
-            </div>
-            <div className="fg">
-              <label>Instagram</label>
-              <input type="text" value={instagram} onChange={e => setInstagram(e.target.value)} placeholder="@seuperfil" />
-            </div>
-            <div className="fg">
-              <label>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="contato@email.com" />
-            </div>
-            <div className="fg">
-              <label>Site (opcional)</label>
-              <input type="text" value={website} onChange={e => setWebsite(e.target.value)} placeholder="www.seusite.com.br" />
-            </div>
-            <div className="fg">
-              <label>Faixa de preço (opcional)</label>
-              <input type="text" value={priceInfo} onChange={e => setPriceInfo(e.target.value)} placeholder="Ex: A partir de R$ 800 · Pacotes a partir de R$ 2.500" />
-            </div>
-          </>
-        )}
-
-        {/* STEP 4: Atributos */}
-        {step === 4 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>✨ Diferenciais do seu serviço</h2>
-            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 18 }}>Marque os que se aplicam ao seu trabalho.</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {SUPPLIER_ATTRIBUTES.map(a => (
-                <button
-                  key={a}
-                  type="button"
-                  onClick={() => toggleArr(attributes, a, setAttributes)}
-                  className={`chip-btn ${attributes.includes(a) ? 'on' : ''}`}
-                >
-                  {attributes.includes(a) ? '✓ ' : ''}{a}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* STEP 5: Fotos portfólio */}
-        {step === 5 && (
-          <>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>📸 Fotos do portfólio</h2>
-            <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 18 }}>Adicione fotos do seu trabalho (até 8).</p>
-
-            {existingUrls.length > 0 && (
-              <>
-                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Fotos atuais:</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 8, marginBottom: 16 }}>
-                  {existingUrls.map((url, i) => (
-                    <div key={i} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', height: 85 }}>
-                      <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <button
-                        onClick={() => setExistingUrls(existingUrls.filter((_, idx) => idx !== i))}
-                        style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12 }}
-                      >×</button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            <label style={{ display: 'block', border: '2px dashed #e8e8e8', borderRadius: 12, padding: 32, textAlign: 'center', cursor: 'pointer', background: '#fafafa' }}>
-              <input type="file" multiple accept="image/*" onChange={e => e.target.files && setFiles(Array.from(e.target.files).slice(0, 8))} style={{ display: 'none' }} />
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📷</div>
-              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
-                {files.length > 0 ? `${files.length} foto(s) selecionada(s)` : 'Clique para escolher fotos do portfólio'}
-              </div>
-              <div style={{ fontSize: 12, color: '#6b7280' }}>JPG, PNG até 50MB cada</div>
-            </label>
-
-            {files.length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 8, marginTop: 12 }}>
-                {files.map((f, i) => (
-                  <div key={i} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', height: 85 }}>
-                    <img src={URL.createObjectURL(f)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <button
-                      onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
-                      style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: 12 }}
-                    >×</button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {loading && uploadProgress > 0 && (
-              <div style={{ marginTop: 16, padding: 12, background: '#f0fdf4', borderRadius: 8 }}>
-                <div style={{ fontSize: 12, marginBottom: 6 }}>Enviando fotos... {uploadProgress.toFixed(0)}%</div>
-                <div style={{ height: 4, background: '#e8e8e8', borderRadius: 100, overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#a3e635', transition: 'width 0.3s' }} />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {error && <div className="auth-error" style={{ marginTop: 16 }}>⚠️ {error}</div>}
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24, paddingTop: 18, borderTop: '1px solid #e8e8e8' }}>
-          {step > 1
-            ? <button onClick={() => setStep(step - 1)} style={{ padding: '10px 20px', fontSize: 14, fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer' }}>← Anterior</button>
-            : <div />}
-          {step < totalSteps
-            ? <button onClick={nextStep} className="btn-primary">Próximo →</button>
-            : <button onClick={handleSubmit} className="btn-primary" disabled={loading}>{loading ? 'Salvando...' : (isEditing ? '✓ Salvar alterações' : '✓ Publicar serviço')}</button>
-          }
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
+            Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]} 👋
+          </h1>
+          <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus serviços anunciados</p>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={() => setShowFeedback(!showFeedback)}
+            style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: showFeedback ? '#fefce8' : '#fff', border: `1.5px solid ${showFeedback ? '#fde68a' : '#e8e8e8'}`, borderRadius: 8, cursor: 'pointer', color: showFeedback ? '#92400e' : '#2d2d2d', fontFamily: 'inherit' }}>
+            💡 {showFeedback ? 'Fechar feedback' : 'Enviar feedback'}
+          </button>
+          <button onClick={() => goToPage('host-quotes')}
+            style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d', fontFamily: 'inherit' }}>
+            📋 Ver orçamentos
+          </button>
+          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>
+            + Anunciar novo serviço
+          </button>
         </div>
       </div>
+
+      {/* Feedback Panel */}
+      {showFeedback && (
+        <div style={{ marginBottom: 24, background: '#fff', borderRadius: 14, border: '1px solid #fde68a', padding: 24 }}>
+          {fbSent ? (
+            <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ fontSize: 40, marginBottom: 10 }}>💡</div>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#166534', marginBottom: 6 }}>Feedback enviado!</h3>
+              <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 16 }}>Obrigado por ajudar a melhorar o Ewind!</p>
+              <button onClick={() => { setFbSent(false); setFbCategory(''); setFbPage(''); setFbMessage(''); setFbFiles([]) }}
+                style={{ fontSize: 13, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>Enviar outro feedback</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 600 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>💡 Enviar feedback sobre o Ewind</h3>
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <div className="fg" style={{ flex: 1, minWidth: 200 }}>
+                  <label>Categoria do evento</label>
+                  <select value={fbCategory} onChange={e => setFbCategory(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+                    <option value="">Selecione...</option>
+                    {EVENT_CATS.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="fg" style={{ flex: 1, minWidth: 200 }}>
+                  <label>Onde aconteceu?</label>
+                  <select value={fbPage} onChange={e => setFbPage(e.target.value)}
+                    style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+                    <option value="">Página...</option>
+                    {PAGES_LIST.map(p => <option key={p}>{p}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="fg">
+                <label>Seu feedback *</label>
+                <textarea value={fbMessage} onChange={e => setFbMessage(e.target.value)} rows={4}
+                  placeholder="Descreva o problema, sugestão ou experiência..."
+                  style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
+              </div>
+              <div>
+                <input ref={fileInputRef} type="file" multiple accept="image/*,video/*" onChange={addFiles} style={{ display: 'none' }} />
+                <button type="button" onClick={() => fileInputRef.current?.click()}
+                  style={{ padding: '8px 16px', border: '2px dashed #d1d5db', borderRadius: 8, background: '#f9fafb', color: '#6b7280', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  📷 Adicionar prints ou vídeos (até 5)
+                </button>
+                {fbFiles.length > 0 && (
+                  <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {fbFiles.map((f, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 6, fontSize: 11 }}>
+                        {f.type.startsWith('video') ? '🎥' : '🖼️'}
+                        <span style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                        <button onClick={() => setFbFiles(prev => prev.filter((_,j) => j !== i))}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 14, lineHeight: 1 }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {fbError && <div style={{ fontSize: 12, color: '#dc2626', background: '#fef2f2', padding: '6px 10px', borderRadius: 6 }}>{fbError}</div>}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={sendFeedback} disabled={fbSending || !fbMessage.trim()} className="btn-primary" style={{ padding: '9px 22px', fontSize: 13 }}>
+                  {fbSending ? 'Enviando...' : '📨 Enviar feedback'}
+                </button>
+                <button onClick={() => setShowFeedback(false)}
+                  style={{ padding: '9px 16px', fontSize: 13, background: 'none', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>Cancelar</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
+        <div className="stat-card"><div className="stat-num">{stats.total}</div><div className="stat-lab2">Total</div></div>
+        <div className="stat-card"><div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div><div className="stat-lab2">Ativos</div></div>
+        <div className="stat-card"><div className="stat-num" style={{ color: '#c05621' }}>{stats.pending}</div><div className="stat-lab2">Em revisão</div></div>
+        <div className="stat-card"><div className="stat-num" style={{ color: '#6b7280' }}>{stats.paused}</div><div className="stat-lab2">Pausados</div></div>
+      </div>
+
+      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Meus serviços</h2>
+
+      {loading && <p>Carregando...</p>}
+
+      {!loading && suppliers.length === 0 && (
+        <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🛠️</div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Você ainda não cadastrou nenhum serviço</h3>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>Cadastre seu serviço e apareça para quem está organizando eventos!</p>
+          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>+ Cadastrar primeiro serviço</button>
+        </div>
+      )}
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+        {suppliers.map(s => (
+          <div key={s.id} className="card">
+            <img
+              src={s.media_urls?.[0] || 'https://via.placeholder.com/400x180?text=Sem+foto'}
+              alt={s.name}
+              style={{ height: 160, width: '100%', objectFit: 'cover' }}
+            />
+            <div className="card-body">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                <div>
+                  <div className="card-name">{s.name}</div>
+                  <div className="card-loc">🛠️ {s.category}</div>
+                  {!s.whatsapp && (
+                    <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '5px 10px', fontSize: 11, color: '#dc2626', fontWeight: 600 }}>
+                      ⚠️ Sem WhatsApp — <span onClick={() => goToPage('edit-supplier', s)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>adicionar agora</span>
+                    </div>
+                  )}
+                </div>
+                {statusBadge(s.status)}
+              </div>
+
+              <div className="card-foot" style={{ marginTop: 8 }}>
+                <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500 }}>Preços a partir de</span>
+                <span className="card-price">{s.price_info || 'Consulte'}</span>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
+                <button onClick={() => goToPage('supplier-detail', s)}
+                  style={{ flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d' }}>
+                  👁 Ver
+                </button>
+                <button onClick={() => goToPage('edit-supplier', s)}
+                  style={{ flex: 1, minWidth: 70, padding: 7, fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#5aa800' }}>
+                  ✏️ Editar
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <button onClick={() => togglePause(s)}
+                  style={{ flex: 1, padding: 7, fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d' }}>
+                  {s.status === 'active' ? '⏸ Pausar' : '▶ Ativar'}
+                </button>
+                <button onClick={() => deleteSupplier(s.id)}
+                  style={{ padding: '7px 12px', fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #fecaca', borderRadius: 8, cursor: 'pointer', color: '#991b1b' }}>
+                  🗑
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
     </div>
   )
 }
