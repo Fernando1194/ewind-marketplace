@@ -97,7 +97,7 @@ export default function HomePage({ goToPage }: Props) {
             <span style={{ color: '#a3e635' }}>espaço perfeito</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
-            Compare chácaras, salões, hotéis, restaurantes e muito mais. Solicite orçamentos diretamente com os anunciantes — grátis e sem compromisso.
+            Espaços e fornecedores de eventos em um só lugar. Compare, solicite orçamentos e feche negócio direto com o anunciante — sem taxas, sem complicação.
           </p>
 
           <div className="search-pill">
@@ -155,10 +155,10 @@ className="hero-arrow hero-arrow-right"
       <section style={{ background: '#f9fafb', padding: '32px 24px', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
           {[
-            { icon: '🔍', title: 'Compare opções', desc: 'Veja vários espaços lado a lado antes de decidir' },
-            { icon: '💬', title: 'Orçamento direto', desc: 'Fale diretamente com o anunciante, sem intermediários' },
+            { icon: '🔍', title: 'Tudo em um só lugar', desc: 'Espaços, salões, chácaras, fotógrafos, DJs e decoradores — tudo aqui' },
+            { icon: '💬', title: 'Orçamento em minutos', desc: 'Preencha os dados do evento e receba propostas diretamente do anunciante' },
             { icon: '💸', title: 'Grátis para quem busca', desc: 'Nenhuma taxa para quem organiza eventos' },
-            { icon: '⚡', title: 'Resposta rápida', desc: 'Anunciantes respondem em até 24 horas' },
+            { icon: '⚡', title: 'Resposta rápida', desc: 'Os melhores anunciantes respondem em até 24h — alguns em minutos' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
@@ -292,7 +292,7 @@ className="hero-arrow hero-arrow-right"
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="cta-host">
           <div>
-            <div className="cta-title">Tem um espaço para eventos?</div>
+            <div className="cta-title">Você tem um espaço ou oferece serviços para eventos?</div>
             <div className="cta-desc">
               Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
             </div>
