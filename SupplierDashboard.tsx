@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Supplier } from '../types'
-import { SUPPLIER_CATEGORIES } from '../types'
 import type { Page } from '../App'
 
 interface Props {
