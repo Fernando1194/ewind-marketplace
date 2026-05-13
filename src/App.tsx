@@ -26,12 +26,13 @@ const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
+const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
 
 export type Page =
   | 'home' | 'listing' | 'detail'
   | 'login' | 'signup'
   | 'host-dashboard' | 'new-space' | 'edit-space'
-  | 'my-quotes' | 'host-quotes'
+  | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
   | 'supplier-login' | 'supplier-signup'
@@ -213,24 +214,7 @@ function App() {
         </div>
 
         <div className="nav-right">
-          {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-            <button
-              onClick={() => goToPage('admin')}
-              title="Admin"
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                padding: '6px', opacity: 0.25, transition: 'opacity 0.2s',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.25'}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d2d2d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </button>
-          )}
+
           {/* Badge comparação */}
           {compareSpaces.length > 0 && (
             <button
@@ -251,10 +235,17 @@ function App() {
 
           {user ? (
             <>
-              {/* Meu painel */}
-              {user && userRole !== 'guest' && (
-                <button className="btn-primary" onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
-                  {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+              {/* Meu painel — todos os perfis */}
+              {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+                <button className="btn-primary" onClick={() => goToPage('admin')}>⚙️ Admin</button>
+              )}
+              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+                <button className="btn-primary" onClick={() => {
+                  if (userRole === 'supplier' || isSupplier) goToPage('supplier-dashboard')
+                  else if (userRole === 'host' || isHost) goToPage('host-dashboard')
+                  else goToPage('guest-dashboard')
+                }}>
+                  {userRole === 'supplier' || isSupplier ? '🛠️' : userRole === 'host' || isHost ? '🏢' : '👤'} Meu painel
                 </button>
               )}
 
@@ -355,6 +346,9 @@ function App() {
         )}
         {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
+        )}
+        {page === 'guest-dashboard' && user && (
+          <GuestDashboard user={user} goToPage={goToPage} />
         )}
         {page === 'my-quotes' && user && (
           <MyQuotesPage user={user} goToPage={goToPage} />
