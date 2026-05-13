@@ -47,7 +47,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
   }, [])
 
   const deleteSupplier = useCallback(async (id: string) => {
-    if (!confirm('Excluir este serviço? Esta ação não pode ser desfeita.')) return
+    if (!confirm(lang === 'en' ? 'Delete this service? This action cannot be undone.' : 'Excluir este serviço? Esta ação não pode ser desfeita.')) return
     const { error } = await supabase.from('suppliers').delete().eq('id', id)
     if (!error) setSuppliers(prev => prev.filter(x => x.id !== id))
   }, [])
@@ -111,9 +111,9 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
 
       {tab === 'dados' && (
         <div style={{maxWidth:480,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28,display:'flex',flexDirection:'column',gap:16}}>
-          <div className="fg"><label>Nome completo</label><input type="text" value={fullName} onChange={e=>setFullName(e.target.value)} /></div>
-          <div className="fg"><label>Email</label><input type="email" value={user.email||''} disabled style={{background:'#f9fafb',color:'#9ca3af'}} /></div>
-          <div className="fg"><label>WhatsApp</label><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
+          <div className="fg"><label>{t[lang].dash_full_name}</label><input type="text" value={fullName} onChange={e=>setFullName(e.target.value)} /></div>
+          <div className="fg"><label>{t[lang].dash_email}</label><input type="email" value={user.email||''} disabled style={{background:'#f9fafb',color:'#9ca3af'}} /></div>
+          <div className="fg"><label>{t[lang].dash_whatsapp}</label><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
           {saveMsg && <div style={{fontSize:13,color:'#16a34a',fontWeight:600}}>{saveMsg}</div>}
           <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>{saving?'Salvando...':'Salvar'}</button>
         </div>
@@ -122,7 +122,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
         <div style={{maxWidth:520,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28}}>
           {sacSent ? (<div style={{textAlign:'center',padding:24}}><div style={{fontSize:40,marginBottom:10}}>✅</div><p style={{fontSize:14,color:'#166534',fontWeight:700}}>Mensagem enviada!</p><button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:12,fontSize:12,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}}>{t[lang].dash_sac_another}</button></div>
           ) : (<div style={{display:'flex',flexDirection:'column',gap:14}}>
-              <div className="fg"><label>Assunto</label><select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}><option value="">Selecione...</option><option>Dúvida sobre planos</option><option>Problema com orçamento</option><option>Erro no cadastro</option><option>Outro</option></select></div>
+              <div className="fg"><label>{t[lang].dash_sac_subject}</label><select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}><option value="">Selecione...</option><option>Dúvida sobre planos</option><option>Problema com orçamento</option><option>Erro no cadastro</option><option>Outro</option></select></div>
               <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={4} placeholder={lang==='en'?'Describe...':'Descreva...'} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
               <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'9px 22px'}}>{t[lang].dash_sac_send}</button>
             </div>)}
@@ -143,20 +143,20 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
       {tab === 'servicos' && <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Meus serviços</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{t[lang].supp_dash_services}</h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus anúncios de fornecedor</p>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
             📋 Ver orçamentos recebidos
           </button>
-          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>+ Anunciar novo serviço</button>
+          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>{t[lang].supp_dash_new}</button>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 28 }}>
-        <div className="stat-card"><div className="stat-num">{stats.total}</div><div className="stat-lab2">Total</div></div>
-        <div className="stat-card"><div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div><div className="stat-lab2">Ativos</div></div>
+        <div className="stat-card"><div className="stat-num">{stats.total}</div><div className="stat-lab2">{t[lang].host_dash_total}</div></div>
+        <div className="stat-card"><div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div><div className="stat-lab2">{t[lang].host_dash_active}</div></div>
         <div className="stat-card"><div className="stat-num" style={{ color: '#6b7280' }}>{stats.paused}</div><div className="stat-lab2">Pausados</div></div>
       </div>
 
@@ -166,8 +166,8 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🛠️</div>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Você ainda não anunciou nenhum serviço</h3>
-          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>Cadastre seu serviço e apareça para quem está organizando eventos!</p>
-          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>+ Anunciar meu serviço</button>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>{lang === 'en' ? 'List your service and start receiving quotes.' : 'Cadastre seu serviço e apareça para quem busca.'}reça para quem está organizando eventos!</p>
+          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>{t[lang].supp_dash_new}</button>
         </div>
       )}
 
@@ -177,7 +177,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
           return (
             <div key={s.id} className="card">
               <img
-                src={s.media_urls[0] || 'https://via.placeholder.com/400x160?text=Sem+foto'}
+                src={s.media_urls[0] || 'https://via.placeholder.com/400x160?text=No+photo'}
                 alt={s.name}
                 style={{ height: 150, width: '100%', objectFit: 'cover' }}
               />
@@ -200,7 +200,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
                   <button
                     onClick={() => goToPage('edit-supplier', s)}
                     style={{ flex: 1, minWidth: 60, padding: 7, fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#5aa800' }}
-                  >✏️ Editar</button>
+                  >{lang === 'en' ? '✏️ Edit' : '✏️ Editar'}</button>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                   <button

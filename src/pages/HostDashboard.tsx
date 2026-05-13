@@ -39,7 +39,7 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
   }, [loadMySpaces])
 
   const deleteSpace = useCallback(async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este espaço? Esta ação não pode ser desfeita.')) return
+    if (!confirm(lang === 'en' ? 'Are you sure you want to delete this venue? This action cannot be undone.' : 'Tem certeza que deseja excluir este espaço? Esta ação não pode ser desfeita.')) return
     const { error } = await supabase.from('spaces').delete().eq('id', id)
     if (!error) setSpaces(prev => prev.filter(s => s.id !== id))
   }, [])
@@ -147,9 +147,9 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
       {/* Tab: Dados */}
       {tab === 'dados' && (
         <div style={{ maxWidth: 480, background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="fg"><label>Nome completo</label><input type="text" value={fullName} onChange={e => setFullName(e.target.value)} /></div>
+          <div className="fg"><label>{t[lang].dash_full_name}</label><input type="text" value={fullName} onChange={e => setFullName(e.target.value)} /></div>
           <div className="fg"><label>Email</label><input type="email" value={user.email || ''} disabled style={{ background: '#f9fafb', color: '#9ca3af' }} /></div>
-          <div className="fg"><label>WhatsApp</label><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
+          <div className="fg"><label>{t[lang].dash_whatsapp}</label><input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
           {saveMsg && <div style={{ fontSize: 13, color: '#16a34a', fontWeight: 600 }}>{saveMsg}</div>}
           <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{ alignSelf: 'flex-start', padding: '10px 24px' }}>{saving ? 'Salvando...' : 'Salvar'}</button>
         </div>
@@ -167,9 +167,9 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div className="fg">
-                <label>Assunto</label>
+                <label>{t[lang].dash_sac_subject}</label>
                 <select value={sacSubject} onChange={e => setSacSubject(e.target.value)} style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
-                  <option value="">Selecione...</option>
+                  <option value="">{t[lang].select_placeholder}</option>
                   <option>Dúvida sobre planos</option><option>Problema com orçamento</option><option>Erro no cadastro</option><option>Outro</option>
                 </select>
               </div>
@@ -197,31 +197,31 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
         <div className="stat-card">
           <div className="stat-num">{stats.total}</div>
-          <div className="stat-lab2">Total</div>
+          <div className="stat-lab2">{t[lang].host_dash_total}</div>
         </div>
         <div className="stat-card">
           <div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div>
-          <div className="stat-lab2">Ativos</div>
+          <div className="stat-lab2">{t[lang].host_dash_active}</div>
         </div>
         <div className="stat-card">
           <div className="stat-num" style={{ color: '#c05621' }}>{stats.pending}</div>
-          <div className="stat-lab2">Em revisão</div>
+          <div className="stat-lab2">{t[lang].host_dash_pending}</div>
         </div>
         <div className="stat-card">
           <div className="stat-num" style={{ color: '#6b7280' }}>{stats.paused}</div>
-          <div className="stat-lab2">Pausados</div>
+          <div className="stat-lab2">{t[lang].host_dash_paused}</div>
         </div>
       </div>
 
-      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Meus espaços</h2>
+      <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>{t[lang].host_dash_spaces}</h2>
 
       {loading && <p>{t[lang].loading}</p>}
 
       {!loading && spaces.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🏢</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Você ainda não cadastrou nenhum espaço</h3>
-          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>Cadastre seu primeiro espaço e comece a receber orçamentos!</p>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{lang === 'en' ? 'You haven\'t listed any venues yet' : 'Você ainda não cadastrou nenhum espaço'}</h3>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>{lang === 'en' ? 'List your first venue and start receiving quotes.' : 'Cadastre seu primeiro espaço e comece a receber orçamentos.'}os!</p>
           <button className="btn-primary" onClick={() => goToPage('new-space')}>
             + Cadastrar primeiro espaço
           </button>
@@ -232,7 +232,7 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
         {spaces.map(s => (
           <div key={s.id} className="card">
             <img
-              src={s.media_urls[0] || 'https://via.placeholder.com/400x180?text=Sem+foto'}
+              src={s.media_urls[0] || 'https://via.placeholder.com/400x180?text=No+photo'}
               alt={s.name}
               style={{ height: 160, width: '100%', objectFit: 'cover' }}
             />

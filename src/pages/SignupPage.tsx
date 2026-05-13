@@ -118,12 +118,12 @@ export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
           </div>
 
           <div className="fg">
-            <label>Email</label>
+            <label>{t[lang].signup_email}</label>
             <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
           </div>
 
           <div className="fg">
-            <label>Senha</label>
+            <label>{t[lang].signup_password}</label>
             <div style={{ position: 'relative' }}>
               <input
                 type={showPass ? 'text' : 'password'}

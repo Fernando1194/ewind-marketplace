@@ -72,7 +72,7 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
   return (
     <DashboardLayout user={user} tabs={TABS} activeTab={tab} onTabChange={setTab}
       title={T[tab]?.title||''} subtitle={T[tab]?.subtitle||''}
-      headerAction={tab === 'orcamentos' ? <button className="btn-primary" onClick={() => goToPage('spaces')} style={{fontSize:13,padding:'9px 18px'}}>+ Buscar espaços</button> : undefined}>
+      headerAction={tab === 'orcamentos' ? <button className="btn-primary" onClick={() => goToPage('spaces')} style={{fontSize:13,padding:'9px 18px'}}>{lang === 'en' ? '+ Find venues' : '+ Buscar espaços'}</button> : undefined}>
 
       {tab === 'orcamentos' && (
         <div>
@@ -81,8 +81,8 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
             <div style={{textAlign:'center',padding:'60px 24px',background:'#fff',borderRadius:14,border:'1px solid #e8e8e8'}}>
               <div style={{fontSize:48,marginBottom:12}}>📋</div>
               <h3 style={{fontSize:18,fontWeight:700,marginBottom:8}}>{t[lang].my_quotes_none}</h3>
-              <p style={{fontSize:14,color:'#6b7280',marginBottom:20}}>Busque espaços ou fornecedores e solicite orçamentos gratuitos.</p>
-              <button className="btn-primary" onClick={() => goToPage('spaces')}>Buscar espaços →</button>
+              <p style={{fontSize:14,color:'#6b7280',marginBottom:20}}>{lang === 'en' ? 'Find venues or suppliers and request free quotes.' : 'Busque espaços ou fornecedores e solicite orçamentos gratuitos.'}itos.</p>
+              <button className="btn-primary" onClick={() => goToPage('spaces')}>{lang === 'en' ? 'Find venues →' : 'Buscar espaços →'}</button>
             </div>
           )}
           {!loadingQ && quotes.length > 0 && (
@@ -92,13 +92,13 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
                   <div>
                     <div style={{fontSize:15,fontWeight:700,marginBottom:4}}>
                       {q.spaces?.name||q.suppliers?.name||'Anúncio'}
-                      {q.suppliers && <span style={{fontSize:10,color:'#9ca3af',fontWeight:400,marginLeft:6}}>Fornecedor</span>}
+                      {q.suppliers && <span style={{fontSize:10,color:'#9ca3af',fontWeight:400,marginLeft:6}}>{lang === 'en' ? 'Supplier' : 'Fornecedor'}</span>}
                     </div>
                     <div style={{fontSize:12,color:'#6b7280'}}>🎉 {q.event_type}{q.event_date&&` · ${new Date(q.event_date+'T12:00:00').toLocaleDateString('pt-BR')}`}{q.guests_count&&` · ${q.guests_count} convidados`}</div>
                     <div style={{fontSize:11,color:'#9ca3af',marginTop:2}}>{new Date(q.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'2-digit'})}</div>
                   </div>
                   <div style={{display:'flex',alignItems:'center',gap:12}}>
-                    {q.proposed_price && <div style={{textAlign:'right'}}><div style={{fontSize:10,color:'#9ca3af'}}>Valor proposto</div><div style={{fontSize:15,fontWeight:800,color:'#5aa800'}}>R$ {Number(q.proposed_price).toLocaleString('pt-BR')}</div></div>}
+                    {q.proposed_price && <div style={{textAlign:'right'}}><div style={{fontSize:10,color:'#9ca3af'}}>{lang === 'en' ? 'Proposed value' : 'Valor proposto'}</div><div style={{fontSize:15,fontWeight:800,color:'#5aa800'}}>R$ {Number(q.proposed_price).toLocaleString('pt-BR')}</div></div>}
                     <span style={{fontSize:11,fontWeight:700,padding:'4px 12px',borderRadius:100,background:`${SC[q.status]||'#9ca3af'}18`,color:SC[q.status]||'#9ca3af'}}>{SL[q.status]||q.status}</span>
                   </div>
                 </div>
@@ -110,9 +110,9 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
 
       {tab === 'dados' && (
         <div style={{maxWidth:480,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28,display:'flex',flexDirection:'column',gap:16}}>
-          <div className="fg"><label>Nome completo</label><input type="text" value={fullName} onChange={e=>setFullName(e.target.value)} placeholder="Seu nome" /></div>
-          <div className="fg"><label>Email</label><input type="email" value={user.email||''} disabled style={{background:'#f9fafb',color:'#9ca3af'}} /><p style={{fontSize:11,color:'#9ca3af',marginTop:4}}>O email não pode ser alterado.</p></div>
-          <div className="fg"><label>WhatsApp</label><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(41) 99999-9999" maxLength={16} /></div>
+          <div className="fg"><label>{t[lang].dash_full_name}</label><input type="text" value={fullName} onChange={e=>setFullName(e.target.value)} placeholder="Seu nome" /></div>
+          <div className="fg"><label>{t[lang].dash_email}</label><input type="email" value={user.email||''} disabled style={{background:'#f9fafb',color:'#9ca3af'}} /><p style={{fontSize:11,color:'#9ca3af',marginTop:4}}>{lang === 'en' ? 'Email cannot be changed.' : 'O email não pode ser alterado.'}</p></div>
+          <div className="fg"><label>{t[lang].dash_whatsapp}</label><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(41) 99999-9999" maxLength={16} /></div>
           {saveMsg && <div style={{fontSize:13,color:'#16a34a',fontWeight:600}}>{saveMsg}</div>}
           <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>{saving ? t[lang].dash_saving : t[lang].dash_save}</button>
         </div>
@@ -130,9 +130,9 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
           ) : (
             <div style={{background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28,display:'flex',flexDirection:'column',gap:16}}>
               <div className="fg">
-                <label>Assunto</label>
+                <label>{t[lang].dash_sac_subject}</label>
                 <select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}>
-                  <option value="">Selecione...</option>
+                  <option value="">{t[lang].select_placeholder}</option>
                   <option>{lang==='en'?'Issue with quote':'Problema com orçamento'}</option><option>{lang==='en'?'Advertiser did not respond':'Anunciante não respondeu'}</option><option>{lang==='en'?'Registration error':'Erro no cadastro'}</option><option>{lang==='en'?'Question about plans':'Dúvida sobre planos'}</option><option>{lang==='en'?'Report listing':'Denúncia de anúncio'}</option><option>{lang==='en'?'Other':'Outro'}</option>
                 </select>
               </div>
@@ -159,7 +159,7 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
               <button onClick={sendChat} disabled={!chatInput.trim()} style={{padding:'10px 18px',background:'#a3e635',color:'#1a2e05',border:'none',borderRadius:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit',fontSize:14}}>{t[lang].dash_chat_send}</button>
             </div>
           </div>
-          <p style={{fontSize:11,color:'#9ca3af',marginTop:10}}>Para problemas técnicos, use a aba Suporte.</p>
+          <p style={{fontSize:11,color:'#9ca3af',marginTop:10}}>{lang === 'en' ? 'For technical issues, use the Support tab.' : 'Para problemas técnicos, use a aba Suporte.'}</p>
         </div>
       )}
 

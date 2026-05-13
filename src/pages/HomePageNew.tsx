@@ -202,7 +202,7 @@ className="hero-arrow hero-arrow-right"
           <div className="cards-3col">
             {featuredSpaces.slice(0, 3).map(s => (
               <div key={s.id} className="card" onClick={() => goToPage('detail', s)}>
-                <img src={s.media_urls[0] || 'https://via.placeholder.com/400x220?text=Sem+foto'} alt={s.name} loading="lazy" />
+                <img src={s.media_urls[0] || 'https://via.placeholder.com/400x220?text=No+photo'} alt={s.name} loading="lazy" />
                 <div className="card-body">
                   <div className="card-name">{s.name}</div>
                   <div className="card-loc">📍 {s.city}, {s.state}</div>
@@ -258,7 +258,7 @@ className="hero-arrow hero-arrow-right"
                   <div className="card-name">{s.name}</div>
                   <div className="card-loc">📍 {s.cities?.[0] || s.state} · {s.category}</div>
                   <div className="card-tags">
-                    <span className="tag">🛠️ Fornecedor</span>
+                    <span className="tag">🛠️ {lang === 'en' ? 'Supplier' : 'Fornecedor'}</span>
                     {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
                   </div>
                   <div className="card-foot">
@@ -330,7 +330,7 @@ className="hero-arrow hero-arrow-right"
 
       <footer className="footer">
         <img src="/logo.png" alt="Ewind" className="logo-img-sm" />
-        <span>© 2025 Ewind — O marketplace de espaços e serviços para eventos</span>
+        <span>{lang === 'en' ? '© 2025 Ewind — The event spaces & services marketplace' : '© 2025 Ewind — O marketplace de espaços e serviços para eventos'}</span>
       </footer>
     </>
   )

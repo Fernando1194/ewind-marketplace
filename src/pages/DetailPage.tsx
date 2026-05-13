@@ -41,12 +41,12 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
     }
 
     if (!eventType) {
-      setError('Selecione o tipo de evento')
+      setError(lang === 'en' ? 'Select the event type' : 'Selecione o tipo de evento')
       setLoading(false)
       return
     }
     if (!eventDate) {
-      setError('Selecione a data do evento')
+      setError(lang === 'en' ? 'Select the event date' : 'Selecione a data do evento')
       setLoading(false)
       return
     }
@@ -81,7 +81,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
       setShowForm(false)
       setQuoteData({ eventType, eventDate, eventTime, guestsCount, duration, message })
     } catch (err: any) {
-      setError(err.message || 'Erro ao enviar orçamento')
+      setError(err.message || (lang === 'en' ? 'Error sending quote' : 'Erro ao enviar orçamento'))
     } finally {
       setLoading(false)
     }
@@ -90,7 +90,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
   return (
     <>
       <div className="back-bar">
-        <a onClick={() => goToPage('listing')}>← Voltar à listagem</a>
+        <a onClick={() => goToPage('listing')}>{lang === 'en' ? '← Back to venues' : '← Voltar à listagem'}</a>
       </div>
       <div className="det-layout">
         <div>
@@ -103,7 +103,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
           <div className="stats-row">
             <div className="stat-item">
               <div className="stat-val">{space.capacity}</div>
-              <div className="stat-lab">Capacidade</div>
+              <div className="stat-lab">{lang === 'en' ? 'Capacity' : 'Capacidade'}</div>
             </div>
             <div className="stat-item">
               <div className="stat-val">{space.min_hours}h</div>
@@ -161,7 +161,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
               )}
               <div style={{ borderRadius: 12, overflow: 'hidden', border: '1.5px solid #e8e8e8' }}>
                 <iframe
-                  title="Mapa do espaço"
+                  title={lang === 'en' ? 'Venue map' : 'Mapa do espaço'}
                   width="100%"
                   height="280"
                   style={{ border: 0, display: 'block' }}
@@ -188,7 +188,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
                 : `R$ ${Number(space.price_per_day).toLocaleString('pt-BR')}`}
             </div>
             <div className="qb-sub">{t[lang].detail_price_sub}</div>
-            <div className="qb-sub">Preço orientativo · sujeito a negociação</div>
+            <div className="qb-sub">{lang === 'en' ? 'Indicative price · subject to negotiation' : 'Preço orientativo · sujeito a negociação'}</div>
 
             {success && quoteData && (() => {
               const waNumber = space.whatsapp ? `55${space.whatsapp.replace(/\D/g, '')}` : null
@@ -208,16 +208,16 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
                   <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
                   <div style={{ fontSize: 15, fontWeight: 800, color: '#14532d', marginBottom: 4 }}>Orçamento enviado!</div>
                   <div style={{ fontSize: 12, color: '#166534', marginBottom: 14, lineHeight: 1.5 }}>
-                    Você receberá a resposta no painel em até 24h.<br/>
-                    <strong>Acelere o processo enviando também pelo WhatsApp!</strong>
+                    {lang === 'en' ? 'You will receive the response in your dashboard within 24h.' : 'Você receberá a resposta no painel em até 24h.'}<br/>
+                    <strong>{lang === 'en' ? 'Speed it up by also sending via WhatsApp!' : 'Acelere o processo enviando também pelo WhatsApp!'}</strong>
                   </div>
 
                   {waNumber && !whatsappSent ? (
                     <>
                       <div style={{ background: '#fff', border: '1px solid #d9f99d', borderRadius: 10, padding: '10px 12px', marginBottom: 12, textAlign: 'left', fontSize: 12, color: '#4b5563', lineHeight: 1.6 }}>
-                        <div style={{ fontWeight: 700, color: '#166534', marginBottom: 6 }}>📱 Mensagem que será enviada:</div>
+                        <div style={{ fontWeight: 700, color: '#166534', marginBottom: 6 }}>📱 {lang === 'en' ? 'Message that will be sent:' : 'Mensagem que será enviada:'}</div>
                         <div style={{ fontStyle: 'italic', color: '#6b7280' }}>
-                          "Olá! Te encontrei na plataforma Ewind e gostaria de um orçamento do seu espaço <strong>{space.name}</strong>."
+                          {lang === 'en' ? `Hello! I found you on Ewind and would like a quote for <strong>${space.name}</strong>.` : `Olá! Te encontrei na plataforma Ewind e gostaria de um orçamento do seu espaço <strong>${space.name}</strong>.`}
                           <br/>📌 {quoteData.eventType} · 📅 {new Date(quoteData.eventDate).toLocaleDateString('pt-BR')}{quoteData.eventTime ? ` às ${quoteData.eventTime.substring(0,5)}` : ''}
                           <br/>👥 {quoteData.guestsCount} pessoas · ⏱️ {quoteData.duration}h
                         </div>
@@ -259,7 +259,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
                       )}
                       {!waNumber && (
                         <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 10, padding: '8px 12px', background: '#f9fafb', borderRadius: 8 }}>
-                          Este espaço ainda não tem WhatsApp cadastrado.<br/>Aguarde a resposta pela plataforma.
+                          {lang === 'en' ? 'This venue has no WhatsApp registered. Wait for the reply on the platform.' : 'Este espaço ainda não tem WhatsApp cadastrado. Aguarde a resposta pela plataforma.'}
                         </div>
                       )}
                       <button onClick={() => goToPage('my-quotes')} className="btn-primary" style={{ width: '100%', padding: 11, fontSize: 13 }}>
@@ -348,7 +348,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
                 </button>
                 <div style={{ marginTop: 10, padding: '8px 12px', background: '#f0fdf4', borderRadius: 8, fontSize: 12, color: '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span>⚡</span>
-                  <span>Anunciantes respondem em até <strong>24 horas</strong>. Você receberá a proposta diretamente no painel.</span>
+                  <span>{lang === 'en' ? 'Advertisers respond within' : 'Anunciantes respondem em até'} <strong>24 {lang === 'en' ? 'hours' : 'horas'}</strong>. {lang === 'en' ? 'You will receive the proposal in your dashboard.' : 'Você receberá a proposta diretamente no painel.'}</span>
                 </div>
                 <button
                   type="button"
@@ -363,7 +363,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
             {/* Disponibilidade */}
       {((space as any).available_dates?.length > 0 || (space as any).availability_note) && (
         <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
-          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 Disponibilidade</h3>
+          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 {t[lang].availability_title.replace('📅 ', '')}</h3>
           <AvailabilityCalendar
             availableDates={(space as any).available_dates || []}
             readOnly
@@ -384,7 +384,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
                 {space.whatsapp && (
                   <a href={`https://wa.me/55${space.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Olá! Te encontrei na plataforma Ewind e gostaria de um orçamento do seu espaço *' + space.name + '*. Poderia me passar mais informações sobre disponibilidade e valores? 😊')}`} target="_blank" rel="noopener noreferrer"
                     style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 12px', background: '#f0fdf4', borderRadius: 8, fontSize: 13, fontWeight: 600, color: '#166534', textDecoration: 'none' }}>
-                    💬 WhatsApp
+                    {t[lang].contact_whatsapp}
                   </a>
                 )}
                 {space.instagram && (
@@ -413,7 +413,7 @@ export default function DetailPage({  space, user, goToPage, lang = 'pt' }: Prop
                 )}
               </div>
             )}
-            <div className="qb-sec">🔒 Seus dados são protegidos. Compartilhados apenas com o fornecedor.</div>
+            <div className="qb-sec">🔒 {lang === 'en' ? 'Your data is protected. Shared only with the advertiser.' : 'Seus dados são protegidos. Compartilhados apenas com o fornecedor.'}</div>
           </div>
         </aside>
       </div>

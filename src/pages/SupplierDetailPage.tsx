@@ -92,7 +92,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
         setWaMsg(`https://wa.me/55${num}?text=${wm}`)
       }
     } catch (err: any) {
-      setQuoteError(err.message || 'Erro ao enviar orçamento')
+      setQuoteError(err.message || (lang === 'en' ? 'Error sending quote' : 'Erro ao enviar orçamento'))
     }
     setQuoteLoading(false)
   }
@@ -106,7 +106,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
   return (
     <>
       <div className="back-bar">
-        <a onClick={() => goToPage('suppliers')}>← Voltar aos fornecedores</a>
+        <a onClick={() => goToPage('suppliers')}>{lang === 'en' ? '← Back to suppliers' : '← Voltar aos fornecedores'}</a>
       </div>
 
       <div className="det-layout">
@@ -185,7 +185,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
         {/* Disponibilidade */}
         {((supplier as any).available_dates?.length > 0 || (supplier as any).availability_note) && (
           <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 Disponibilidade</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 {lang === 'en' ? 'Availability' : 'Disponibilidade'}</h3>
             <AvailabilityCalendar
               availableDates={(supplier as any).available_dates || []}
               readOnly
@@ -283,7 +283,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
                       <label style={{ fontSize: 12 }}>{t[lang].detail_event_type}</label>
                       <select value={eventType} onChange={e => setEventType(e.target.value)}
                         style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-                        <option value="">Selecione...</option>
+                        <option value="">{t[lang].select_placeholder}</option>
                         {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>

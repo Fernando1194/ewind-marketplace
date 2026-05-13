@@ -243,8 +243,9 @@ function App() {
               {/* Language toggle */}
               <button onClick={() => setLang(l => l === 'pt' ? 'en' : 'pt')}
                 title={lang === 'pt' ? 'Switch to English' : 'Mudar para Português'}
-                style={{ background: 'none', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', padding: '4px 8px', display: 'flex', alignItems: 'center', gap: 4, fontSize: 18, lineHeight: 1 }}>
-                {lang === 'pt' ? '🇧🇷' : '🇺🇸'}
+                style={{ background: 'none', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 6, lineHeight: 1, transition: 'border-color .2s' }}>
+                <span style={{ fontSize: 20 }}>{lang === 'pt' ? '🇧🇷' : '🇺🇸'}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#6b7280' }}>{lang === 'pt' ? 'PT' : 'EN'}</span>
               </button>
               <span className="user-greeting">{t[lang].nav_hi} {userName}</span>
               <button className="btn-link" onClick={handleLogout}>{t[lang].nav_logout}</button>

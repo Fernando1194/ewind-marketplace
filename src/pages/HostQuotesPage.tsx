@@ -152,12 +152,12 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
         <div style={{ padding: '12px 16px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13 }}>
           <span style={{ fontSize: 18 }}>⚡</span>
           <span style={{ color: '#92400e' }}>
-            Você tem <strong>{stats.pending} solicitação(ões)</strong> aguardando resposta. Responda em até 24h para uma melhor experiência!
+            {lang === 'en' ? 'You have' : 'Você tem'} <strong>{stats.pending} {lang === 'en' ? 'pending request(s)' : 'solicitação(ões)'}</strong> {lang === 'en' ? 'awaiting response. Reply within 24h for better' : 'aguardando resposta. Responda em até 24h para uma melhor'} experiência!
           </span>
         </div>
       )}
 
-      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando orçamentos...</p>}
+      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>{lang === 'en' ? 'Loading quotes...' : 'Carregando orçamentos...'}</p>}
 
       {!loading && filtered.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
@@ -168,7 +168,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
           <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
             {activeFilter === 'all' ? 'Quando clientes solicitarem orçamentos, eles aparecerão aqui.' : 'Tente outro filtro.'}
           </p>
-          <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>Ver meus espaços</button>
+          <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>{lang === 'en' ? 'View my venues' : 'Ver meus espaços'}</button>
         </div>
       )}
 
@@ -203,7 +203,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                       <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
                         {userRole === 'supplier'
                           ? (q.suppliers?.name || q.spaces?.name || 'Serviço')
-                          : (q.spaces?.name || q.suppliers?.name || 'Espaço')}
+                          : (q.spaces?.name || q.suppliers?.name || (lang === 'en' ? 'Venue' : 'Espaço'))}
                       </h3>
                       <div style={{ fontSize: 12, color: '#6b7280' }}>📍 {q.spaces?.city}, {q.spaces?.state} · {hoursAgo(q.created_at)}</div>
                     </div>
@@ -241,7 +241,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                       <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.5 }}>{q.host_response}</div>
                       {q.proposed_price && (
                         <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800, color: '#166534' }}>
-                          💰 Proposta: R$ {q.proposed_price.toLocaleString('pt-BR')}
+                          {lang === 'en' ? '💰 Proposal' : '💰 Proposta'}: R$ {q.proposed_price.toLocaleString('pt-BR')}
                         </div>
                       )}
                     </div>
@@ -289,7 +289,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                           style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
                       </div>
                       <div className="fg">
-                        <label style={{ fontSize: 12 }}>Valor proposto (R$) — opcional</label>
+                        <label style={{ fontSize: 12 }}>{lang === 'en' ? 'Proposed value (R$) — optional' : 'Valor proposto (R$) — opcional'}</label>
                         <input type="number" value={proposedPrice} onChange={e => setProposedPrice(e.target.value)} placeholder="Ex: 4500" min={0} step={0.01} />
                         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Deixe em branco para negociar por WhatsApp/Instagram</p>
                       </div>
@@ -316,7 +316,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                       {canReject && (
                         rejectConfirm === q.id ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 12, color: '#dc2626' }}>Recusar evento?</span>
+                            <span style={{ fontSize: 12, color: '#dc2626' }}>{lang === 'en' ? 'Reject event?' : 'Recusar evento?'}</span>
                             <button onClick={() => rejectQuote(q.id)} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#dc2626', fontFamily: 'inherit' }}>Sim</button>
                             <button onClick={() => setRejectConfirm(null)} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#6b7280', fontFamily: 'inherit' }}>Não</button>
                           </div>

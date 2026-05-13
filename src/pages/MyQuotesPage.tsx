@@ -123,7 +123,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
         ))}
       </div>
 
-      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando orçamentos...</p>}
+      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>{lang === 'en' ? 'Loading quotes...' : 'Carregando orçamentos...'}</p>}
 
       {!loading && displayed.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
@@ -163,7 +163,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
                     <div>
                       <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
                         {q.spaces?.name || q.suppliers?.name || 'Anúncio'}
-                        {q.suppliers && <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 400, marginLeft: 6 }}>Fornecedor</span>}
+                        {q.suppliers && <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 400, marginLeft: 6 }}>{lang === 'en' ? 'Supplier' : 'Fornecedor'}</span>}
                       </h3>
                       <div style={{ fontSize: 12, color: '#6b7280' }}>
                         {q.spaces ? `📍 ${q.spaces.city}, ${q.spaces.state}` : `🛠️ ${q.suppliers?.category}`} · {hoursAgo(q.created_at)}
@@ -211,7 +211,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
                       <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.6 }}>{q.host_response}</div>
                       {q.proposed_price && (
                         <div style={{ marginTop: 8, fontSize: 16, fontWeight: 800, color: '#166534' }}>
-                          💰 Proposta: R$ {q.proposed_price.toLocaleString('pt-BR')}
+                          {lang === 'en' ? '💰 Proposal' : '💰 Proposta'}: R$ {q.proposed_price.toLocaleString('pt-BR')}
                         </div>
                       )}
                       {/* Contatos do espaço após resposta */}
@@ -269,7 +269,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
                     {canCancel && (
                       cancelConfirm === q.id ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span style={{ fontSize: 12, color: '#dc2626' }}>Confirmar?</span>
+                          <span style={{ fontSize: 12, color: '#dc2626' }}>{lang === 'en' ? 'Confirm?' : 'Confirmar?'}</span>
                           <button onClick={() => cancelQuote(q.id)} style={{ padding: '5px 10px', fontSize: 11, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#dc2626', fontFamily: 'inherit' }}>Sim</button>
                           <button onClick={() => setCancelConfirm(null)} style={{ padding: '5px 10px', fontSize: 11, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#6b7280', fontFamily: 'inherit' }}>Não</button>
                         </div>
@@ -294,7 +294,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
           onClick={e => e.target === e.currentTarget && setEditingQuote(null)}>
           <div style={{ background: '#fff', borderRadius: 16, padding: 28, width: '100%', maxWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800 }}>✏️ Editar solicitação</h2>
+              <h2 style={{ fontSize: 18, fontWeight: 800 }}>✏️ {lang === 'en' ? 'Edit request' : 'Editar solicitação'}</h2>
               <button onClick={() => setEditingQuote(null)} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#9ca3af' }}>×</button>
             </div>
             <div style={{ fontSize: 12, color: '#d97706', background: '#fffbeb', padding: '8px 12px', borderRadius: 8, marginBottom: 16 }}>
@@ -349,7 +349,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
             <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
             <h2 style={{ fontSize: 28, fontWeight: 900, color: '#14532d', marginBottom: 10 }}>Evento agendado!</h2>
             <p style={{ fontSize: 15, color: '#166534', lineHeight: 1.7, marginBottom: 8 }}>
-              Você aceitou o orçamento de <strong>{celebrationQuote.spaces?.name || celebrationQuote.suppliers?.name}</strong>.
+              {lang === 'en' ? 'You accepted the quote from' : 'Você aceitou o orçamento de'} <strong>{celebrationQuote.spaces?.name || celebrationQuote.suppliers?.name}</strong>.
             </p>
             {celebrationQuote.proposed_price && (
               <div style={{ fontSize: 24, fontWeight: 900, color: '#16a34a', margin: '12px 0', padding: '12px', background: '#f0fdf4', borderRadius: 12 }}>

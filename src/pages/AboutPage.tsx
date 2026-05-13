@@ -91,7 +91,7 @@ export default function AboutPage({  goToPage, lang = 'pt' }: Props) {
               <div style={{ fontSize: 28, marginBottom: 12 }}>😓</div>
               <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10 }}>Antes do Ewind</h4>
               <ul style={{ fontSize: 13, color: '#6b7280', lineHeight: 2, paddingLeft: 18 }}>
-                <li>Horas pesquisando em sites diferentes</li>
+                <li>{lang === 'en' ? 'Hours searching across different websites' : 'Horas pesquisando em sites diferentes'}</li>
                 <li>Ligações sem retorno e emails ignorados</li>
                 <li>{lang === 'en' ? 'Quotes arriving days later' : 'Orçamentos chegando dias depois'}</li>
                 <li>Impossível comparar opções com clareza</li>
@@ -102,10 +102,10 @@ export default function AboutPage({  goToPage, lang = 'pt' }: Props) {
               <div style={{ fontSize: 28, marginBottom: 12 }}>🎉</div>
               <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: '#1a2e05' }}>Com o Ewind</h4>
               <ul style={{ fontSize: 13, color: '#166534', lineHeight: 2, paddingLeft: 18 }}>
-                <li>Tudo em um lugar: espaços e fornecedores</li>
+                <li>{lang === 'en' ? 'Everything in one place: venues and suppliers' : 'Tudo em um lugar: espaços e fornecedores'}</li>
                 <li>{lang === 'en' ? 'Quotes sent in minutes' : 'Orçamentos enviados em minutos'}</li>
-                <li>Respostas em até 24 horas</li>
-                <li>Comparação lado a lado, clara e objetiva</li>
+                <li>{lang === 'en' ? 'Responses within 24 hours' : 'Respostas em até 24 horas'}</li>
+                <li>{lang === 'en' ? 'Side-by-side comparison, clear and objective' : 'Comparação lado a lado, clara e objetiva'}</li>
                 <li>Foco no que importa: o evento</li>
               </ul>
             </div>

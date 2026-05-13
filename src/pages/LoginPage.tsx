@@ -27,7 +27,7 @@ export default function LoginPage({  goToPage, lang = 'pt' }: Props) {
       goToPage('home')
     } catch (err: any) {
       setError(err.message === 'Invalid login credentials'
-        ? 'Email ou senha incorretos'
+        ? (lang === 'en' ? 'Incorrect email or password' : 'Email ou senha incorretos')
         : (err.message || 'Erro ao entrar'))
     } finally {
       setLoading(false)
@@ -68,7 +68,7 @@ export default function LoginPage({  goToPage, lang = 'pt' }: Props) {
 
             <form onSubmit={handleLogin}>
               <div className="fg">
-                <label>Email</label>
+                <label>{t[lang].login_email}</label>
                 <input
                   type="email"
                   required
@@ -79,7 +79,7 @@ export default function LoginPage({  goToPage, lang = 'pt' }: Props) {
                 />
               </div>
               <div className="fg">
-                <label>Senha</label>
+                <label>{t[lang].login_password}</label>
                 <input
                   type="password"
                   required
@@ -146,7 +146,7 @@ export default function LoginPage({  goToPage, lang = 'pt' }: Props) {
 
             <form onSubmit={handleForgot}>
               <div className="fg">
-                <label>Email cadastrado</label>
+                <label>{lang === 'en' ? 'Registered email' : 'Email cadastrado'}</label>
                 <input
                   type="email"
                   required
@@ -185,7 +185,7 @@ export default function LoginPage({  goToPage, lang = 'pt' }: Props) {
           <>
             <div style={{ textAlign: 'center', padding: '8px 0 24px' }}>
               <div style={{ fontSize: 56, marginBottom: 16 }}>✉️</div>
-              <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>Email enviado!</h1>
+              <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>{lang === 'en' ? 'Email sent!' : 'Email enviado!'}</h1>
               <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 8 }}>
                 Enviamos um link para <strong>{email}</strong>.
               </p>

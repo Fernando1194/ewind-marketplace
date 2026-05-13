@@ -131,7 +131,7 @@ export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
                 {plan.id === 'pro' && <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>vs R${getPrice(59) + getPrice(49)}{t[lang].pricing_per_month} comprando separado</div>}
               </div>
               <div style={{ background: '#f9fafb', border: '1px solid #e8e8e8', borderRadius: 8, padding: '7px 12px', marginBottom: 18, fontSize: 11, color: '#6b7280' }}>
-                ✓ <strong>90 dias grátis</strong> para novos anunciantes
+                {lang === 'en' ? <span>✓ <strong>90 days free</strong> for new advertisers</span> : <span>✓ <strong>90 dias grátis</strong> para novos anunciantes</span>}
               </div>
               <button onClick={() => goToPage('signup')} style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 800, background: plan.highlight ? plan.color : '#111', color: plan.highlight ? '#1a2e05' : '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
                 {plan.cta} →
@@ -156,21 +156,21 @@ export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#111' }}>
-                {['Recurso', 'Espaços', 'Pro ⭐', 'Fornecedor'].map((h, i) => (
+                {(lang === 'en' ? ['Feature', 'Venues', 'Pro ⭐', 'Supplier'] : ['Recurso', 'Espaços', 'Pro ⭐', 'Fornecedor']).map((h, i) => (
                   <th key={i} style={{ padding: '13px 16px', textAlign: i === 0 ? 'left' : 'center', fontSize: 12, fontWeight: 700, color: i === 2 ? '#a3e635' : '#9ca3af' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {[
-                ['Anúncios de espaços', '✓', '✓', '—'],
-                ['Perfil de fornecedor', '—', '✓', '✓'],
-                ['Badge Verificado', '—', '✓', '—'],
+                [lang === 'en' ? 'Venue listings' : 'Anúncios de espaços', '✓', '✓', '—'],
+                [lang === 'en' ? 'Supplier profile' : 'Perfil de fornecedor', '—', '✓', '✓'],
+                [lang === 'en' ? 'Verified badge' : 'Badge Verificado', '—', '✓', '—'],
                 ['Destaque nas buscas', '—', '✓', '—'],
-                ['Orçamentos ilimitados', '✓', '✓', '✓'],
+                [lang === 'en' ? 'Unlimited quotes' : 'Orçamentos ilimitados', '✓', '✓', '✓'],
                 ['Notificações', '✓', '✓', '✓'],
-                ['Avaliações', '✓', '✓', '✓'],
-                ['Preço mensal', `R$${getPrice(59)}`, `R$${getPrice(89)}`, `R$${getPrice(49)}`],
+                [lang === 'en' ? 'Reviews' : 'Avaliações', '✓', '✓', '✓'],
+                [lang === 'en' ? 'Monthly price' : 'Preço mensal', `R$${getPrice(59)}`, `R$${getPrice(89)}`, `R$${getPrice(49)}`],
               ].map(([feat, esp, pro, forn], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
                   <td style={{ padding: '12px 16px', fontSize: 13, color: '#2d2d2d', fontWeight: 500 }}>{feat}</td>

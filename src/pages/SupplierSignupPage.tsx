@@ -45,7 +45,7 @@ export default function SupplierSignupPage({  goToPage, lang = 'pt' }: Props) {
     e.preventDefault()
     setError(''); setSuccess('')
     if (!allRulesOk) { setError('A senha não atende todos os requisitos'); setTouchedPass(true); return }
-    if (!category) { setError('Selecione sua categoria de serviço'); return }
+    if (!category) { setError(lang === 'en' ? 'Select your service category' : 'Selecione sua categoria de serviço'); return }
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -111,7 +111,7 @@ export default function SupplierSignupPage({  goToPage, lang = 'pt' }: Props) {
       {/* Lado direito */}
       <div style={{ flex: 1, padding: '48px 56px', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflowY: 'auto' }}>
         <div style={{ maxWidth: 480 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>Criar perfil de fornecedor</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>{lang === 'en' ? 'Create supplier profile' : 'Criar perfil de fornecedor'}</h1>
           <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 28 }}>
             Preencha os dados e comece a aparecer para quem organiza eventos.
           </p>
@@ -120,7 +120,7 @@ export default function SupplierSignupPage({  goToPage, lang = 'pt' }: Props) {
             {/* Categoria */}
             <div className="fg">
               <label>Sua especialidade *</label>
-              <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>Selecione a categoria que melhor descreve seu serviço</p>
+              <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 8 }}>{lang === 'en' ? 'Select the category that best describes your service' : 'Selecione a categoria que melhor descreve seu serviço'}</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 6 }}>
                 {SUPPLIER_CATEGORIES.map(c => (
                   <button key={c.name} type="button" onClick={() => setCategory(c.name)}
@@ -137,12 +137,12 @@ export default function SupplierSignupPage({  goToPage, lang = 'pt' }: Props) {
             </div>
 
             <div className="fg">
-              <label>Email *</label>
+              <label>{t[lang].signup_email} *</label>
               <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="contato@seunegocio.com.br" />
             </div>
 
             <div className="fg">
-              <label>Senha *</label>
+              <label>{t[lang].signup_password} *</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPass ? 'text' : 'password'}
@@ -200,7 +200,7 @@ export default function SupplierSignupPage({  goToPage, lang = 'pt' }: Props) {
           </form>
 
           <div style={{ marginTop: 16, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-            Precisa de um espaço?{' '}
+            {lang === 'en' ? 'Need a venue?' : 'Precisa de um espaço?'}{' '}
             <a onClick={() => goToPage('signup')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>Cadastro de cliente →</a>
           </div>
           <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>

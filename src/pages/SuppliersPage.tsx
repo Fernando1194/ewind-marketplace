@@ -23,7 +23,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
   return (
     <div className="card" onClick={onClick} style={{ cursor: 'pointer' }}>
       <div style={{ position: 'relative' }}>
-        <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={supplier.name}
+        <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=No+photo'} alt={supplier.name}
           loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
         <div style={{ position: 'absolute', top: 10, left: 10, background: cat?.bg || '#f0fdf4', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
           {cat?.icon} {supplier.category}
@@ -128,13 +128,13 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
           <option value="">{t[lang].listing_state}</option>
           {STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="btn-primary" onClick={clearFilters}>Buscar</button>
+        <button className="btn-primary" onClick={clearFilters}>{t[lang].hero_search}</button>
       </div>
 
       <div className="listing-wrap">
         <aside className="filters-sidebar">
           <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
-            <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
+            <span>🔍 {t[lang].listing_filters} {activeFiltersCount > 0 ? `(${activeFiltersCount} ${lang === 'en' ? 'active' : 'ativos'})` : ''}</span>
             <span>{filtersOpen ? '▲' : '▼'}</span>
           </button>
           <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
@@ -158,7 +158,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Categoria</div>
+            <div className="sf-group-title">{t[lang].listing_category}</div>
             {SUPPLIER_CATEGORIES.map(c => (
               <label key={c.name} style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, cursor: 'pointer',
@@ -191,7 +191,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
 
           {activeFiltersCount > 0 && (
             <div className="sf-group">
-              <div className="sf-group-title">Filtros ativos</div>
+              <div className="sf-group-title">{lang === 'en' ? 'Active filters' : 'Filtros ativos'}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                 {filterCategories.map(cat => {
                   const c = SUPPLIER_CATEGORIES.find(x => x.name === cat)
@@ -221,7 +221,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
         <main className="results-area">
           <div className="results-bar">
             <span>
-              <strong>{filtered.length} fornecedores</strong> encontrados
+              <strong>{filtered.length} {lang === 'en' ? 'supplier(s)' : 'fornecedor(es)'}</strong> {lang === 'en' ? 'found' : 'encontrado(s)'}
               {filtered.length > PAGE_SIZE && (
                 <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>
                   · página {currentPage} de {totalPages}
@@ -245,13 +245,13 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
             <div style={{ textAlign: 'center', padding: 48, background: '#f9fafb', borderRadius: 14 }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
               <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
-                {activeFiltersCount > 0 ? 'Nenhum fornecedor encontrado' : 'Seja o primeiro a anunciar!'}
+                {activeFiltersCount > 0 ? (lang === 'en' ? 'No suppliers found' : 'Nenhum fornecedor encontrado') : (lang === 'en' ? 'Be the first to list!' : 'Seja o primeiro a anunciar!')}
               </h3>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
                 {activeFiltersCount > 0 ? 'Tente ajustar os filtros.' : 'Cadastre seus serviços e apareça para quem organiza eventos.'}
               </p>
               {activeFiltersCount > 0
-                ? <button className="btn-primary" onClick={clearFilters}>Limpar filtros</button>
+                ? <button className="btn-primary" onClick={clearFilters}>{t[lang].listing_clear}</button>
                 : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'supplier-signup')}>+ Anunciar meu serviço</button>
               }
             </div>

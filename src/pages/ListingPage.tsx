@@ -25,7 +25,7 @@ const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
 }) => (
   <div className="card" style={{ position: 'relative' }}>
     <div style={{ position: 'relative' }}>
-      <img src={space.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={space.name}
+      <img src={space.media_urls[0] || 'https://via.placeholder.com/400x200?text=No+photo'} alt={space.name}
         loading="lazy" onClick={onClick}
         style={{ cursor: 'pointer', width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
       <button onClick={onCompare} style={{
@@ -163,13 +163,13 @@ export default function ListingPage({  goToPage, compareSpaces, onCompareToggle,
           <option value="">{t[lang].listing_state}</option>
           {STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="btn-primary" onClick={clearFilters}>Buscar</button>
+        <button className="btn-primary" onClick={clearFilters}>{t[lang].hero_search}</button>
       </div>
 
       <div className="listing-wrap">
         <aside className="filters-sidebar">
           <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
-            <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
+            <span>🔍 {t[lang].listing_filters} {activeFiltersCount > 0 ? `(${activeFiltersCount} ${lang === 'en' ? 'active' : 'ativos'})` : ''}</span>
             <span>{filtersOpen ? '▲' : '▼'}</span>
           </button>
           <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
@@ -184,7 +184,7 @@ export default function ListingPage({  goToPage, compareSpaces, onCompareToggle,
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Capacidade (pessoas)</div>
+            <div className="sf-group-title">{lang === 'en' ? 'Capacity (people)' : 'Capacidade (pessoas)'}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               <input type="number" placeholder="Mín" value={filterMinCapacity} onChange={e => setFilterMinCapacity(e.target.value)} min={0} />
               <input type="number" placeholder="Máx" value={filterMaxCapacity} onChange={e => setFilterMaxCapacity(e.target.value)} min={0} />
@@ -192,7 +192,7 @@ export default function ListingPage({  goToPage, compareSpaces, onCompareToggle,
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Faixa de preço (R$)</div>
+            <div className="sf-group-title">{lang === 'en' ? 'Price range (R$)' : 'Faixa de preço (R$)'}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
               <input type="number" placeholder="Mín" value={filterMinPrice} onChange={e => setFilterMinPrice(e.target.value)} min={0} />
               <input type="number" placeholder="Máx" value={filterMaxPrice} onChange={e => setFilterMaxPrice(e.target.value)} min={0} />
@@ -201,7 +201,7 @@ export default function ListingPage({  goToPage, compareSpaces, onCompareToggle,
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Categoria</div>
+            <div className="sf-group-title">{t[lang].listing_category}</div>
             {CATEGORIES.map(c => (
               <label key={c.name} className="chk-row">
                 <input type="checkbox" checked={filterCategory.includes(c.name)} onChange={() => toggleArr(filterCategory, c.name, setFilterCategory)} />
@@ -239,7 +239,7 @@ export default function ListingPage({  goToPage, compareSpaces, onCompareToggle,
         <main className="results-area">
           <div className="results-bar">
             <span>
-              <strong>{filtered.length} espaços</strong> encontrados
+              <strong>{filtered.length} {lang === 'en' ? 'venue(s)' : 'espaço(s)'}</strong> {lang === 'en' ? 'found' : 'encontrado(s)'}
               {filtered.length > PAGE_SIZE && (
                 <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>
                   · página {currentPage} de {totalPages}
