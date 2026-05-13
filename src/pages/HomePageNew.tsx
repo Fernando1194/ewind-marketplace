@@ -97,7 +97,7 @@ export default function HomePage({ goToPage }: Props) {
             <span style={{ color: '#a3e635' }}>espaço perfeito</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
-            Espaços e fornecedores de eventos em um só lugar. Compare, solicite orçamentos e feche negócio direto com o anunciante — sem taxas, sem complicação.
+            Salões, chácaras, fotógrafos, DJs, decoradores e muito mais. Compare opções, solicite orçamentos e feche direto com o anunciante — de graça e sem complicação.
           </p>
 
           <div className="search-pill">
