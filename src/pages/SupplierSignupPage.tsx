@@ -64,7 +64,7 @@ export default function SupplierSignupPage({  goToPage, lang = 'pt' }: Props) {
           is_host: false,
           updated_at: new Date().toISOString()
         })
-        setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
+        setSuccess(lang === 'en' ? 'Account created! Check your email to confirm.' : 'Cadastro realizado! Verifique seu email para confirmar a conta.')
         setName(''); setEmail(''); setPassword(''); setCategory('')
       }
     } catch (err: any) {

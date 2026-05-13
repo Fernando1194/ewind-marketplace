@@ -290,7 +290,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                       <div className="fg">
-                        <label style={{ fontSize: 12 }}>Data *</label>
+                        <label style={{ fontSize: 12 }}>{t[lang].detail_date}</label>
                         <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)}
                           min={new Date().toISOString().split('T')[0]}
                           style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />

@@ -90,7 +90,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
     { key: 'servicos', icon: '🛠️', label: t[lang].supp_dash_services },
     { key: 'dados', icon: '👤', label: t[lang].dash_my_data },
     { key: 'sac', icon: '🎧', label: t[lang].dash_support },
-    { key: 'chat', icon: '💬', label: 'Chat Ewind' },
+    { key: 'chat', icon: '💬', label: t[lang].dash_chat },
   ]
   const TITLES: Record<string, {title:string;subtitle:string}> = {
     servicos: { title: t[lang].supp_dash_services, subtitle: 'Gerencie seus anúncios de serviços' },
@@ -101,7 +101,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
 
   return (
     <DashboardLayout user={user} tabs={TABS} activeTab={tab} onTabChange={setTab}
-      title={TITLES[tab]?.title||''} subtitle={TITLES[tab]?.subtitle||''}
+      title={tab==='servicos'?t[lang].supp_dash_services:tab==='dados'?t[lang].dash_my_data:tab==='sac'?t[lang].dash_sac_title:t[lang].dash_chat} subtitle={tab==='servicos'?t[lang].supp_dash_sub:tab==='dados'?(lang==='en'?'Update your information':'Atualize suas informações'):tab==='sac'?t[lang].dash_sac_title:t[lang].dash_chat}
       headerAction={tab === 'servicos' ? (
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d', fontFamily: 'inherit' }}>{t[lang].supp_dash_quotes}</button>
@@ -120,10 +120,10 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
       )}
       {tab === 'sac' && (
         <div style={{maxWidth:520,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28}}>
-          {sacSent ? (<div style={{textAlign:'center',padding:24}}><div style={{fontSize:40,marginBottom:10}}>✅</div><p style={{fontSize:14,color:'#166534',fontWeight:700}}>Mensagem enviada!</p><button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:12,fontSize:12,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}}>Enviar outra</button></div>
+          {sacSent ? (<div style={{textAlign:'center',padding:24}}><div style={{fontSize:40,marginBottom:10}}>✅</div><p style={{fontSize:14,color:'#166534',fontWeight:700}}>Mensagem enviada!</p><button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:12,fontSize:12,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}}>{t[lang].dash_sac_another}</button></div>
           ) : (<div style={{display:'flex',flexDirection:'column',gap:14}}>
               <div className="fg"><label>Assunto</label><select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}><option value="">Selecione...</option><option>Dúvida sobre planos</option><option>Problema com orçamento</option><option>Erro no cadastro</option><option>Outro</option></select></div>
-              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={4} placeholder="Descreva..." style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
+              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={4} placeholder={lang==='en'?'Describe...':'Descreva...'} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
               <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'9px 22px'}}>{t[lang].dash_sac_send}</button>
             </div>)}
         </div>
@@ -134,8 +134,8 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
             {chatMsgs.map((m,i) => (<div key={i} style={{marginBottom:12,display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start',alignItems:'flex-end',gap:8}}>{m.role==='assistant' && <div style={{width:30,height:30,borderRadius:'50%',background:'#a3e635',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,flexShrink:0}}>E</div>}<div style={{maxWidth:'78%',padding:'9px 13px',fontSize:13,lineHeight:1.55,borderRadius:m.role==='user'?'13px 13px 4px 13px':'13px 13px 13px 4px',background:m.role==='user'?'#a3e635':'#f3f4f6',color:m.role==='user'?'#1a2e05':'#2d2d2d'}}>{m.text}</div></div>))}
           </div>
           <div style={{borderTop:'1px solid #e8e8e8',padding:'10px 14px',display:'flex',gap:8}}>
-            <input type="text" value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendChat()} placeholder="Escreva sua dúvida..." style={{flex:1,padding:'9px 13px',border:'1.5px solid #e8e8e8',borderRadius:9,fontSize:13,fontFamily:'inherit'}} />
-            <button onClick={sendChat} disabled={!chatInput.trim()} style={{padding:'9px 16px',background:'#a3e635',color:'#1a2e05',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Enviar</button>
+            <input type="text" value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendChat()} placeholder={t[lang].dash_chat_placeholder} style={{flex:1,padding:'9px 13px',border:'1.5px solid #e8e8e8',borderRadius:9,fontSize:13,fontFamily:'inherit'}} />
+            <button onClick={sendChat} disabled={!chatInput.trim()} style={{padding:'9px 16px',background:'#a3e635',color:'#1a2e05',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>{t[lang].dash_chat_send}</button>
           </div>
         </div>
       )}
@@ -160,7 +160,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
         <div className="stat-card"><div className="stat-num" style={{ color: '#6b7280' }}>{stats.paused}</div><div className="stat-lab2">Pausados</div></div>
       </div>
 
-      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando...</p>}
+      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>{t[lang].loading}</p>}
 
       {!loading && suppliers.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>

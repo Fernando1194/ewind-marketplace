@@ -200,7 +200,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
                   {(q.status === 'pending' || q.status === 'viewed') && (
                     <div style={{ marginTop: 10, padding: '8px 12px', background: '#f0fdf4', borderRadius: 8, fontSize: 12, color: '#166534', display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span>⚡</span>
-                      <span>Anunciantes respondem em até <strong>24 horas</strong></span>
+                      <span>{lang === 'en' ? 'Advertisers respond within 24 hours' : 'Anunciantes respondem em até 24 horas'}</span>
                     </div>
                   )}
 
@@ -301,7 +301,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
               ⚠️ Editar enviará a solicitação novamente como pendente
             </div>
             <div className="fg">
-              <label>Tipo de evento</label>
+              <label>{t[lang].detail_event_type}</label>
               <select value={editForm.event_type} onChange={e => setEditForm(f => ({ ...f, event_type: e.target.value }))}
                 style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }}>
                 {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -309,7 +309,7 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div className="fg">
-                <label>Data do evento</label>
+                <label>{t[lang].hero_date}</label>
                 <input type="date" value={editForm.event_date} onChange={e => setEditForm(f => ({ ...f, event_date: e.target.value }))} min={new Date().toISOString().split('T')[0]} />
               </div>
               <div className="fg">
@@ -317,16 +317,16 @@ export default function MyQuotesPage({  user, goToPage, lang = 'pt' }: Props) {
                 <input type="time" value={editForm.event_time} onChange={e => setEditForm(f => ({ ...f, event_time: e.target.value }))} />
               </div>
               <div className="fg">
-                <label>Convidados</label>
+                <label>{t[lang].hero_guests}</label>
                 <input type="number" value={editForm.guests_count} onChange={e => setEditForm(f => ({ ...f, guests_count: e.target.value }))} min={1} />
               </div>
               <div className="fg">
-                <label>Duração (horas)</label>
+                <label>{t[lang].detail_duration}</label>
                 <input type="number" value={editForm.duration_hours} onChange={e => setEditForm(f => ({ ...f, duration_hours: e.target.value }))} min={1} />
               </div>
             </div>
             <div className="fg">
-              <label>Mensagem</label>
+              <label>{t[lang].detail_message}</label>
               <textarea value={editForm.message} onChange={e => setEditForm(f => ({ ...f, message: e.target.value }))} rows={3}
                 style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
             </div>

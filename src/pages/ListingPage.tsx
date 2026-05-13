@@ -160,7 +160,7 @@ export default function ListingPage({  goToPage, compareSpaces, onCompareToggle,
         <input placeholder={t[lang].listing_city} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
         <select value={filterState} onChange={e => setFilterState(e.target.value)}
           style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-          <option value="">Estado</option>
+          <option value="">{t[lang].listing_state}</option>
           {STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <button className="btn-primary" onClick={clearFilters}>Buscar</button>
@@ -211,7 +211,7 @@ export default function ListingPage({  goToPage, compareSpaces, onCompareToggle,
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Tipo de evento</div>
+            <div className="sf-group-title">{t[lang].listing_event_type}</div>
             {EVENT_TYPES.map(t => (
               <label key={t} className="chk-row">
                 <input type="checkbox" checked={filterEventTypes.includes(t)} onChange={() => toggleArr(filterEventTypes, t, setFilterEventTypes)} />

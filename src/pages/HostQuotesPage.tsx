@@ -230,7 +230,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
 
                   {q.message && (
                     <div style={{ marginTop: 10, padding: '8px 12px', background: '#f9fafb', borderRadius: 8, fontSize: 12, color: '#4b5563' }}>
-                      <strong>Mensagem:</strong> {q.message}
+                      <strong>{lang === 'en' ? 'Message' : 'Mensagem'}:</strong> {q.message}
                     </div>
                   )}
 
@@ -283,7 +283,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                     <div style={{ marginTop: 14, padding: 16, background: '#f9fafb', borderRadius: 12, border: '1.5px solid #e8e8e8' }}>
                       <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>💬 Sua proposta para {q.event_type} em {fmtDate(q.event_date)}{fmtTime(q.event_time) ? ` às ${fmtTime(q.event_time)}` : ''}</div>
                       <div className="fg">
-                        <label style={{ fontSize: 12 }}>Mensagem *</label>
+                        <label style={{ fontSize: 12 }}>{lang === 'en' ? 'Message *' : 'Mensagem *'}</label>
                         <textarea value={responseText} onChange={e => setResponseText(e.target.value)} rows={3}
                           placeholder={`Olá! Temos disponibilidade para ${q.event_type} em ${fmtDate(q.event_date)}. Ficamos felizes em receber ${q.guests_count} convidados por ${q.duration_hours}h...`}
                           style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />

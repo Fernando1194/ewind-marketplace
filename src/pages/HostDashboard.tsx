@@ -128,7 +128,7 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
               {tab === 'espacos' ? t[lang].host_dash_spaces : tab === 'orcamentos' ? 'Orçamentos recebidos' : tab === 'dados' ? t[lang].dash_my_data : 'Central de suporte'}
             </h1>
             <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>
-              {tab === 'espacos' ? 'Gerencie seus anúncios' : tab === 'orcamentos' ? 'Veja e responda orçamentos' : tab === 'dados' ? 'Atualize suas informações' : 'Nossa equipe responde em até 24h'}
+              {tab === 'espacos' ? t[lang].host_dash_sub : tab === 'orcamentos' ? (lang === 'en' ? 'View and respond to quotes' : 'Veja e responda orçamentos') : tab === 'dados' ? (lang === 'en' ? 'Update your information' : 'Atualize suas informações') : t[lang].dash_sac_title}
             </p>
           </div>
           {tab === 'espacos' && (
@@ -161,8 +161,8 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
           {sacSent ? (
             <div style={{ textAlign: 'center', padding: 24 }}>
               <div style={{ fontSize: 40, marginBottom: 10 }}>✅</div>
-              <p style={{ fontSize: 14, color: '#166534', fontWeight: 700 }}>Mensagem enviada! Respondemos em até 24h.</p>
-              <button onClick={() => { setSacSent(false); setSacSubject(''); setSacMsg('') }} style={{ marginTop: 12, fontSize: 12, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Enviar outra</button>
+              <p style={{ fontSize: 14, color: '#166534', fontWeight: 700 }}>Mensagem enviada! {lang === 'en' ? 'We will respond within 24h.' : 'Respondemos em até 24h.'}</p>
+              <button onClick={() => { setSacSent(false); setSacSubject(''); setSacMsg('') }} style={{ marginTop: 12, fontSize: 12, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>{t[lang].dash_sac_another}</button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -184,7 +184,7 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
       {tab === 'orcamentos' && (
         <div style={{ textAlign: 'center', padding: '40px 24px' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Orçamentos recebidos</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{t[lang].host_quotes_title}</h3>
           <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Visualize e responda todos os orçamentos dos seus espaços.</p>
           <button className="btn-primary" onClick={() => goToPage('host-quotes')} style={{ padding: '12px 28px', fontSize: 15 }}>
             Ver todos os orçamentos →
@@ -215,7 +215,7 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
 
       <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Meus espaços</h2>
 
-      {loading && <p>Carregando...</p>}
+      {loading && <p>{t[lang].loading}</p>}
 
       {!loading && spaces.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
@@ -291,7 +291,7 @@ export default function HostDashboard({  user, goToPage, lang = 'pt' }: Props) {
                     borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
                   }}
                 >
-                  {s.status === 'active' ? '⏸ Pausar' : '▶ Ativar'}
+                  {s.status === 'active' ? '{t[lang].host_dash_pause}' : '{t[lang].host_dash_activate}'}
                 </button>
                 <button
                   onClick={() => deleteSpace(s.id)}

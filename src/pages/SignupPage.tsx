@@ -77,7 +77,7 @@ export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
           is_supplier: extraRoles.includes('supplier') || role === 'supplier',
           updated_at: new Date().toISOString()
         })
-        setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
+        setSuccess(lang === 'en' ? 'Account created! Check your email to confirm.' : 'Cadastro realizado! Verifique seu email para confirmar a conta.')
         setEmail(''); setPassword(''); setConfirmPassword(''); setName('')
       }
     } catch (err: any) {

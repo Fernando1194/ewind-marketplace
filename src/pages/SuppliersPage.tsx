@@ -122,10 +122,10 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
   return (
     <>
       <div className="mini-search">
-        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+        <input placeholder={t[lang].listing_city} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
         <select value={filterState} onChange={e => setFilterState(e.target.value)}
           style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-          <option value="">Estado</option>
+          <option value="">{t[lang].listing_state}</option>
           {STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         <button className="btn-primary" onClick={clearFilters}>Buscar</button>
@@ -140,7 +140,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
           <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
           <div className="sf-group">
             <div className="sf-group-title">Localização</div>
-            <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <input type="text" placeholder={t[lang].listing_city} value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
             <label style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.06em', display: 'block', marginBottom: 4 }}>📅 Data do evento</label>
             <input
               type="date"
@@ -179,7 +179,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Tipo de evento</div>
+            <div className="sf-group-title">{t[lang].listing_event_type}</div>
             {EVENT_TYPES.map(t => (
               <label key={t} className="chk-row">
                 <input type="checkbox" checked={filterEventTypes.includes(t)}

@@ -54,10 +54,10 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
     setChatMsgs(p => [...p, { role: 'user' as const, text: msg }])
     setTimeout(() => {
       const l = msg.toLowerCase()
-      let r = 'Para dúvidas específicas, use a aba Suporte. Respondemos em até 24h! 😊'
-      if (l.includes('plano') || l.includes('preço')) r = 'Os planos Ewind começam em R$49/mês. Novos anunciantes têm 90 dias gratuitos!'
-      if (l.includes('orçamento')) r = 'Para solicitar orçamento, acesse um espaço ou fornecedor e clique em "Solicitar orçamento". É gratuito!'
-      if (l.includes('cadastro') || l.includes('anunciar')) r = 'Para cadastrar, clique em "Criar conta" e selecione o perfil. São 90 dias gratuitos!'
+      let r = lang === 'en' ? 'For specific questions, use the Support tab. We respond within 24h! 😊' : 'Para dúvidas específicas, use a aba Suporte. Respondemos em até 24h! 😊'
+      if (l.includes('plano') || l.includes('preço')) r = lang === 'en' ? 'Ewind plans start at R$49/mo. New advertisers get 90 days free!' : 'Os planos Ewind começam em R$49/mês. Novos anunciantes têm 90 dias gratuitos!'
+      if (l.includes('orçamento')) r = lang === 'en' ? 'To request a quote, visit a venue or supplier and click "Request quote". It\'s free!' : 'Para solicitar orçamento, acesse um espaço ou fornecedor e clique em "Solicitar orçamento". É gratuito!'
+      if (l.includes('cadastro') || l.includes('anunciar')) r = lang === 'en' ? 'To register, click "Create account" and select your profile. 90 days free!' : 'Para cadastrar, clique em "Criar conta" e selecione o perfil. São 90 dias gratuitos!'
       setChatMsgs(p => [...p, { role: 'assistant' as const, text: r }])
     }, 500)
   }
@@ -76,7 +76,7 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
 
       {tab === 'orcamentos' && (
         <div>
-          {loadingQ && <p style={{color:'#9ca3af'}}>Carregando...</p>}
+          {loadingQ && <p style={{color:'#9ca3af'}}>{t[lang].loading}</p>}
           {!loadingQ && quotes.length === 0 && (
             <div style={{textAlign:'center',padding:'60px 24px',background:'#fff',borderRadius:14,border:'1px solid #e8e8e8'}}>
               <div style={{fontSize:48,marginBottom:12}}>📋</div>
@@ -114,7 +114,7 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
           <div className="fg"><label>Email</label><input type="email" value={user.email||''} disabled style={{background:'#f9fafb',color:'#9ca3af'}} /><p style={{fontSize:11,color:'#9ca3af',marginTop:4}}>O email não pode ser alterado.</p></div>
           <div className="fg"><label>WhatsApp</label><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(41) 99999-9999" maxLength={16} /></div>
           {saveMsg && <div style={{fontSize:13,color:'#16a34a',fontWeight:600}}>{saveMsg}</div>}
-          <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>{saving?'Salvando...':'Salvar alterações'}</button>
+          <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>{saving ? t[lang].dash_saving : t[lang].dash_save}</button>
         </div>
       )}
 
@@ -124,8 +124,8 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
             <div style={{background:'#f0fdf4',border:'1px solid #a3e635',borderRadius:14,padding:40,textAlign:'center'}}>
               <div style={{fontSize:44,marginBottom:12}}>✅</div>
               <h3 style={{fontSize:18,fontWeight:700,color:'#166534',marginBottom:8}}>{t[lang].dash_sac_sent}</h3>
-              <p style={{fontSize:14,color:'#6b7280'}}>Responderemos em <strong>{user.email}</strong> em até 24h úteis.</p>
-              <button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:20,fontSize:13,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600}}>Enviar outra mensagem</button>
+              <p style={{fontSize:14,color:'#6b7280'}}>{lang === 'en' ? 'We will respond to' : 'Responderemos em'} <strong>{user.email}</strong> {lang === 'en' ? 'within 24 business hours.' : 'em até 24h úteis.'}</p>
+              <button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:20,fontSize:13,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit',fontWeight:600}}>{t[lang].dash_sac_another}</button>
             </div>
           ) : (
             <div style={{background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28,display:'flex',flexDirection:'column',gap:16}}>
@@ -133,11 +133,11 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
                 <label>Assunto</label>
                 <select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}>
                   <option value="">Selecione...</option>
-                  <option>Problema com orçamento</option><option>Anunciante não respondeu</option><option>Erro no cadastro</option><option>Dúvida sobre planos</option><option>Denúncia de anúncio</option><option>Outro</option>
+                  <option>{lang==='en'?'Issue with quote':'Problema com orçamento'}</option><option>{lang==='en'?'Advertiser did not respond':'Anunciante não respondeu'}</option><option>{lang==='en'?'Registration error':'Erro no cadastro'}</option><option>{lang==='en'?'Question about plans':'Dúvida sobre planos'}</option><option>{lang==='en'?'Report listing':'Denúncia de anúncio'}</option><option>{lang==='en'?'Other':'Outro'}</option>
                 </select>
               </div>
-              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={5} placeholder="Descreva detalhadamente..." style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
-              <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>📨 Enviar mensagem</button>
+              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={5} placeholder={lang==='en'?'Describe in detail...':'Descreva detalhadamente...'} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
+              <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>{t[lang].dash_sac_send}</button>
             </div>
           )}
         </div>
@@ -155,8 +155,8 @@ export default function GuestDashboard({  user, goToPage, lang = 'pt' }: Props) 
               ))}
             </div>
             <div style={{borderTop:'1px solid #e8e8e8',padding:'12px 16px',display:'flex',gap:8}}>
-              <input type="text" value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendChat()} placeholder="Escreva sua dúvida..." style={{flex:1,padding:'10px 14px',border:'1.5px solid #e8e8e8',borderRadius:10,fontSize:14,fontFamily:'inherit'}} />
-              <button onClick={sendChat} disabled={!chatInput.trim()} style={{padding:'10px 18px',background:'#a3e635',color:'#1a2e05',border:'none',borderRadius:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit',fontSize:14}}>Enviar</button>
+              <input type="text" value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendChat()} placeholder={t[lang].dash_chat_placeholder} style={{flex:1,padding:'10px 14px',border:'1.5px solid #e8e8e8',borderRadius:10,fontSize:14,fontFamily:'inherit'}} />
+              <button onClick={sendChat} disabled={!chatInput.trim()} style={{padding:'10px 18px',background:'#a3e635',color:'#1a2e05',border:'none',borderRadius:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit',fontSize:14}}>{t[lang].dash_chat_send}</button>
             </div>
           </div>
           <p style={{fontSize:11,color:'#9ca3af',marginTop:10}}>Para problemas técnicos, use a aba Suporte.</p>
