@@ -189,37 +189,17 @@ function App() {
           <img src="/logo.png" alt="Ewind" className="logo-img" />
         </div>
 
-        <div className="nav-center">
+        <div className="nav-center" style={{ flex: 1, justifyContent: 'center' }}>
           <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
+          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
           <a onClick={() => goToPage('listing')}>Espaços</a>
           <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
-
-          {/* Nav items por role */}
-
-          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
           <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
         </div>
 
         <div className="nav-right">
-          {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-            <button
-              onClick={() => goToPage('admin')}
-              title="Admin"
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                padding: '6px', opacity: 0.25, transition: 'opacity 0.2s',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.8'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '0.25'}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2d2d2d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-              </svg>
-            </button>
-          )}
+
           {/* Badge comparação */}
           {compareSpaces.length > 0 && (
             <button
@@ -242,14 +222,9 @@ function App() {
             <>
               {/* Meu painel */}
               {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-                <>
-                  <button onClick={() => goToPage('host-dashboard')} style={{ fontSize: 12, padding: '9px 14px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
-                    🏢 Meus espaços
-                  </button>
-                  <button className="btn-primary" onClick={() => goToPage('admin')}>
-                    ⚙️ Admin
-                  </button>
-                </>
+                <button className="btn-primary" onClick={() => goToPage('admin')}>
+                  ⚙️ Admin
+                </button>
               )}
               {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
                 <button className="btn-primary" onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
@@ -285,10 +260,7 @@ function App() {
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
 
         {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-          <>
-            <a onClick={() => goToPage('host-dashboard')}>🏢 Meus espaços</a>
-            <a onClick={() => goToPage('admin')}>⚙️ Admin</a>
-          </>
+          <a onClick={() => goToPage('admin')}>⚙️ Admin</a>
         )}
         {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
           <a onClick={() => { goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard'); refreshQuoteCount() }}>
