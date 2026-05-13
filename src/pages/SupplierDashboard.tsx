@@ -1,6 +1,4 @@
-import { t, type Lang } from '../translations'
-import DashboardLayout from '../components/DashboardLayout'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Supplier } from '../types'
@@ -10,22 +8,20 @@ import type { Page } from '../App'
 interface Props {
   user: User
   goToPage: (page: Page, supplier?: Supplier) => void
-  lang?: Lang
 }
 
-export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Props) {
+export default function SupplierDashboard({ user, goToPage }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState('servicos')
-  const [fullName, setFullName] = useState(user.user_metadata?.full_name || '')
-  const [phone, setPhone] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [saveMsg, setSaveMsg] = useState('')
-  const [sacSubject, setSacSubject] = useState('')
-  const [sacMsg, setSacMsg] = useState('')
-  const [sacSent, setSacSent] = useState(false)
-  const [chatMsgs, setChatMsgs] = useState([{ role: 'assistant' as const, text: 'Olá! 👋 Como posso ajudar com seu painel de fornecedor hoje?' }])
-  const [chatInput, setChatInput] = useState('')
+  const [activeSection, setActiveSection] = useState<'servicos' | 'feedback'>('servicos')
+  const [fbCategory, setFbCategory] = useState('')
+  const [fbPage, setFbPage] = useState('')
+  const [fbMessage, setFbMessage] = useState('')
+  const [fbFiles, setFbFiles] = useState<File[]>([])
+  const [fbSending, setFbSending] = useState(false)
+  const [fbSent, setFbSent] = useState(false)
+  const [fbError, setFbError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -47,7 +43,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
   }, [])
 
   const deleteSupplier = useCallback(async (id: string) => {
-    if (!confirm(lang === 'en' ? 'Delete this service? This action cannot be undone.' : 'Excluir este serviço? Esta ação não pode ser desfeita.')) return
+    if (!confirm('Excluir este serviço? Esta ação não pode ser desfeita.')) return
     const { error } = await supabase.from('suppliers').delete().eq('id', id)
     if (!error) setSuppliers(prev => prev.filter(x => x.id !== id))
   }, [])
@@ -68,106 +64,71 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
     return <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 100, background: c.bg, color: c.color }}>{c.label}</span>
   }
 
-  const saveProfile = async () => {
-    setSaving(true)
-    await supabase.from('profiles').update({ full_name: fullName, updated_at: new Date().toISOString() }).eq('id', user.id)
-    setSaveMsg('{t[lang].dash_saved}'); setSaving(false); setTimeout(() => setSaveMsg(''), 3000)
-  }
-  const sendChat = () => {
-    if (!chatInput.trim()) return
-    const msg = chatInput.trim(); setChatInput('')
-    setChatMsgs(p => [...p, { role: 'user' as const, text: msg }])
-    setTimeout(() => {
-      const l = msg.toLowerCase()
-      let r = 'Para dúvidas específicas, use a aba Suporte. Respondemos em até 24h!'
-      if (l.includes('plano') || l.includes('preço')) r = 'Os planos Ewind começam em R$49/mês para fornecedores. Novos anunciantes têm 90 dias gratuitos!'
-      if (l.includes('orçamento')) r = 'Os orçamentos recebidos ficam no botão "Ver orçamentos" no topo do seu painel.'
-      setChatMsgs(p => [...p, { role: 'assistant' as const, text: r }])
-    }, 500)
+  const PAGES_LIST = ['Página inicial','Listagem de espaços','Listagem de fornecedores','Detalhe de espaço','Detalhe de fornecedor','Formulário de orçamento','Meu painel','Cadastro','Login','Outra']
+  const EVENT_CATS = ['Casamento','Aniversário','Confraternização corporativa','Formatura','Chá de bebê / revelação','Show / Evento cultural','Outro']
+
+  const addFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newFiles = Array.from(e.target.files || []).filter(f => f.size < 20 * 1024 * 1024)
+    setFbFiles(prev => [...prev, ...newFiles].slice(0, 5))
+    e.target.value = ''
   }
 
-  const TABS = [
-    { key: 'servicos', icon: '🛠️', label: t[lang].supp_dash_services },
-    { key: 'dados', icon: '👤', label: t[lang].dash_my_data },
-    { key: 'sac', icon: '🎧', label: t[lang].dash_support },
-    { key: 'chat', icon: '💬', label: t[lang].dash_chat },
-  ]
-  const TITLES: Record<string, {title:string;subtitle:string}> = {
-    servicos: { title: t[lang].supp_dash_services, subtitle: 'Gerencie seus anúncios de serviços' },
-    dados: { title: t[lang].dash_my_data, subtitle: 'Atualize suas informações de cadastro' },
-    sac: { title: 'Central de suporte', subtitle: 'Nossa equipe responde em até 24h úteis' },
-    chat: { title: 'Chat Ewind', subtitle: 'Tire dúvidas sobre a plataforma' },
+  const sendFeedback = async () => {
+    if (!fbMessage.trim()) { setFbError('Descreva seu feedback antes de enviar.'); return }
+    setFbSending(true); setFbError('')
+    try {
+      const mediaUrls: string[] = []
+      for (const file of fbFiles) {
+        const ext = file.name.split('.').pop()
+        const path = `feedback/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { data } = await supabase.storage.from('space-media').upload(path, file, { upsert: true })
+        if (data) {
+          const { data: { publicUrl } } = supabase.storage.from('space-media').getPublicUrl(path)
+          mediaUrls.push(publicUrl)
+        }
+      }
+      const { error } = await supabase.from('feedbacks').insert({
+        user_id: user.id, user_email: user.email,
+        category: fbCategory, page: fbPage,
+        message: fbMessage, media_urls: mediaUrls,
+      })
+      if (error) throw error
+      setFbSent(true)
+    } catch (err: any) {
+      setFbError(err.message || 'Erro ao enviar. Tente novamente.')
+    }
+    setFbSending(false)
   }
 
   return (
-    <DashboardLayout user={user} tabs={TABS} activeTab={tab} onTabChange={setTab}
-      title={tab==='servicos'?t[lang].supp_dash_services:tab==='dados'?t[lang].dash_my_data:tab==='sac'?t[lang].dash_sac_title:t[lang].dash_chat} subtitle={tab==='servicos'?t[lang].supp_dash_sub:tab==='dados'?(lang==='en'?'Update your information':'Atualize suas informações'):tab==='sac'?t[lang].dash_sac_title:t[lang].dash_chat}
-      headerAction={tab === 'servicos' ? (
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', color: '#2d2d2d', fontFamily: 'inherit' }}>{t[lang].supp_dash_quotes}</button>
-          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>{t[lang].supp_dash_new}</button>
-        </div>
-      ) : undefined}>
-
-      {tab === 'dados' && (
-        <div style={{maxWidth:480,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28,display:'flex',flexDirection:'column',gap:16}}>
-          <div className="fg"><label>{t[lang].dash_full_name}</label><input type="text" value={fullName} onChange={e=>setFullName(e.target.value)} /></div>
-          <div className="fg"><label>{t[lang].dash_email}</label><input type="email" value={user.email||''} disabled style={{background:'#f9fafb',color:'#9ca3af'}} /></div>
-          <div className="fg"><label>{t[lang].dash_whatsapp}</label><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
-          {saveMsg && <div style={{fontSize:13,color:'#16a34a',fontWeight:600}}>{saveMsg}</div>}
-          <button onClick={saveProfile} disabled={saving} className="btn-primary" style={{alignSelf:'flex-start',padding:'10px 24px'}}>{saving?'Salvando...':'Salvar'}</button>
-        </div>
-      )}
-      {tab === 'sac' && (
-        <div style={{maxWidth:520,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',padding:28}}>
-          {sacSent ? (<div style={{textAlign:'center',padding:24}}><div style={{fontSize:40,marginBottom:10}}>✅</div><p style={{fontSize:14,color:'#166534',fontWeight:700}}>Mensagem enviada!</p><button onClick={()=>{setSacSent(false);setSacSubject('');setSacMsg('')}} style={{marginTop:12,fontSize:12,color:'#5aa800',background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}}>{t[lang].dash_sac_another}</button></div>
-          ) : (<div style={{display:'flex',flexDirection:'column',gap:14}}>
-              <div className="fg"><label>{t[lang].dash_sac_subject}</label><select value={sacSubject} onChange={e=>setSacSubject(e.target.value)} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',background:'#fff'}}><option value="">Selecione...</option><option>Dúvida sobre planos</option><option>Problema com orçamento</option><option>Erro no cadastro</option><option>Outro</option></select></div>
-              <div className="fg"><label>Mensagem</label><textarea value={sacMsg} onChange={e=>setSacMsg(e.target.value)} rows={4} placeholder={lang==='en'?'Describe...':'Descreva...'} style={{width:'100%',padding:'10px 12px',border:'1.5px solid #e8e8e8',borderRadius:8,fontSize:14,fontFamily:'inherit',resize:'vertical'}} /></div>
-              <button onClick={()=>setSacSent(true)} disabled={!sacSubject||!sacMsg.trim()} className="btn-primary" style={{alignSelf:'flex-start',padding:'9px 22px'}}>{t[lang].dash_sac_send}</button>
-            </div>)}
-        </div>
-      )}
-      {tab === 'chat' && (
-        <div style={{maxWidth:600,background:'#fff',borderRadius:14,border:'1px solid #e8e8e8',overflow:'hidden'}}>
-          <div style={{height:380,overflowY:'auto',padding:'20px'}}>
-            {chatMsgs.map((m,i) => (<div key={i} style={{marginBottom:12,display:'flex',justifyContent:m.role==='user'?'flex-end':'flex-start',alignItems:'flex-end',gap:8}}>{m.role==='assistant' && <div style={{width:30,height:30,borderRadius:'50%',background:'#a3e635',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,flexShrink:0}}>E</div>}<div style={{maxWidth:'78%',padding:'9px 13px',fontSize:13,lineHeight:1.55,borderRadius:m.role==='user'?'13px 13px 4px 13px':'13px 13px 13px 4px',background:m.role==='user'?'#a3e635':'#f3f4f6',color:m.role==='user'?'#1a2e05':'#2d2d2d'}}>{m.text}</div></div>))}
-          </div>
-          <div style={{borderTop:'1px solid #e8e8e8',padding:'10px 14px',display:'flex',gap:8}}>
-            <input type="text" value={chatInput} onChange={e=>setChatInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendChat()} placeholder={t[lang].dash_chat_placeholder} style={{flex:1,padding:'9px 13px',border:'1.5px solid #e8e8e8',borderRadius:9,fontSize:13,fontFamily:'inherit'}} />
-            <button onClick={sendChat} disabled={!chatInput.trim()} style={{padding:'9px 16px',background:'#a3e635',color:'#1a2e05',border:'none',borderRadius:9,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>{t[lang].dash_chat_send}</button>
-          </div>
-        </div>
-      )}
-
-      {tab === 'servicos' && <div>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 28px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{t[lang].supp_dash_services}</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Meus serviços</h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie seus anúncios de fornecedor</p>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => goToPage('host-quotes')} style={{ fontSize: 12, padding: '9px 16px', fontWeight: 600, background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#166534', fontFamily: 'inherit' }}>
             📋 Ver orçamentos recebidos
           </button>
-          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>{t[lang].supp_dash_new}</button>
+          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>+ Anunciar novo serviço</button>
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 28 }}>
-        <div className="stat-card"><div className="stat-num">{stats.total}</div><div className="stat-lab2">{t[lang].host_dash_total}</div></div>
-        <div className="stat-card"><div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div><div className="stat-lab2">{t[lang].host_dash_active}</div></div>
+        <div className="stat-card"><div className="stat-num">{stats.total}</div><div className="stat-lab2">Total</div></div>
+        <div className="stat-card"><div className="stat-num" style={{ color: '#5aa800' }}>{stats.active}</div><div className="stat-lab2">Ativos</div></div>
         <div className="stat-card"><div className="stat-num" style={{ color: '#6b7280' }}>{stats.paused}</div><div className="stat-lab2">Pausados</div></div>
       </div>
 
-      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>{t[lang].loading}</p>}
+      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando...</p>}
 
       {!loading && suppliers.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🛠️</div>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Você ainda não anunciou nenhum serviço</h3>
-          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>{lang === 'en' ? 'List your service and start receiving quotes.' : 'Cadastre seu serviço e apareça para quem busca.'}reça para quem está organizando eventos!</p>
-          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>{t[lang].supp_dash_new}</button>
+          <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>Cadastre seu serviço e apareça para quem está organizando eventos!</p>
+          <button className="btn-primary" onClick={() => goToPage('new-supplier')}>+ Anunciar meu serviço</button>
         </div>
       )}
 
@@ -177,7 +138,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
           return (
             <div key={s.id} className="card">
               <img
-                src={s.media_urls[0] || 'https://via.placeholder.com/400x160?text=No+photo'}
+                src={s.media_urls[0] || 'https://via.placeholder.com/400x160?text=Sem+foto'}
                 alt={s.name}
                 style={{ height: 150, width: '100%', objectFit: 'cover' }}
               />
@@ -200,7 +161,7 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
                   <button
                     onClick={() => goToPage('edit-supplier', s)}
                     style={{ flex: 1, minWidth: 60, padding: 7, fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #a3e635', borderRadius: 8, cursor: 'pointer', color: '#5aa800' }}
-                  >{lang === 'en' ? '✏️ Edit' : '✏️ Editar'}</button>
+                  >✏️ Editar</button>
                 </div>
                 <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
                   <button
@@ -217,7 +178,88 @@ export default function SupplierDashboard({  user, goToPage, lang = 'pt' }: Prop
           )
         })}
       </div>
-    </div>}
-    </DashboardLayout>
+      {/* Section toggle */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '1px solid #e8e8e8', paddingBottom: 0 }}>
+        <button onClick={() => setActiveSection('servicos')}
+          style={{ padding: '8px 18px', fontSize: 13, fontWeight: 600, border: 'none', borderBottom: activeSection === 'servicos' ? '2.5px solid #a3e635' : '2.5px solid transparent', background: 'none', color: activeSection === 'servicos' ? '#2d2d2d' : '#9ca3af', cursor: 'pointer', fontFamily: 'inherit' }}>
+          🛠️ Meus serviços
+        </button>
+        <button onClick={() => setActiveSection('feedback')}
+          style={{ padding: '8px 18px', fontSize: 13, fontWeight: 600, border: 'none', borderBottom: activeSection === 'feedback' ? '2.5px solid #a3e635' : '2.5px solid transparent', background: 'none', color: activeSection === 'feedback' ? '#2d2d2d' : '#9ca3af', cursor: 'pointer', fontFamily: 'inherit' }}>
+          💡 Feedback
+        </button>
+      </div>
+
+      {/* Feedback Section */}
+      {activeSection === 'feedback' && (
+        <div style={{ maxWidth: 620 }}>
+          {fbSent ? (
+            <div style={{ background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 14, padding: 48, textAlign: 'center' }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>💡</div>
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: '#166534', marginBottom: 8 }}>Feedback enviado!</h3>
+              <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Obrigado por ajudar a melhorar o Ewind!</p>
+              <button onClick={() => { setFbSent(false); setFbCategory(''); setFbPage(''); setFbMessage(''); setFbFiles([]) }}
+                style={{ fontSize: 13, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>Enviar outro feedback</button>
+            </div>
+          ) : (
+            <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 28, display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#92400e' }}>
+                💡 Reporte bugs, sugira melhorias ou compartilhe sua experiência com o Ewind.
+              </div>
+              <div className="fg">
+                <label>Categoria do evento <span style={{ color: '#9ca3af', fontSize: 11 }}>(opcional)</span></label>
+                <select value={fbCategory} onChange={e => setFbCategory(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
+                  <option value="">Selecione uma categoria...</option>
+                  {EVENT_CATS.map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="fg">
+                <label>Onde aconteceu? <span style={{ color: '#9ca3af', fontSize: 11 }}>(página)</span></label>
+                <select value={fbPage} onChange={e => setFbPage(e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', background: '#fff' }}>
+                  <option value="">Selecione a página...</option>
+                  {PAGES_LIST.map(p => <option key={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="fg">
+                <label>Seu feedback *</label>
+                <textarea value={fbMessage} onChange={e => setFbMessage(e.target.value)} rows={5}
+                  placeholder="Descreva o problema, sugestão ou experiência..."
+                  style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 14, fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.6 }} />
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>{fbMessage.length}/2000 caracteres</div>
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>
+                  📎 Anexar prints ou vídeos <span style={{ color: '#9ca3af', fontWeight: 400 }}>(até 5, máx. 20MB cada)</span>
+                </label>
+                <input ref={fileInputRef} type="file" multiple accept="image/*,video/*" onChange={addFiles} style={{ display: 'none' }} />
+                <button type="button" onClick={() => fileInputRef.current?.click()}
+                  style={{ padding: '10px 18px', border: '2px dashed #d1d5db', borderRadius: 10, background: '#f9fafb', color: '#6b7280', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit', width: '100%' }}>
+                  📷 Clique para adicionar imagens ou vídeos
+                </button>
+                {fbFiles.length > 0 && (
+                  <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {fbFiles.map((f, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 8, fontSize: 12 }}>
+                        {f.type.startsWith('video') ? '🎥' : '🖼️'}
+                        <span style={{ maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                        <button onClick={() => setFbFiles(prev => prev.filter((_,j) => j !== i))}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 16, lineHeight: 1 }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {fbError && <div style={{ fontSize: 13, color: '#dc2626', background: '#fef2f2', padding: '8px 12px', borderRadius: 8 }}>{fbError}</div>}
+              <button onClick={sendFeedback} disabled={fbSending || !fbMessage.trim()} className="btn-primary" style={{ alignSelf: 'flex-start', padding: '11px 28px', fontSize: 14 }}>
+                {fbSending ? 'Enviando...' : '📨 Enviar feedback'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+    </div>
   )
 }
