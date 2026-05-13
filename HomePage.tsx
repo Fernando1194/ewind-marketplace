@@ -97,7 +97,7 @@ export default function HomePage({ goToPage }: Props) {
             <span style={{ color: '#a3e635' }}>espaço perfeito</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
-            Compare chácaras, salões, hotéis, restaurantes e muito mais. Solicite orçamentos diretamente com os anunciantes — grátis e sem compromisso.
+            Salões, chácaras, fotógrafos, DJs, decoradores e muito mais. Compare opções, solicite orçamentos e feche direto com o anunciante — de graça e sem complicação.
           </p>
 
           <div className="search-pill">
@@ -155,10 +155,10 @@ className="hero-arrow hero-arrow-right"
       <section style={{ background: '#f9fafb', padding: '32px 24px', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
           {[
-            { icon: '🔍', title: 'Compare opções', desc: 'Veja vários espaços lado a lado antes de decidir' },
-            { icon: '💬', title: 'Orçamento direto', desc: 'Fale diretamente com o anunciante, sem intermediários' },
+            { icon: '🔍', title: 'Tudo em um só lugar', desc: 'Espaços, salões, chácaras, fotógrafos, DJs e decoradores — tudo aqui' },
+            { icon: '💬', title: 'Orçamento em minutos', desc: 'Preencha os dados do evento e receba propostas diretamente do anunciante' },
             { icon: '💸', title: 'Grátis para quem busca', desc: 'Nenhuma taxa para quem organiza eventos' },
-            { icon: '⚡', title: 'Resposta rápida', desc: 'Anunciantes respondem em até 24 horas' },
+            { icon: '⚡', title: 'Resposta rápida', desc: 'Os melhores anunciantes respondem em até 24h — alguns em minutos' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
@@ -208,7 +208,10 @@ className="hero-arrow hero-arrow-right"
                     {s.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
                   </div>
                   <div className="card-foot">
-                    <span className="card-price">{s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}</span>
+                    <div style={{ marginTop: 4 }}>
+                      <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
+                      <span className="card-price">{s.price_per_hour ? `R$ ${s.price_per_hour.toLocaleString('pt-BR')}` : s.price_per_day ? `R$ ${s.price_per_day.toLocaleString('pt-BR')}` : 'Consulte o valor'}</span>
+                    </div>
                     <span className="card-cap">👥 até {s.capacity}</span>
                   </div>
                 </div>
@@ -257,13 +260,10 @@ className="hero-arrow hero-arrow-right"
                     {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
                   </div>
                   <div className="card-foot">
-                    <span className="card-price">{s.price_info
-                      ? (isNaN(Number(s.price_info.replace(/[^0-9.,]/g, ''))) || !s.price_info.trim()
-                          ? s.price_info
-                          : s.price_info.toLowerCase().includes('r$')
-                            ? s.price_info
-                            : `R$ ${s.price_info}`)
-                      : 'Consultar valor'}</span>
+                    <div style={{ marginTop: 4 }}>
+                      <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
+                      <span className="card-price">{s.price_info ? (s.price_info.toLowerCase().includes('r$') ? s.price_info : `R$ ${s.price_info}`) : 'Consulte o valor'}</span>
+                    </div>
                     <span className="card-cap">Ver perfil →</span>
                   </div>
                 </div>
@@ -292,7 +292,7 @@ className="hero-arrow hero-arrow-right"
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="cta-host">
           <div>
-            <div className="cta-title">Tem um espaço para eventos?</div>
+            <div className="cta-title">Você tem um espaço ou oferece serviços para eventos?</div>
             <div className="cta-desc">
               Cadastre seu espaço no Ewind e receba solicitações de orçamento qualificadas — com data, número de convidados e tipo de evento já informados. Grátis para começar.
             </div>
