@@ -97,7 +97,7 @@ export default function HomePage({ goToPage }: Props) {
             <span style={{ color: '#a3e635' }}>em um só lugar</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 580, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
-            Compare lugares, fornecedores e muito mais. Solicite orçamentos diretamente com os anunciantes — grátis e sem compromisso.
+            Compare chácaras, salões, hotéis, restaurantes e muito mais. Solicite orçamentos diretamente com os anunciantes — grátis e sem compromisso.
           </p>
 
           <div className="search-pill">

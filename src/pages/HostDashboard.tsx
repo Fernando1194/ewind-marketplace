@@ -125,7 +125,7 @@ export default function HostDashboard({ user, goToPage }: Props) {
         {spaces.map(s => (
           <div key={s.id} className="card">
             <img
-              src={s.media_urls[0] || 'https://via.placeholder.com/400x180?text=Sem+foto'}
+              src={s.media_urls[0] || 'https://placehold.co/400x180/f3f4f6/9ca3af?text=Sem+foto'}
               alt={s.name}
               style={{ height: 160, width: '100%', objectFit: 'cover' }}
             />

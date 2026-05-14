@@ -1,4 +1,3 @@
-import { t, type Lang } from '../translations'
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react'
 import { supabase } from '../supabase'
 import { SUPPLIER_CATEGORIES, EVENT_TYPES } from '../types'
@@ -8,7 +7,6 @@ import type { Page } from '../App'
 interface Props {
   goToPage: (page: Page, supplier?: Supplier) => void
   user?: any
-  lang?: Lang
 }
 
 const STATES = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT','PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO']
@@ -23,7 +21,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
   return (
     <div className="card" onClick={onClick} style={{ cursor: 'pointer' }}>
       <div style={{ position: 'relative' }}>
-        <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=No+photo'} alt={supplier.name}
+        <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={supplier.name}
           loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
         <div style={{ position: 'absolute', top: 10, left: 10, background: cat?.bg || '#f0fdf4', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
           {cat?.icon} {supplier.category}
@@ -38,10 +36,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
           📍 {supplier.cities.slice(0, 2).join(', ')}{supplier.cities.length > 2 ? ` +${supplier.cities.length - 2}` : ''}, {supplier.state}
         </div>
         {supplier.price_info && (
-          <div style={{ marginTop: 6 }}>
-            <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 500, display: 'block' }}>Preços a partir de</span>
-            <span style={{ fontSize: 14, color: '#5aa800', fontWeight: 800 }}>{supplier.price_info.toLowerCase().includes('r$') ? supplier.price_info : `R$ ${supplier.price_info}`}</span>
-          </div>
+          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>💰 {supplier.price_info}</div>
         )}
         <div className="card-tags" style={{ marginTop: 8 }}>
           {supplier.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
@@ -51,7 +46,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
   )
 })
 
-export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
+export default function SuppliersPage({ goToPage, user }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -122,25 +117,25 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
   return (
     <>
       <div className="mini-search">
-        <input placeholder={t[lang].listing_city} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
         <select value={filterState} onChange={e => setFilterState(e.target.value)}
           style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-          <option value="">{t[lang].listing_state}</option>
+          <option value="">Estado</option>
           {STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="btn-primary" onClick={clearFilters}>{t[lang].hero_search}</button>
+        <button className="btn-primary" onClick={clearFilters}>Buscar</button>
       </div>
 
       <div className="listing-wrap">
         <aside className="filters-sidebar">
           <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
-            <span>🔍 {t[lang].listing_filters} {activeFiltersCount > 0 ? `(${activeFiltersCount} ${lang === 'en' ? 'active' : 'ativos'})` : ''}</span>
+            <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
             <span>{filtersOpen ? '▲' : '▼'}</span>
           </button>
           <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
           <div className="sf-group">
             <div className="sf-group-title">Localização</div>
-            <input type="text" placeholder={t[lang].listing_city} value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
             <label style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.06em', display: 'block', marginBottom: 4 }}>📅 Data do evento</label>
             <input
               type="date"
@@ -158,7 +153,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">{t[lang].listing_category}</div>
+            <div className="sf-group-title">Categoria</div>
             {SUPPLIER_CATEGORIES.map(c => (
               <label key={c.name} style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, cursor: 'pointer',
@@ -179,7 +174,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">{t[lang].listing_event_type}</div>
+            <div className="sf-group-title">Tipo de evento</div>
             {EVENT_TYPES.map(t => (
               <label key={t} className="chk-row">
                 <input type="checkbox" checked={filterEventTypes.includes(t)}
@@ -191,7 +186,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
 
           {activeFiltersCount > 0 && (
             <div className="sf-group">
-              <div className="sf-group-title">{lang === 'en' ? 'Active filters' : 'Filtros ativos'}</div>
+              <div className="sf-group-title">Filtros ativos</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                 {filterCategories.map(cat => {
                   const c = SUPPLIER_CATEGORIES.find(x => x.name === cat)
@@ -221,7 +216,7 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
         <main className="results-area">
           <div className="results-bar">
             <span>
-              <strong>{filtered.length} {lang === 'en' ? 'supplier(s)' : 'fornecedor(es)'}</strong> {lang === 'en' ? 'found' : 'encontrado(s)'}
+              <strong>{filtered.length} fornecedores</strong> encontrados
               {filtered.length > PAGE_SIZE && (
                 <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>
                   · página {currentPage} de {totalPages}
@@ -245,13 +240,13 @@ export default function SuppliersPage({  goToPage, user, lang = 'pt' }: Props) {
             <div style={{ textAlign: 'center', padding: 48, background: '#f9fafb', borderRadius: 14 }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
               <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
-                {activeFiltersCount > 0 ? (lang === 'en' ? 'No suppliers found' : 'Nenhum fornecedor encontrado') : (lang === 'en' ? 'Be the first to list!' : 'Seja o primeiro a anunciar!')}
+                {activeFiltersCount > 0 ? 'Nenhum fornecedor encontrado' : 'Seja o primeiro a anunciar!'}
               </h3>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
                 {activeFiltersCount > 0 ? 'Tente ajustar os filtros.' : 'Cadastre seus serviços e apareça para quem organiza eventos.'}
               </p>
               {activeFiltersCount > 0
-                ? <button className="btn-primary" onClick={clearFilters}>{t[lang].listing_clear}</button>
+                ? <button className="btn-primary" onClick={clearFilters}>Limpar filtros</button>
                 : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'supplier-signup')}>+ Anunciar meu serviço</button>
               }
             </div>

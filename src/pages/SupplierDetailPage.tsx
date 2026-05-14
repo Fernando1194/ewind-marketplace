@@ -1,7 +1,6 @@
-import { t, type Lang } from '../translations'
 import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import Reviews from '../components/Reviews'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { Supplier } from '../types'
 import MediaCarousel from '../components/MediaCarousel'
 import { SUPPLIER_CATEGORIES, EVENT_TYPES } from '../types'
@@ -12,10 +11,9 @@ interface Props {
   supplier: Supplier
   goToPage: (page: Page) => void
   user?: any
-  lang?: Lang
 }
 
-export default function SupplierDetailPage({  supplier, goToPage, user, lang = 'pt' }: Props) {
+export default function SupplierDetailPage({ supplier, goToPage, user }: Props) {
   const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
 
   // Quote form state
@@ -92,7 +90,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
         setWaMsg(`https://wa.me/55${num}?text=${wm}`)
       }
     } catch (err: any) {
-      setQuoteError(err.message || (lang === 'en' ? 'Error sending quote' : 'Erro ao enviar orçamento'))
+      setQuoteError(err.message || 'Erro ao enviar orçamento')
     }
     setQuoteLoading(false)
   }
@@ -106,7 +104,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
   return (
     <>
       <div className="back-bar">
-        <a onClick={() => goToPage('suppliers')}>{lang === 'en' ? '← Back to suppliers' : '← Voltar aos fornecedores'}</a>
+        <a onClick={() => goToPage('suppliers')}>← Voltar aos fornecedores</a>
       </div>
 
       <div className="det-layout">
@@ -185,7 +183,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
         {/* Disponibilidade */}
         {((supplier as any).available_dates?.length > 0 || (supplier as any).availability_note) && (
           <div style={{ marginTop: 28, paddingTop: 24, borderTop: '1px solid #e8e8e8' }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 {lang === 'en' ? 'Availability' : 'Disponibilidade'}</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 Disponibilidade</h3>
             <AvailabilityCalendar
               availableDates={(supplier as any).available_dates || []}
               readOnly
@@ -205,11 +203,8 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
           <div className="quote-box">
             {supplier.price_info && (
               <>
-                <div style={{ fontSize: 11, color: '#9ca3af', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 2 }}>{t[lang].detail_price_label}</div>
-                <div className="qb-price" style={{ fontSize: 26 }}>
-                  {supplier.price_info.toLowerCase().includes('r$') ? supplier.price_info : `R$ ${supplier.price_info}`}
-                </div>
-                <div className="qb-sub">{t[lang].detail_price_sub}</div>
+                <div className="qb-price" style={{ fontSize: 18 }}>{supplier.price_info}</div>
+                <div className="qb-sub">Valor orientativo · sujeito a negociação</div>
               </>
             )}
 
@@ -220,7 +215,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
                     <button onClick={() => user ? setShowQuoteForm(true) : goToPage('login')}
                       style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 8, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      📋 {t[lang].detail_quote_title} pelo Ewind
+                      📋 Solicitar orçamento pelo Ewind
                     </button>
                     {supplier.whatsapp && (
                       <button onClick={handleWhatsApp}
@@ -277,20 +272,20 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
                   </div>
                 ) : (
                   <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#2d2d2d' }}>📋 {t[lang].detail_quote_title}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: '#2d2d2d' }}>📋 Solicitar orçamento</div>
 
                     <div className="fg" style={{ marginBottom: 10 }}>
-                      <label style={{ fontSize: 12 }}>{t[lang].detail_event_type}</label>
+                      <label style={{ fontSize: 12 }}>Tipo de evento *</label>
                       <select value={eventType} onChange={e => setEventType(e.target.value)}
                         style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-                        <option value="">{t[lang].select_placeholder}</option>
+                        <option value="">Selecione...</option>
                         {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
                       <div className="fg">
-                        <label style={{ fontSize: 12 }}>{t[lang].detail_date}</label>
+                        <label style={{ fontSize: 12 }}>Data *</label>
                         <input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)}
                           min={new Date().toISOString().split('T')[0]}
                           style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit' }} />
@@ -319,7 +314,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
                     </div>
 
                     <div className="fg" style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 12 }}>{t[lang].detail_message}</label>
+                      <label style={{ fontSize: 12 }}>Mensagem (opcional)</label>
                       <textarea value={message} onChange={e => setMessage(e.target.value)} rows={3}
                         placeholder="Detalhes do evento, dúvidas..."
                         style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
@@ -334,7 +329,7 @@ export default function SupplierDetailPage({  supplier, goToPage, user, lang = '
                       </button>
                       <button onClick={submitQuote} disabled={quoteLoading}
                         style={{ flex: 2, padding: 10, fontSize: 13, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 8, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        {quoteLoading ? 'Enviando...' : '✓ {t[lang].detail_send}'}
+                        {quoteLoading ? 'Enviando...' : '✓ Enviar orçamento'}
                       </button>
                     </div>
                   </div>
