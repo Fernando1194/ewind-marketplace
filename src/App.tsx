@@ -20,8 +20,6 @@ const SuppliersPage = lazy(() => import('./pages/SuppliersPage'))
 const SupplierDetailPage = lazy(() => import('./pages/SupplierDetailPage'))
 const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
-const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
-const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
@@ -36,7 +34,7 @@ export type Page =
   | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
-  | 'supplier-login' | 'supplier-signup'
+ 
   | 'reset-password' | 'terms' | 'pricing' | 'admin'
 
 const PageLoader = () => (
@@ -360,8 +358,6 @@ function App() {
         )}
 
         {/* Área do Fornecedor */}
-        {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} />}
-        {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
         {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
         {page === 'terms' && <TermsPage goToPage={goToPage} />}
         {page === 'pricing' && <PricingPage goToPage={goToPage} />}
