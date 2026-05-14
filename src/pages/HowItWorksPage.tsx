@@ -130,7 +130,7 @@ export default function HowItWorksPage({ goToPage }: Props) {
               </button>
             )}
             {audience === 'supplier' && (
-              <button className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }} onClick={() => goToPage('supplier-signup')}>
+              <button className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }} onClick={() => goToPage('signup')}>
                 🛠️ Criar meu perfil de fornecedor
               </button>
             )}
@@ -196,7 +196,7 @@ export default function HowItWorksPage({ goToPage }: Props) {
             <button style={{ fontSize: 15, padding: '14px 28px', background: 'transparent', border: '2px solid #a3e635', borderRadius: 8, color: '#a3e635', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => goToPage('signup')}>
               🏢 Anunciar espaço
             </button>
-            <button style={{ fontSize: 15, padding: '14px 28px', background: 'transparent', border: '2px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => goToPage('supplier-signup')}>
+            <button style={{ fontSize: 15, padding: '14px 28px', background: 'transparent', border: '2px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }} onClick={() => goToPage('signup')}>
               🛠️ Sou fornecedor
             </button>
           </div>
