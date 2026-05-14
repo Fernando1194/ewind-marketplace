@@ -110,6 +110,8 @@ export interface Supplier {
   youtube: string | null
   tiktok: string | null
   portfolio_url: string | null
+  available_dates: string[] | null
+  availability_note: string | null
   status: 'active' | 'paused' | 'pending'
   created_at: string
   updated_at: string
