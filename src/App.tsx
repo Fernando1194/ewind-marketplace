@@ -52,10 +52,19 @@ const URL_TO_PAGE: Record<string, Page> = Object.fromEntries(
   Object.entries(PAGE_TO_URL).map(([k, v]) => [v, k as Page])
 )
 
+
+function slugify(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)
+}
+function getSpaceUrl(space) { return '/espacos/' + slugify(space.name) + '-' + space.id.slice(0,8) }
+function getSupplierUrl(supplier) { return '/fornecedores/' + slugify(supplier.name) + '-' + supplier.id.slice(0,8) }
+
 function getInitialPage(): Page {
   const path = window.location.pathname
   if (URL_TO_PAGE[path]) return URL_TO_PAGE[path]
+  if (path.match(/^\/espacos\/.+-[0-9a-f]{8}$/)) return 'detail'
   if (path.startsWith('/espacos')) return 'listing'
+  if (path.match(/^\/fornecedores\/.+-[0-9a-f]{8}$/)) return 'supplier-detail'
   if (path.startsWith('/fornecedores')) return 'suppliers'
   if (path === '/reset-password') return 'reset-password'
   return 'home'
