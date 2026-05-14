@@ -223,7 +223,7 @@ export default function SuppliersPage({ goToPage, user }: Props) {
                 </span>
               )}
             </span>
-            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage(user ? 'new-supplier' : 'supplier-signup')}>
+            <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage(user ? 'new-supplier' : 'signup')}>
               + Anunciar serviço
             </button>
           </div>
@@ -247,7 +247,7 @@ export default function SuppliersPage({ goToPage, user }: Props) {
               </p>
               {activeFiltersCount > 0
                 ? <button className="btn-primary" onClick={clearFilters}>Limpar filtros</button>
-                : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'supplier-signup')}>+ Anunciar meu serviço</button>
+                : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'signup')}>+ Anunciar meu serviço</button>
               }
             </div>
           )}
