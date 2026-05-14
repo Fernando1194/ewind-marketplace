@@ -1,16 +1,14 @@
-import { t, type Lang } from '../translations'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
-  lang?: Lang
 }
 
 type Mode = 'login' | 'forgot' | 'forgot-sent'
 
-export default function SupplierLoginPage({  goToPage, lang = 'pt' }: Props) {
+export default function SupplierLoginPage({ goToPage }: Props) {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,7 +25,7 @@ export default function SupplierLoginPage({  goToPage, lang = 'pt' }: Props) {
       goToPage('supplier-dashboard')
     } catch (err: any) {
       setError(err.message === 'Invalid login credentials'
-        ? (lang === 'en' ? 'Incorrect email or password' : 'Email ou senha incorretos')
+        ? 'Email ou senha incorretos'
         : (err.message || 'Erro ao entrar'))
     } finally {
       setLoading(false)
@@ -129,7 +127,7 @@ export default function SupplierLoginPage({  goToPage, lang = 'pt' }: Props) {
 
               <form onSubmit={handleLogin}>
                 <div className="fg">
-                  <label>{t[lang].login_email}</label>
+                  <label>Email</label>
                   <input
                     type="email"
                     required
@@ -140,7 +138,7 @@ export default function SupplierLoginPage({  goToPage, lang = 'pt' }: Props) {
                   />
                 </div>
                 <div className="fg">
-                  <label>{t[lang].login_password}</label>
+                  <label>Senha</label>
                   <input
                     type="password"
                     required
@@ -216,7 +214,7 @@ export default function SupplierLoginPage({  goToPage, lang = 'pt' }: Props) {
 
               <form onSubmit={handleForgot}>
                 <div className="fg">
-                  <label>{lang === 'en' ? 'Registered email' : 'Email cadastrado'}</label>
+                  <label>Email cadastrado</label>
                   <input
                     type="email"
                     required
@@ -254,7 +252,7 @@ export default function SupplierLoginPage({  goToPage, lang = 'pt' }: Props) {
           {mode === 'forgot-sent' && (
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 56, marginBottom: 20 }}>✉️</div>
-              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 10 }}>{lang === 'en' ? 'Email sent!' : 'Email enviado!'}</h1>
+              <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 10 }}>Email enviado!</h1>
               <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 6 }}>
                 Enviamos um link para <strong>{email}</strong>.
               </p>

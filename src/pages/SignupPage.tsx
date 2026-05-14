@@ -1,11 +1,9 @@
-import { t, type Lang } from '../translations'
 import { useState, useMemo } from 'react'
 import { supabase } from '../supabase'
 import type { Page } from '../App'
 
 interface Props {
   goToPage: (page: Page) => void
-  lang?: Lang
 }
 
 type Role = 'guest' | 'host' | 'supplier'
@@ -29,7 +27,7 @@ const EyeIcon = ({ open }: { open: boolean }) => open ? (
   </svg>
 )
 
-export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
+export default function SignupPage({ goToPage }: Props) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -77,7 +75,7 @@ export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
           is_supplier: extraRoles.includes('supplier') || role === 'supplier',
           updated_at: new Date().toISOString()
         })
-        setSuccess(lang === 'en' ? 'Account created! Check your email to confirm.' : 'Cadastro realizado! Verifique seu email para confirmar a conta.')
+        setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
         setEmail(''); setPassword(''); setConfirmPassword(''); setName('')
       }
     } catch (err: any) {
@@ -91,7 +89,7 @@ export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
     <div className="auth-wrap">
       <div className="auth-card" style={{ maxWidth: 500 }}>
         <img src="/logo.png" alt="Ewind" className="logo-img-md" onClick={() => goToPage('home')} style={{ cursor: 'pointer' }} />
-        <h1 className="auth-title">{t[lang].signup_title} gratuita</h1>
+        <h1 className="auth-title">Criar conta gratuita</h1>
         <p className="auth-sub">Faça parte do marketplace de eventos do Brasil</p>
 
         <form onSubmit={handleSignUp}>
@@ -113,17 +111,17 @@ export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
           </div>
 
           <div className="fg">
-            <label>{t[lang].signup_name}</label>
+            <label>Nome completo</label>
             <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="Como você quer ser chamado" />
           </div>
 
           <div className="fg">
-            <label>{t[lang].signup_email}</label>
+            <label>Email</label>
             <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
           </div>
 
           <div className="fg">
-            <label>{t[lang].signup_password}</label>
+            <label>Senha</label>
             <div style={{ position: 'relative' }}>
               <input
                 type={showPass ? 'text' : 'password'}
@@ -159,9 +157,9 @@ export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
             )}
           </div>
 
-          {/* {t[lang].signup_confirm} */}
+          {/* Confirmar senha */}
           <div className="fg">
-            <label>{t[lang].signup_confirm}</label>
+            <label>Confirmar senha</label>
             <div style={{ position: 'relative' }}>
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -206,12 +204,12 @@ export default function SignupPage({  goToPage, lang = 'pt' }: Props) {
             <a onClick={() => goToPage('terms')} style={{ color: '#5aa800', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso e Política de Privacidade</a>.
           </p>
           <button type="submit" className="btn-primary" style={{ width: '100%', padding: 13, marginTop: 4, fontSize: 15 }} disabled={loading}>
-            {loading ? 'Criando conta...' : '{t[lang].signup_title} e começar'}
+            {loading ? 'Criando conta...' : 'Criar conta e começar'}
           </button>
         </form>
 
         <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f3f4f6', textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
-          {t[lang].signup_have_account}{' '}
+          Já tem conta?{' '}
           <a onClick={() => goToPage('login')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>Entrar</a>
         </div>
         <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>

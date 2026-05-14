@@ -1,10 +1,9 @@
-import { t, type Lang } from '../translations'
 import { useState } from 'react'
 import type { Page } from '../App'
 
-interface Props { goToPage: (page: Page) => void; lang?: Lang }
+interface Props { goToPage: (page: Page) => void }
 
-export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
+export default function PricingPage({ goToPage }: Props) {
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly')
   const [submitted, setSubmitted] = useState(false)
   const [email, setEmail] = useState('')
@@ -82,7 +81,7 @@ export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
     { q: 'Por quanto tempo meu anúncio fica ativo gratuitamente?', a: 'Todos os novos anunciantes têm 90 dias gratuitos a partir da data de publicação. Após esse período, é necessário assinar um plano para manter a visibilidade.' },
     { q: 'O que acontece se eu não assinar após os 90 dias?', a: 'Seu anúncio fica pausado e deixa de aparecer nas buscas. Assim que você assinar, ele volta imediatamente. Nenhum dado é perdido.' },
     { q: 'Posso cancelar a qualquer momento?', a: 'Sim. Não há fidelidade. Você cancela quando quiser e o anúncio é pausado ao final do período pago.' },
-    { q: 'O Plano Pro vale a pena vs contratar os dois separados?', a: 'Espaços (R$59) + Fornecedor (R$49) separados custam R$108{t[lang].pricing_per_month}. O Pro sai por R$89 — economia de R$19{t[lang].pricing_per_month} ou R$228/ano, e ainda inclui badge verificado e destaque nas buscas.' },
+    { q: 'O Plano Pro vale a pena vs contratar os dois separados?', a: 'Espaços (R$59) + Fornecedor (R$49) separados custam R$108/mês. O Pro sai por R$89 — economia de R$19/mês ou R$228/ano, e ainda inclui badge verificado e destaque nas buscas.' },
     { q: 'Quem entra agora como Early Adopter tem benefício?', a: 'Sim. Early adopters terão desconto exclusivo permanente nos planos pagos — condições melhores do que quem entrar depois do lançamento oficial.' },
     { q: 'O Ewind cobra comissão sobre eventos fechados?', a: 'Não. Apenas a assinatura mensal. Você negocia e fecha diretamente com o cliente — sem comissão sobre nada.' },
   ]
@@ -104,7 +103,7 @@ export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
         <div style={{ display: 'inline-flex', background: '#1a1a1a', borderRadius: 100, padding: 4, gap: 4 }}>
           {(['monthly', 'annual'] as const).map(b => (
             <button key={b} onClick={() => setBilling(b)} style={{ padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, transition: 'all .2s', background: billing === b ? (b === 'annual' ? '#a3e635' : '#fff') : 'transparent', color: billing === b ? (b === 'annual' ? '#1a2e05' : '#111') : '#666', display: 'flex', alignItems: 'center', gap: 6 }}>
-              {b === 'monthly' ? t[lang].pricing_monthly : <><span>{t[lang].pricing_annual}</span><span style={{ fontSize: 10, background: billing === 'annual' ? '#1a2e05' : '#333', color: billing === 'annual' ? '#a3e635' : '#aaa', padding: '2px 7px', borderRadius: 100 }}>-20%</span></>}
+              {b === 'monthly' ? 'Mensal' : <><span>Anual</span><span style={{ fontSize: 10, background: billing === 'annual' ? '#1a2e05' : '#333', color: billing === 'annual' ? '#a3e635' : '#aaa', padding: '2px 7px', borderRadius: 100 }}>-20%</span></>}
             </button>
           ))}
         </div>
@@ -125,13 +124,13 @@ export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
                   <span style={{ fontSize: 13, color: '#9ca3af' }}>R$</span>
                   <span style={{ fontSize: 40, fontWeight: 900, color: plan.highlight ? plan.color : '#111', lineHeight: 1 }}>{getPrice(plan.monthly)}</span>
-                  <span style={{ fontSize: 13, color: '#9ca3af' }}>{t[lang].pricing_per_month}</span>
+                  <span style={{ fontSize: 13, color: '#9ca3af' }}>/mês</span>
                 </div>
                 {billing === 'annual' && <div style={{ fontSize: 11, color: '#16a34a', marginTop: 3, fontWeight: 600 }}>Você economiza R${getSaving(plan.monthly)} por ano</div>}
-                {plan.id === 'pro' && <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>vs R${getPrice(59) + getPrice(49)}{t[lang].pricing_per_month} comprando separado</div>}
+                {plan.id === 'pro' && <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>vs R${getPrice(59) + getPrice(49)}/mês comprando separado</div>}
               </div>
               <div style={{ background: '#f9fafb', border: '1px solid #e8e8e8', borderRadius: 8, padding: '7px 12px', marginBottom: 18, fontSize: 11, color: '#6b7280' }}>
-                {lang === 'en' ? <span>✓ <strong>90 days free</strong> for new advertisers</span> : <span>✓ <strong>90 dias grátis</strong> para novos anunciantes</span>}
+                ✓ <strong>90 dias grátis</strong> para novos anunciantes
               </div>
               <button onClick={() => goToPage('signup')} style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 800, background: plan.highlight ? plan.color : '#111', color: plan.highlight ? '#1a2e05' : '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
                 {plan.cta} →
@@ -156,21 +155,21 @@ export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#111' }}>
-                {(lang === 'en' ? ['Feature', 'Venues', 'Pro ⭐', 'Supplier'] : ['Recurso', 'Espaços', 'Pro ⭐', 'Fornecedor']).map((h, i) => (
+                {['Recurso', 'Espaços', 'Pro ⭐', 'Fornecedor'].map((h, i) => (
                   <th key={i} style={{ padding: '13px 16px', textAlign: i === 0 ? 'left' : 'center', fontSize: 12, fontWeight: 700, color: i === 2 ? '#a3e635' : '#9ca3af' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {[
-                [lang === 'en' ? 'Venue listings' : 'Anúncios de espaços', '✓', '✓', '—'],
-                [lang === 'en' ? 'Supplier profile' : 'Perfil de fornecedor', '—', '✓', '✓'],
-                [lang === 'en' ? 'Verified badge' : 'Badge Verificado', '—', '✓', '—'],
+                ['Anúncios de espaços', '✓', '✓', '—'],
+                ['Perfil de fornecedor', '—', '✓', '✓'],
+                ['Badge Verificado', '—', '✓', '—'],
                 ['Destaque nas buscas', '—', '✓', '—'],
-                [lang === 'en' ? 'Unlimited quotes' : 'Orçamentos ilimitados', '✓', '✓', '✓'],
+                ['Orçamentos ilimitados', '✓', '✓', '✓'],
                 ['Notificações', '✓', '✓', '✓'],
-                [lang === 'en' ? 'Reviews' : 'Avaliações', '✓', '✓', '✓'],
-                [lang === 'en' ? 'Monthly price' : 'Preço mensal', `R$${getPrice(59)}`, `R$${getPrice(89)}`, `R$${getPrice(49)}`],
+                ['Avaliações', '✓', '✓', '✓'],
+                ['Preço mensal', `R$${getPrice(59)}`, `R$${getPrice(89)}`, `R$${getPrice(49)}`],
               ].map(([feat, esp, pro, forn], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
                   <td style={{ padding: '12px 16px', fontSize: 13, color: '#2d2d2d', fontWeight: 500 }}>{feat}</td>
@@ -212,7 +211,7 @@ export default function PricingPage({  goToPage, lang = 'pt' }: Props) {
 
       {/* FAQ */}
       <div style={{ maxWidth: 660, margin: '0 auto', padding: '56px 24px' }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 28 }}>{t[lang].pricing_faq_title}</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 28 }}>Perguntas frequentes</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {faqs.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
         </div>

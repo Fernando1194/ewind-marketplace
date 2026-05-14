@@ -1,4 +1,3 @@
-import { t, type Lang } from '../translations'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -10,10 +9,9 @@ interface Props {
   goToPage: (page: Page) => void
   onQuoteCountChange?: () => void
   userRole?: string
-  lang?: Lang
 }
 
-export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, userRole = 'host', lang = 'pt' }: Props) {
+export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, userRole = 'host' }: Props) {
   const [quotes, setQuotes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [respondingId, setRespondingId] = useState<string | null>(null)
@@ -118,7 +116,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{t[lang].host_quotes_title}</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Orçamentos recebidos</h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>Responda em até 24h para melhor experiência</p>
         </div>
         <button onClick={loadQuotes} style={{ padding: '8px 16px', fontSize: 12, fontWeight: 600, background: '#f9fafb', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>
@@ -152,12 +150,12 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
         <div style={{ padding: '12px 16px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13 }}>
           <span style={{ fontSize: 18 }}>⚡</span>
           <span style={{ color: '#92400e' }}>
-            {lang === 'en' ? 'You have' : 'Você tem'} <strong>{stats.pending} {lang === 'en' ? 'pending request(s)' : 'solicitação(ões)'}</strong> {lang === 'en' ? 'awaiting response. Reply within 24h for better' : 'aguardando resposta. Responda em até 24h para uma melhor'} experiência!
+            Você tem <strong>{stats.pending} solicitação(ões)</strong> aguardando resposta. Responda em até 24h para uma melhor experiência!
           </span>
         </div>
       )}
 
-      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>{lang === 'en' ? 'Loading quotes...' : 'Carregando orçamentos...'}</p>}
+      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando orçamentos...</p>}
 
       {!loading && filtered.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
@@ -168,7 +166,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
           <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
             {activeFilter === 'all' ? 'Quando clientes solicitarem orçamentos, eles aparecerão aqui.' : 'Tente outro filtro.'}
           </p>
-          <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>{lang === 'en' ? 'View my venues' : 'Ver meus espaços'}</button>
+          <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>Ver meus espaços</button>
         </div>
       )}
 
@@ -203,7 +201,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                       <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
                         {userRole === 'supplier'
                           ? (q.suppliers?.name || q.spaces?.name || 'Serviço')
-                          : (q.spaces?.name || q.suppliers?.name || (lang === 'en' ? 'Venue' : 'Espaço'))}
+                          : (q.spaces?.name || q.suppliers?.name || 'Espaço')}
                       </h3>
                       <div style={{ fontSize: 12, color: '#6b7280' }}>📍 {q.spaces?.city}, {q.spaces?.state} · {hoursAgo(q.created_at)}</div>
                     </div>
@@ -230,7 +228,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
 
                   {q.message && (
                     <div style={{ marginTop: 10, padding: '8px 12px', background: '#f9fafb', borderRadius: 8, fontSize: 12, color: '#4b5563' }}>
-                      <strong>{lang === 'en' ? 'Message' : 'Mensagem'}:</strong> {q.message}
+                      <strong>Mensagem:</strong> {q.message}
                     </div>
                   )}
 
@@ -241,7 +239,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                       <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.5 }}>{q.host_response}</div>
                       {q.proposed_price && (
                         <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800, color: '#166534' }}>
-                          {lang === 'en' ? '💰 Proposal' : '💰 Proposta'}: R$ {q.proposed_price.toLocaleString('pt-BR')}
+                          💰 Proposta: R$ {q.proposed_price.toLocaleString('pt-BR')}
                         </div>
                       )}
                     </div>
@@ -283,13 +281,13 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                     <div style={{ marginTop: 14, padding: 16, background: '#f9fafb', borderRadius: 12, border: '1.5px solid #e8e8e8' }}>
                       <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>💬 Sua proposta para {q.event_type} em {fmtDate(q.event_date)}{fmtTime(q.event_time) ? ` às ${fmtTime(q.event_time)}` : ''}</div>
                       <div className="fg">
-                        <label style={{ fontSize: 12 }}>{lang === 'en' ? 'Message *' : 'Mensagem *'}</label>
+                        <label style={{ fontSize: 12 }}>Mensagem *</label>
                         <textarea value={responseText} onChange={e => setResponseText(e.target.value)} rows={3}
                           placeholder={`Olá! Temos disponibilidade para ${q.event_type} em ${fmtDate(q.event_date)}. Ficamos felizes em receber ${q.guests_count} convidados por ${q.duration_hours}h...`}
                           style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
                       </div>
                       <div className="fg">
-                        <label style={{ fontSize: 12 }}>{lang === 'en' ? 'Proposed value (R$) — optional' : 'Valor proposto (R$) — opcional'}</label>
+                        <label style={{ fontSize: 12 }}>Valor proposto (R$) — opcional</label>
                         <input type="number" value={proposedPrice} onChange={e => setProposedPrice(e.target.value)} placeholder="Ex: 4500" min={0} step={0.01} />
                         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Deixe em branco para negociar por WhatsApp/Instagram</p>
                       </div>
@@ -316,7 +314,7 @@ export default function HostQuotesPage({  user, goToPage, onQuoteCountChange, us
                       {canReject && (
                         rejectConfirm === q.id ? (
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span style={{ fontSize: 12, color: '#dc2626' }}>{lang === 'en' ? 'Reject event?' : 'Recusar evento?'}</span>
+                            <span style={{ fontSize: 12, color: '#dc2626' }}>Recusar evento?</span>
                             <button onClick={() => rejectQuote(q.id)} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#dc2626', fontFamily: 'inherit' }}>Sim</button>
                             <button onClick={() => setRejectConfirm(null)} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#6b7280', fontFamily: 'inherit' }}>Não</button>
                           </div>
