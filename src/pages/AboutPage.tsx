@@ -175,7 +175,7 @@ export default function AboutPage({ goToPage }: Props) {
             {[
               { icon: '🎉', title: 'Quem busca espaços', desc: 'Encontre, compare e solicite orçamentos para casamentos, aniversários, formaturas, confraternizações e qualquer tipo de evento.', btn: 'Buscar espaços →', action: 'listing' as Page },
               { icon: '🏢', title: 'Quem anuncia espaços', desc: 'Cadastre seu espaço, receba orçamentos qualificados, responda propostas e gerencie tudo pelo painel. Gratuito para começar.', btn: 'Anunciar meu espaço →', action: 'signup' as Page },
-              { icon: '🛠️', title: 'Fornecedores de serviços', desc: 'Fotografia, DJ, buffet, decoração, cerimonialista e muito mais. Crie seu perfil e seja encontrado por quem organiza eventos.', btn: 'Criar perfil de fornecedor →', action: 'supplier-signup' as Page },
+              { icon: '🛠️', title: 'Fornecedores de serviços', desc: 'Fotografia, DJ, buffet, decoração, cerimonialista e muito mais. Crie seu perfil e seja encontrado por quem organiza eventos.', btn: 'Criar perfil de fornecedor →', action: 'signup' as Page },
             ].map((card, i) => (
               <div key={i} style={{ background: '#fff', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8', textAlign: 'left' }}>
                 <div style={{ fontSize: 36, marginBottom: 12 }}>{card.icon}</div>
