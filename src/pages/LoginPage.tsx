@@ -120,7 +120,7 @@ export default function LoginPage({ goToPage }: Props) {
                   Criar conta
                 </button>
                 <button
-                  onClick={() => goToPage('supplier-login')}
+                  onClick={() => goToPage('login')}
                   style={{
                     flex: 1, padding: '10px 12px', fontSize: 13, fontWeight: 600,
                     background: '#f0fdf4', border: '1.5px solid #a3e635',
