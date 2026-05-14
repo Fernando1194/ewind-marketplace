@@ -27,6 +27,7 @@ const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
+import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
 
 export type Page =
   | 'home' | 'listing' | 'detail'
@@ -58,6 +59,7 @@ function App() {
   const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
+  const [cookieCategories, setCookieCategories] = useState<CookieCategories>(() => getCookieConsent().categories)
 
   const loadUserRole = useCallback(async (userId: string) => {
     // Tentar buscar perfil
@@ -375,6 +377,7 @@ function App() {
           <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={editingSupplier} />
         )}
       </Suspense>
+      <CookieBanner user={user} onAccept={setCookieCategories} />
     </div>
   )
 }

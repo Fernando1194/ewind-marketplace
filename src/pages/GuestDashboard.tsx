@@ -4,7 +4,7 @@ import type { User } from '@supabase/supabase-js'
 import type { Page } from '../App'
 
 interface Props { user: User; goToPage: (page: Page) => void }
-type Tab = 'orcamentos' | 'dados' | 'feedback' | 'sac'
+type Tab = 'orcamentos' | 'dados' | 'feedback' | 'sac' | 'lgpd'
 
 const SC: Record<string,string> = { pending:'#d97706', viewed:'#7c3aed', responded:'#2563eb', accepted:'#16a34a', closed:'#6b7280', rejected:'#dc2626' }
 const SL: Record<string,string> = { pending:'Aguardando', viewed:'Visto', responded:'Respondido', accepted:'Aceito', closed:'Fechado', rejected:'Recusado' }
@@ -30,6 +30,12 @@ export default function GuestDashboard({ user, goToPage }: Props) {
   const [sacMsg, setSacMsg] = useState('')
   const [sacSent, setSacSent] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [deletionReason, setDeletionReason] = useState('')
+  const [deletionRequested, setDeletionRequested] = useState(false)
+  const [deletionSending, setDeletionSending] = useState(false)
+  const [cookiePrefs, setCookiePrefs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('ewind_cookie_consent') || '{}') } catch { return {} }
+  })
 
   const name = fullName || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Visitante'
 
@@ -88,12 +94,14 @@ export default function GuestDashboard({ user, goToPage }: Props) {
     { key: 'dados',      icon: '👤', label: 'Meus dados' },
     { key: 'feedback',   icon: '💡', label: 'Feedback' },
     { key: 'sac',        icon: '🎧', label: 'Suporte' },
+    { key: 'lgpd',       icon: '🔒', label: 'Meus dados (LGPD)' },
   ]
   const TITLES: Record<Tab,{title:string;sub:string}> = {
     orcamentos: { title:'Meus orçamentos', sub:'Acompanhe os orçamentos que você solicitou' },
     dados:      { title:'Meus dados', sub:'Atualize suas informações de cadastro' },
     feedback:   { title:'Enviar feedback', sub:'Ajude-nos a melhorar a plataforma com sua opinião' },
     sac:        { title:'Central de suporte', sub:'Nossa equipe responde em até 24h úteis' },
+    lgpd:       { title:'Privacidade e LGPD', sub:'Gerencie seus dados conforme a Lei 13.709/2018' },
   }
 
   const sidebar = { width: 220, background: '#111' }
@@ -332,6 +340,122 @@ export default function GuestDashboard({ user, goToPage }: Props) {
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+
+          {/* ── LGPD ── */}
+          {tab === 'lgpd' && (
+            <div style={{ maxWidth: 600, display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+              {/* Seus direitos */}
+              <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 24 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>🔒 Seus direitos pela LGPD</h3>
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>Conforme a Lei 13.709/2018, você tem os seguintes direitos sobre seus dados pessoais:</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { icon: '👁️', title: 'Acesso', desc: 'Saber quais dados temos sobre você' },
+                    { icon: '✏️', title: 'Correção', desc: 'Corrigir dados incompletos ou desatualizados' },
+                    { icon: '🚫', title: 'Eliminação', desc: 'Solicitar exclusão dos seus dados pessoais' },
+                    { icon: '📦', title: 'Portabilidade', desc: 'Receber seus dados em formato estruturado' },
+                    { icon: '↩️', title: 'Revogação', desc: 'Retirar consentimento a qualquer momento' },
+                  ].map(r => (
+                    <div key={r.title} style={{ display: 'flex', gap: 12, padding: '10px 14px', background: '#f9fafb', borderRadius: 8 }}>
+                      <span style={{ fontSize: 18, flexShrink: 0 }}>{r.icon}</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700 }}>{r.title}</div>
+                        <div style={{ fontSize: 12, color: '#6b7280' }}>{r.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preferências de cookies */}
+              <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 24 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>🍪 Preferências de cookies</h3>
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>Gerencie quais cookies você autoriza.</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    { key: 'essential', label: '🔒 Essenciais', desc: 'Necessários para autenticação e segurança', required: true },
+                    { key: 'analytics', label: '📊 Analíticos', desc: 'Melhorias de experiência (dados anonimizados)', required: false },
+                    { key: 'marketing', label: '📣 Marketing', desc: 'Comunicações personalizadas', required: false },
+                  ].map(cat => {
+                    const isOn = cat.required || cookiePrefs?.categories?.[cat.key]
+                    return (
+                      <div key={cat.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#f9fafb', borderRadius: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 600 }}>{cat.label}</div>
+                          <div style={{ fontSize: 11, color: '#9ca3af' }}>{cat.desc}</div>
+                        </div>
+                        {cat.required ? (
+                          <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 700 }}>Sempre ativo</span>
+                        ) : (
+                          <button onClick={() => {
+                            const newPrefs = { ...cookiePrefs, categories: { ...cookiePrefs.categories, [cat.key]: !isOn } }
+                            setCookiePrefs(newPrefs)
+                            localStorage.setItem('ewind_cookie_consent', JSON.stringify(newPrefs))
+                            supabase.from('profiles').update({ [`${cat.key}_consent`]: !isOn }).eq('id', user.id)
+                          }}
+                            style={{ width: 40, height: 22, background: isOn ? '#a3e635' : '#d1d5db', border: 'none', borderRadius: 11, cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+                            <div style={{ position: 'absolute', top: 2, left: isOn ? 'auto' : 2, right: isOn ? 2 : 'auto', width: 18, height: 18, background: '#fff', borderRadius: '50%', transition: 'all 0.2s' }} />
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Exportar dados */}
+              <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8', padding: 24 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 4 }}>📦 Exportar meus dados</h3>
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>Baixe uma cópia dos seus dados pessoais armazenados no Ewind (direito de portabilidade).</p>
+                <button onClick={async () => {
+                  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+                  const { data: quotes } = await supabase.from('quotes').select('*').eq('guest_id', user.id)
+                  const exportData = { profile, quotes, exportedAt: new Date().toISOString() }
+                  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+                  const a = document.createElement('a'); a.href = URL.createObjectURL(blob)
+                  a.download = `ewind-meus-dados-${new Date().toISOString().split('T')[0]}.json`
+                  a.click()
+                }} className="btn-primary" style={{ fontSize: 13, padding: '9px 20px' }}>
+                  📥 Baixar meus dados (JSON)
+                </button>
+              </div>
+
+              {/* Solicitar exclusão */}
+              <div style={{ background: '#fff', borderRadius: 14, border: '1.5px solid #fecaca', padding: 24 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#991b1b', marginBottom: 4 }}>🗑️ Solicitar exclusão da conta</h3>
+                <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16 }}>
+                  Conforme o Art. 18 da LGPD, você pode solicitar a exclusão dos seus dados pessoais. Processaremos em até 15 dias úteis.
+                  <strong style={{ color: '#dc2626' }}> Esta ação é irreversível.</strong>
+                </p>
+                {deletionRequested ? (
+                  <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '14px 18px', fontSize: 13, color: '#991b1b' }}>
+                    ✅ Solicitação registrada. Nossa equipe entrará em contato em {user.email} em até 15 dias úteis.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div className="fg">
+                      <label style={{ color: '#374151' }}>Motivo (opcional)</label>
+                      <select value={deletionReason} onChange={e => setDeletionReason(e.target.value)}
+                        style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #fecaca', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+                        <option value="">Selecione...</option>
+                        <option>Não quero mais usar o Ewind</option>
+                        <option>Preocupações com privacidade</option>
+                        <option>Criou conta por engano</option>
+                        <option>Outro</option>
+                      </select>
+                    </div>
+                    <button onClick={requestDeletion} disabled={deletionSending}
+                      style={{ alignSelf: 'flex-start', padding: '10px 20px', fontSize: 13, fontWeight: 700, background: '#fff', border: '2px solid #dc2626', color: '#dc2626', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      {deletionSending ? 'Enviando...' : '🗑️ Solicitar exclusão da minha conta'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
             </div>
           )}
 
