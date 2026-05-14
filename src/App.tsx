@@ -27,6 +27,40 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
 
+const PAGE_TO_URL: Partial<Record<Page, string>> = {
+  home: '/',
+  listing: '/espacos',
+  suppliers: '/fornecedores',
+  'how-it-works': '/como-funciona',
+  about: '/quem-somos',
+  pricing: '/planos',
+  terms: '/termos',
+  login: '/entrar',
+  signup: '/cadastro',
+  'host-dashboard': '/painel',
+  'supplier-dashboard': '/painel/fornecedor',
+  'guest-dashboard': '/painel/visitante',
+  'host-quotes': '/painel/orcamentos',
+  'my-quotes': '/orcamentos',
+  'new-space': '/anunciar/espaco',
+  'new-supplier': '/anunciar/servico',
+  comparison: '/comparar',
+  admin: '/admin',
+}
+
+const URL_TO_PAGE: Record<string, Page> = Object.fromEntries(
+  Object.entries(PAGE_TO_URL).map(([k, v]) => [v, k as Page])
+)
+
+function getInitialPage(): Page {
+  const path = window.location.pathname
+  if (URL_TO_PAGE[path]) return URL_TO_PAGE[path]
+  if (path.startsWith('/espacos')) return 'listing'
+  if (path.startsWith('/fornecedores')) return 'suppliers'
+  if (path === '/reset-password') return 'reset-password'
+  return 'home'
+}
+
 export type Page =
   | 'home' | 'listing' | 'detail'
   | 'login' | 'signup'
@@ -44,7 +78,7 @@ const PageLoader = () => (
 )
 
 function App() {
-  const [page, setPage] = useState<Page>('home')
+  const [page, setPage] = useState<Page>(getInitialPage)
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
   const [editingSpace, setEditingSpace] = useState<Space | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
@@ -136,6 +170,9 @@ function App() {
   const goToPage = useCallback((p: Page, data?: Space | Supplier) => {
     setMobileMenuOpen(false)
     setPage(p)
+    const url = PAGE_TO_URL[p]
+    if (url && window.location.pathname !== url) window.history.pushState({ page: p }, '', url)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     if (data) {
       if (p === 'edit-space') setEditingSpace(data as Space)
       else if (p === 'detail') setSelectedSpace(data as Space)
@@ -163,6 +200,16 @@ function App() {
     })
   }, [])
 
+
+  useEffect(() => {
+    const handlePop = () => {
+      const path = window.location.pathname
+      const p = (URL_TO_PAGE[path] || 'home') as Page
+      setPage(p); window.scrollTo(0, 0)
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
+  }, [])
   const handleClearCompare = useCallback(() => setCompareSpaces([]), [])
   const handleRemoveFromCompare = useCallback((id: string) =>
     setCompareSpaces(prev => prev.filter(s => s.id !== id)), [])
