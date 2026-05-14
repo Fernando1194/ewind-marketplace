@@ -179,7 +179,9 @@ function App() {
   const goToPage = useCallback((p: Page, data?: Space | Supplier) => {
     setMobileMenuOpen(false)
     setPage(p)
-    const url = PAGE_TO_URL[p]
+    let url = PAGE_TO_URL[p]
+    if (p === 'detail' && data && data.city) url = '/espacos/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
+    if (p === 'supplier-detail' && data && data.cities) url = '/fornecedores/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
     if (url && window.location.pathname !== url) window.history.pushState({ page: p }, '', url)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (data) {
