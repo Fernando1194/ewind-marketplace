@@ -317,14 +317,10 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {user && userRole === 'guest' && !isHost && !isSupplier && (
-        )}
         {user && userRole !== 'guest' && (
           <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
             {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
           </a>
-        )}
-        {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
         )}
         <div className="mobile-auth">
           {!user ? (
