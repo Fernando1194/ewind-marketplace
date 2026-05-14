@@ -319,7 +319,7 @@ className="hero-arrow hero-arrow-right"
           </div>
           <button
             style={{ padding: '14px 28px', fontSize: 15, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 10, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
-            onClick={() => goToPage('supplier-signup')}
+            onClick={() => goToPage('signup')}
           >
             Sou fornecedor →
           </button>
