@@ -93,15 +93,15 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
     setRejectConfirm(null)
   }
 
-  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
+  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR') : 'â'
   const fmtTime = (t: string) => t ? t.substring(0, 5) : null
 
   const hoursAgo = (d: string) => {
     const diff = Date.now() - new Date(d).getTime()
     const h = Math.floor(diff / 3600000)
-    if (h < 1) return 'agora há pouco'
-    if (h < 24) return `há ${h}h`
-    return `há ${Math.floor(h / 24)} dia(s)`
+    if (h < 1) return 'agora hÃ¡ pouco'
+    if (h < 24) return `hÃ¡ ${h}h`
+    return `hÃ¡ ${Math.floor(h / 24)} dia(s)`
   }
 
   const openRespond = async (q: any) => {
@@ -116,11 +116,11 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Orçamentos recebidos</h1>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>Responda em até 24h para melhor experiência</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>OrÃ§amentos recebidos</h1>
+          <p style={{ fontSize: 14, color: '#6b7280' }}>Responda em atÃ© 24h para melhor experiÃªncia</p>
         </div>
         <button onClick={loadQuotes} style={{ padding: '8px 16px', fontSize: 12, fontWeight: 600, background: '#f9fafb', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>
-          🔄 Atualizar
+          ð Atualizar
         </button>
       </div>
 
@@ -130,7 +130,7 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
           { key: 'all', label: 'Total', value: stats.total, color: '#6366f1' },
           { key: 'pending', label: 'Aguardando', value: stats.pending, color: '#f59e0b' },
           { key: 'responded', label: 'Respondidos', value: stats.responded, color: '#0ea5e9' },
-          { key: 'accepted', label: '🎉 Aceitos', value: stats.accepted, color: '#16a34a' },
+          { key: 'accepted', label: 'ð Aceitos', value: stats.accepted, color: '#16a34a' },
         ].map(s => (
           <button key={s.key} onClick={() => setActiveFilter(s.key as any)}
             style={{
@@ -148,25 +148,25 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
       {/* Aviso SLA */}
       {stats.pending > 0 && (
         <div style={{ padding: '12px 16px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10, fontSize: 13 }}>
-          <span style={{ fontSize: 18 }}>⚡</span>
+          <span style={{ fontSize: 18 }}>â¡</span>
           <span style={{ color: '#92400e' }}>
-            Você tem <strong>{stats.pending} solicitação(ões)</strong> aguardando resposta. Responda em até 24h para uma melhor experiência!
+            VocÃª tem <strong>{stats.pending} solicitaÃ§Ã£o(Ãµes)</strong> aguardando resposta. Responda em atÃ© 24h para uma melhor experiÃªncia!
           </span>
         </div>
       )}
 
-      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando orçamentos...</p>}
+      {loading && <p style={{ color: '#6b7280', fontSize: 14 }}>Carregando orÃ§amentos...</p>}
 
       {!loading && filtered.length === 0 && (
         <div style={{ background: '#f9fafb', borderRadius: 14, padding: 48, textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📬</div>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>ð¬</div>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>
-            {activeFilter === 'all' ? 'Nenhum orçamento recebido' : 'Nenhum orçamento nesta categoria'}
+            {activeFilter === 'all' ? 'Nenhum orÃ§amento recebido' : 'Nenhum orÃ§amento nesta categoria'}
           </h3>
           <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
-            {activeFilter === 'all' ? 'Quando clientes solicitarem orçamentos, eles aparecerão aqui.' : 'Tente outro filtro.'}
+            {activeFilter === 'all' ? 'Quando clientes solicitarem orÃ§amentos, eles aparecerÃ£o aqui.' : 'Tente outro filtro.'}
           </p>
-          <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>Ver meus espaços</button>
+          <button className="btn-primary" onClick={() => goToPage('host-dashboard')}>Ver meus espaÃ§os</button>
         </div>
       )}
 
@@ -200,10 +200,10 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                     <div>
                       <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
                         {userRole === 'supplier'
-                          ? (q.suppliers?.name || q.spaces?.name || 'Serviço')
-                          : (q.spaces?.name || q.suppliers?.name || 'Espaço')}
+                          ? (q.suppliers?.name || q.spaces?.name || 'ServiÃ§o')
+                          : (q.spaces?.name || q.suppliers?.name || 'EspaÃ§o')}
                       </h3>
-                      <div style={{ fontSize: 12, color: '#6b7280' }}>📍 {q.spaces?.city}, {q.spaces?.state} · {hoursAgo(q.created_at)}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280' }}>ð {q.spaces?.city}, {q.spaces?.state} Â· {hoursAgo(q.created_at)}</div>
                     </div>
                     <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 100, background: status.bg, color: status.color, whiteSpace: 'nowrap', flexShrink: 0 }}>
                       {status.label}
@@ -215,9 +215,9 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                     {[
                       { label: 'Evento', value: q.event_type },
                       { label: 'Data', value: fmtDate(q.event_date) },
-                      ...(fmtTime(q.event_time) ? [{ label: 'Horário', value: fmtTime(q.event_time) }] : []),
+                      ...(fmtTime(q.event_time) ? [{ label: 'HorÃ¡rio', value: fmtTime(q.event_time) }] : []),
                       { label: 'Convidados', value: q.guests_count },
-                      { label: 'Duração', value: `${q.duration_hours}h` },
+                      { label: 'DuraÃ§Ã£o', value: `${q.duration_hours}h` },
                     ].map(item => (
                       <div key={item.label}>
                         <div style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{item.label}</div>
@@ -235,11 +235,11 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                   {/* Sua resposta */}
                   {q.host_response && (
                     <div style={{ marginTop: 10, padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#166534', marginBottom: 4 }}>✓ Sua resposta enviada:</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#166534', marginBottom: 4 }}>â Sua resposta enviada:</div>
                       <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.5 }}>{q.host_response}</div>
                       {q.proposed_price && (
                         <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800, color: '#166534' }}>
-                          💰 Proposta: R$ {q.proposed_price.toLocaleString('pt-BR')}
+                          ð° Proposta: R$ {q.proposed_price.toLocaleString('pt-BR')}
                         </div>
                       )}
                     </div>
@@ -248,13 +248,13 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                   {/* Status especiais */}
                   {q.status === 'responded' && (
                     <div style={{ marginTop: 10, padding: '8px 12px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, fontSize: 12, color: '#92400e', fontWeight: 500 }}>
-                      ⏳ Aguardando o cliente aceitar ou recusar sua proposta
+                      â³ Aguardando o cliente aceitar ou recusar sua proposta
                     </div>
                   )}
 
                   {q.status === 'accepted' && (
                     <div style={{ marginTop: 12, padding: '14px 18px', background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)', border: '2px solid #86efac', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{ fontSize: 28 }}>🎉</span>
+                      <span style={{ fontSize: 28 }}>ð</span>
                       <div>
                         <div style={{ fontSize: 14, fontWeight: 800, color: '#14532d' }}>Evento confirmado!</div>
                         <div style={{ fontSize: 12, color: '#166534', marginTop: 2 }}>
@@ -266,34 +266,34 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
 
                   {q.status === 'rejected' && (
                     <div style={{ marginTop: 10, padding: '8px 12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, fontSize: 12, color: '#991b1b' }}>
-                      ✕ Solicitação recusada por você
+                      â SolicitaÃ§Ã£o recusada por vocÃª
                     </div>
                   )}
 
                   {q.status === 'closed' && (
                     <div style={{ marginTop: 10, padding: '8px 12px', background: '#f9fafb', border: '1px solid #e8e8e8', borderRadius: 8, fontSize: 12, color: '#9ca3af' }}>
-                      Orçamento encerrado pelo cliente
+                      OrÃ§amento encerrado pelo cliente
                     </div>
                   )}
 
                   {/* Form de resposta */}
                   {respondingId === q.id && (
                     <div style={{ marginTop: 14, padding: 16, background: '#f9fafb', borderRadius: 12, border: '1.5px solid #e8e8e8' }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>💬 Sua proposta para {q.event_type} em {fmtDate(q.event_date)}{fmtTime(q.event_time) ? ` às ${fmtTime(q.event_time)}` : ''}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12 }}>ð¬ Sua proposta para {q.event_type} em {fmtDate(q.event_date)}{fmtTime(q.event_time) ? ` Ã s ${fmtTime(q.event_time)}` : ''}</div>
                       <div className="fg">
                         <label style={{ fontSize: 12 }}>Mensagem *</label>
                         <textarea value={responseText} onChange={e => setResponseText(e.target.value)} rows={3}
-                          placeholder={`Olá! Temos disponibilidade para ${q.event_type} em ${fmtDate(q.event_date)}. Ficamos felizes em receber ${q.guests_count} convidados por ${q.duration_hours}h...`}
+                          placeholder={`OlÃ¡! Temos disponibilidade para ${q.event_type} em ${fmtDate(q.event_date)}. Ficamos felizes em receber ${q.guests_count} convidados por ${q.duration_hours}h...`}
                           style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', resize: 'vertical' }} />
                       </div>
                       <div className="fg">
-                        <label style={{ fontSize: 12 }}>Valor proposto (R$) — opcional</label>
+                        <label style={{ fontSize: 12 }}>Valor proposto (R$) â opcional</label>
                         <input type="number" value={proposedPrice} onChange={e => setProposedPrice(e.target.value)} placeholder="Ex: 4500" min={0} step={0.01} />
                         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Deixe em branco para negociar por WhatsApp/Instagram</p>
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => submitResponse(q.id)} className="btn-primary" style={{ flex: 1, padding: 11 }} disabled={submitting || !responseText.trim()}>
-                          {submitting ? 'Enviando...' : '📤 Enviar proposta'}
+                          {submitting ? 'Enviando...' : 'ð¤ Enviar proposta'}
                         </button>
                         <button onClick={() => setRespondingId(null)} style={{ padding: '11px 16px', fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
                           Cancelar
@@ -302,13 +302,13 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                     </div>
                   )}
 
-                  {/* Ações */}
+                  {/* AÃ§Ãµes */}
                   {respondingId !== q.id && (
                     <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       {canRespond && (
                         <button onClick={() => openRespond(q)}
                           style={{ padding: '9px 16px', fontSize: 12, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#1a2e05', fontFamily: 'inherit' }}>
-                          💬 Responder
+                          ð¬ Responder
                         </button>
                       )}
                       {canReject && (
@@ -316,12 +316,12 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontSize: 12, color: '#dc2626' }}>Recusar evento?</span>
                             <button onClick={() => rejectQuote(q.id)} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: '#fee2e2', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#dc2626', fontFamily: 'inherit' }}>Sim</button>
-                            <button onClick={() => setRejectConfirm(null)} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#6b7280', fontFamily: 'inherit' }}>Não</button>
+                            <button onClick={() => setRejectConfirm(null)} style={{ padding: '6px 10px', fontSize: 11, fontWeight: 700, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', color: '#6b7280', fontFamily: 'inherit' }}>NÃ£o</button>
                           </div>
                         ) : (
                           <button onClick={() => setRejectConfirm(q.id)}
                             style={{ padding: '9px 14px', fontSize: 12, fontWeight: 600, background: '#fff', border: '1.5px solid #fecaca', borderRadius: 8, cursor: 'pointer', color: '#991b1b', fontFamily: 'inherit' }}>
-                            ✕ Recusar
+                            â Recusar
                           </button>
                         )
                       )}
