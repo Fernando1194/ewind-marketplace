@@ -256,18 +256,6 @@ function App() {
           <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
 
           {/* Nav items por role */}
-          {user && userRole === 'guest' && !isHost && !isSupplier && (
-            <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>
-              Meus orçamentos
-              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-            </a>
-          )}
-          {user && (userRole === 'host' || userRole === 'supplier' || isHost || isSupplier) && (
-            <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-              Orçamentos
-              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-            </a>
-          )}
 
           <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
@@ -305,7 +293,7 @@ function App() {
                   else if (userRole === 'host' || isHost) goToPage('host-dashboard')
                   else goToPage('guest-dashboard')
                 }}>
-                  {userRole === 'supplier' || isSupplier ? '🛠️' : userRole === 'host' || isHost ? '🏢' : '👤'} Meu painel
+                  {userRole === 'supplier' || isSupplier ? '🛠️' : userRole === 'host' || isHost ? '🏢' : '👤'} Meu painel{pendingQuotesCount > 0 && <span style={{marginLeft:6,background:'#dc2626',color:'#fff',borderRadius:'50%',padding:'0 6px',fontSize:11,fontWeight:800,lineHeight:'18px',display:'inline-block'}}>{pendingQuotesCount}</span>}
                 </button>
               )}
 
@@ -330,7 +318,6 @@ function App() {
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
         {user && userRole === 'guest' && !isHost && !isSupplier && (
-          <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
         )}
         {user && userRole !== 'guest' && (
           <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
@@ -338,10 +325,6 @@ function App() {
           </a>
         )}
         {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
-          <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-            📋 Orçamentos recebidos
-            {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-          </a>
         )}
         <div className="mobile-auth">
           {!user ? (
