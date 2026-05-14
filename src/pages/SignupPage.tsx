@@ -9,9 +9,9 @@ interface Props {
 type Role = 'guest' | 'host' | 'supplier'
 
 const ROLES: { value: Role; icon: string; label: string; desc: string }[] = [
-  { value: 'guest', icon: '🎉', label: 'Preciso de um espaço', desc: 'Quero encontrar, comparar e solicitar orçamentos para o meu evento' },
-  { value: 'host', icon: '🏢', label: 'Tenho um espaço para locar', desc: 'Quero anunciar meu espaço e receber solicitações de orçamento qualificadas' },
-  { value: 'supplier', icon: '🛠️', label: 'Ofereço serviços para eventos', desc: 'Sou fotógrafo, DJ, buffet, decorador, cerimonialista ou outro fornecedor' },
+  { value: 'guest', icon: 'ð', label: 'Preciso de um espaÃ§o', desc: 'Quero encontrar, comparar e solicitar orÃ§amentos para o meu evento' },
+  { value: 'host', icon: 'ð¢', label: 'Tenho um espaÃ§o para locar', desc: 'Quero anunciar meu espaÃ§o e receber solicitaÃ§Ãµes de orÃ§amento qualificadas' },
+  { value: 'supplier', icon: 'ð ï¸', label: 'OfereÃ§o serviÃ§os para eventos', desc: 'Sou fotÃ³grafo, DJ, buffet, decorador, cerimonialista ou outro fornecedor' },
 ]
 
 const EyeIcon = ({ open }: { open: boolean }) => open ? (
@@ -54,8 +54,8 @@ export default function SignupPage({ goToPage }: Props) {
     setError(''); setSuccess('')
     setTouchedPass(true)
     setTouchedConfirm(true)
-    if (!allRulesOk) { setError('A senha não atende todos os requisitos'); return }
-    if (password !== confirmPassword) { setError('As senhas não coincidem'); return }
+    if (!allRulesOk) { setError('A senha nÃ£o atende todos os requisitos'); return }
+    if (password !== confirmPassword) { setError('As senhas nÃ£o coincidem'); return }
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -90,11 +90,11 @@ export default function SignupPage({ goToPage }: Props) {
       <div className="auth-card" style={{ maxWidth: 500 }}>
         <img src="/logo.png" alt="Ewind" className="logo-img-md" onClick={() => goToPage('home')} style={{ cursor: 'pointer' }} />
         <h1 className="auth-title">Criar conta gratuita</h1>
-        <p className="auth-sub">Faça parte do marketplace de eventos do Brasil</p>
+        <p className="auth-sub">FaÃ§a parte do marketplace de eventos do Brasil</p>
 
         <form onSubmit={handleSignUp}>
           <div className="fg">
-            <label>Como você vai usar o Ewind?</label>
+            <label>Como vocÃª vai usar o Ewind?</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {ROLES.map(r => (
                 <button key={r.value} type="button" onClick={() => setRole(r.value)}
@@ -104,7 +104,7 @@ export default function SignupPage({ goToPage }: Props) {
                     <div style={{ fontSize: 14, fontWeight: 700 }}>{r.label}</div>
                     <div style={{ fontSize: 12, color: role === r.value ? '#365314' : '#6b7280' }}>{r.desc}</div>
                   </div>
-                  {role === r.value && <span style={{ marginLeft: 'auto', color: '#5aa800', fontSize: 18 }}>✓</span>}
+                  {role === r.value && <span style={{ marginLeft: 'auto', color: '#5aa800', fontSize: 18 }}>â</span>}
                 </button>
               ))}
             </div>
@@ -112,7 +112,7 @@ export default function SignupPage({ goToPage }: Props) {
 
           <div className="fg">
             <label>Nome completo</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="Como você quer ser chamado" />
+            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="Como vocÃª quer ser chamado" />
           </div>
 
           <div className="fg">
@@ -142,13 +142,13 @@ export default function SignupPage({ goToPage }: Props) {
             {(touchedPass || password.length > 0) && (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {[
-                  { ok: rules.length, label: 'Mínimo de 8 caracteres' },
-                  { ok: rules.upper, label: 'Pelo menos uma letra maiúscula' },
+                  { ok: rules.length, label: 'MÃ­nimo de 8 caracteres' },
+                  { ok: rules.upper, label: 'Pelo menos uma letra maiÃºscula' },
                   { ok: rules.special, label: 'Pelo menos um caractere especial (!@#$%...)' },
                 ].map((rule, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: rule.ok ? '#16a34a' : '#6b7280', fontWeight: rule.ok ? 600 : 400 }}>
                     <span style={{ width: 16, height: 16, borderRadius: '50%', background: rule.ok ? '#dcfce7' : '#f3f4f6', border: `1.5px solid ${rule.ok ? '#16a34a' : '#d1d5db'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10 }}>
-                      {rule.ok ? '✓' : ''}
+                      {rule.ok ? 'â' : ''}
                     </span>
                     {rule.label}
                   </div>
@@ -177,43 +177,43 @@ export default function SignupPage({ goToPage }: Props) {
             </div>
             {touchedConfirm && confirmPassword && confirmPassword !== password && (
               <div style={{ marginTop: 6, fontSize: 12, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 5 }}>
-                ⚠️ As senhas não coincidem
+                â ï¸ As senhas nÃ£o coincidem
               </div>
             )}
             {touchedConfirm && confirmPassword && confirmPassword === password && allRulesOk && (
               <div style={{ marginTop: 6, fontSize: 12, color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
-                ✓ Senhas coincidem
+                â Senhas coincidem
               </div>
             )}
           </div>
 
-          {error && <div className="auth-error">⚠️ {error}</div>}
+          {error && <div className="auth-error">â ï¸ {error}</div>}
           {success && (
             <div className="auth-success">
-              ✅ {success}
+              â {success}
               <div style={{ marginTop: 10 }}>
                 <button type="button" className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage('login')}>
-                  Ir para o login →
+                  Ir para o login â
                 </button>
               </div>
             </div>
           )}
 
           <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8, lineHeight: 1.5 }}>
-            Ao criar uma conta você concorda com nossos{' '}
-            <a onClick={() => goToPage('terms')} style={{ color: '#5aa800', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso e Política de Privacidade</a>.
+            Ao criar uma conta vocÃª concorda com nossos{' '}
+            <a onClick={() => goToPage('terms')} style={{ color: '#5aa800', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso e PolÃ­tica de Privacidade</a>.
           </p>
           <button type="submit" className="btn-primary" style={{ width: '100%', padding: 13, marginTop: 4, fontSize: 15 }} disabled={loading}>
-            {loading ? 'Criando conta...' : 'Criar conta e começar'}
+            {loading ? 'Criando conta...' : 'Criar conta e comeÃ§ar'}
           </button>
         </form>
 
         <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f3f4f6', textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
-          Já tem conta?{' '}
+          JÃ¡ tem conta?{' '}
           <a onClick={() => goToPage('login')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>Entrar</a>
         </div>
         <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-          <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>← Voltar para a home</a>
+          <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>â Voltar para a home</a>
         </div>
       </div>
     </div>
