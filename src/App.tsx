@@ -377,7 +377,7 @@ function App() {
           <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={editingSupplier} />
         )}
       </Suspense>
-      <CookieBanner user={user} onAccept={setCookieCategories} />
+      <CookieBanner user={user} onAccept={setCookieCategories} goToPage={goToPage} />
     </div>
   )
 }
