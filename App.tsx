@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
-import type { Space, Supplier } from './types'
+import type { Space, Supplier, EventItem } from './types'
 import './App.css'
 
 const HomePage = lazy(() => import('./pages/HomePageNew'))
@@ -20,22 +20,70 @@ const SuppliersPage = lazy(() => import('./pages/SuppliersPage'))
 const SupplierDetailPage = lazy(() => import('./pages/SupplierDetailPage'))
 const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
 const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
-const SupplierLoginPage = lazy(() => import('./pages/SupplierLoginPage'))
-const SupplierSignupPage = lazy(() => import('./pages/SupplierSignupPage'))
 const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
+const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
+const EventsListPage = lazy(() => import('./pages/EventsListPage'))
+const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
+import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
+
+const PAGE_TO_URL: Partial<Record<Page, string>> = {
+  home: '/',
+  listing: '/espacos',
+  suppliers: '/fornecedores',
+  'how-it-works': '/como-funciona',
+  about: '/quem-somos',
+  pricing: '/planos',
+  terms: '/termos',
+  login: '/entrar',
+  signup: '/cadastro',
+  'host-dashboard': '/painel',
+  'supplier-dashboard': '/painel/fornecedor',
+  'guest-dashboard': '/painel/visitante',
+  'host-quotes': '/painel/orcamentos',
+  'my-quotes': '/orcamentos',
+  'new-space': '/anunciar/espaco',
+  'new-supplier': '/anunciar/servico',
+  comparison: '/comparar',
+  admin: '/admin',
+  events: '/eventos',
+  'event-detail': '/eventos/gerenciar',
+}
+
+const URL_TO_PAGE: Record<string, Page> = Object.fromEntries(
+  Object.entries(PAGE_TO_URL).map(([k, v]) => [v, k as Page])
+)
+
+
+function slugify(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)
+}
+function getSpaceUrl(space) { return '/espacos/' + slugify(space.name) + '-' + space.id.slice(0,8) }
+function getSupplierUrl(supplier) { return '/fornecedores/' + slugify(supplier.name) + '-' + supplier.id.slice(0,8) }
+
+function getInitialPage(): Page {
+  const path = window.location.pathname
+  if (URL_TO_PAGE[path]) return URL_TO_PAGE[path]
+  if (path.match(/^\/espacos\/.+-[0-9a-f]{8}$/)) return 'detail'
+  if (path.startsWith('/espacos')) return 'listing'
+  if (path.match(/^\/fornecedores\/.+-[0-9a-f]{8}$/)) return 'supplier-detail'
+  if (path.startsWith('/fornecedores')) return 'suppliers'
+  if (path === '/reset-password') return 'reset-password'
+  return 'home'
+}
 
 export type Page =
   | 'home' | 'listing' | 'detail'
   | 'login' | 'signup'
   | 'host-dashboard' | 'new-space' | 'edit-space'
-  | 'my-quotes' | 'host-quotes'
+  | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
   | 'how-it-works' | 'about' | 'comparison'
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
-  | 'supplier-login' | 'supplier-signup'
+ 
   | 'reset-password' | 'terms' | 'pricing' | 'admin'
+  | 'events' | 'event-detail'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -44,8 +92,9 @@ const PageLoader = () => (
 )
 
 function App() {
-  const [page, setPage] = useState<Page>('home')
+  const [page, setPage] = useState<Page>(getInitialPage)
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [editingSpace, setEditingSpace] = useState<Space | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
@@ -57,6 +106,8 @@ function App() {
   const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
+  const [pageKey, setPageKey] = useState(0)
+  const [cookieCategories, setCookieCategories] = useState<CookieCategories>(() => getCookieConsent().categories)
 
   const loadUserRole = useCallback(async (userId: string) => {
     // Tentar buscar perfil
@@ -135,6 +186,12 @@ function App() {
   const goToPage = useCallback((p: Page, data?: Space | Supplier) => {
     setMobileMenuOpen(false)
     setPage(p)
+    setPageKey(k => k + 1)
+    let url = PAGE_TO_URL[p]
+    if (p === 'detail' && data && data.city) url = '/espacos/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
+    if (p === 'supplier-detail' && data && data.cities) url = '/fornecedores/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
+    if (url && window.location.pathname !== url) window.history.pushState({ page: p }, '', url)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     if (data) {
       if (p === 'edit-space') setEditingSpace(data as Space)
       else if (p === 'detail') setSelectedSpace(data as Space)
@@ -162,6 +219,16 @@ function App() {
     })
   }, [])
 
+
+  useEffect(() => {
+    const handlePop = () => {
+      const path = window.location.pathname
+      const p = (URL_TO_PAGE[path] || 'home') as Page
+      setPage(p); window.scrollTo(0, 0)
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
+  }, [])
   const handleClearCompare = useCallback(() => setCompareSpaces([]), [])
   const handleRemoveFromCompare = useCallback((id: string) =>
     setCompareSpaces(prev => prev.filter(s => s.id !== id)), [])
@@ -190,24 +257,12 @@ function App() {
 
         <div className="nav-center">
           <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
+          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
           <a onClick={() => goToPage('listing')}>Espaços</a>
           <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
 
           {/* Nav items por role */}
-          {user && userRole === 'guest' && !isHost && !isSupplier && (
-            <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>
-              Meus orçamentos
-              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-            </a>
-          )}
-          {user && (userRole === 'host' || userRole === 'supplier' || isHost || isSupplier) && (
-            <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-              Orçamentos
-              {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
-            </a>
-          )}
 
-          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
           <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
         </div>
@@ -234,15 +289,21 @@ function App() {
 
           {user ? (
             <>
-              {/* Meu painel */}
+              {/* Meus eventos — entrada principal (gestor de eventos) */}
+              <button className="btn-link" onClick={() => goToPage('events')} style={{ fontWeight: 600 }}>
+                🗓️ Meus eventos
+              </button>
+              {/* Meu painel — todos os perfis */}
               {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-                <button className="btn-primary" onClick={() => goToPage('admin')}>
-                  ⚙️ Admin
-                </button>
+                <button className="btn-primary" onClick={() => goToPage('admin')}>⚙️ Admin</button>
               )}
-              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && userRole !== 'guest' && (
-                <button className="btn-primary" onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
-                  {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+                <button className="btn-primary" onClick={() => {
+                  if (userRole === 'supplier' || isSupplier) goToPage('supplier-dashboard')
+                  else if (userRole === 'host' || isHost) goToPage('host-dashboard')
+                  else goToPage('guest-dashboard')
+                }}>
+                  {userRole === 'supplier' || isSupplier ? '🛠️' : userRole === 'host' || isHost ? '🏢' : '👤'} Meu painel{pendingQuotesCount > 0 && <span style={{marginLeft:6,background:'#dc2626',color:'#fff',borderRadius:'50%',padding:'0 6px',fontSize:11,fontWeight:800,lineHeight:'18px',display:'inline-block'}}>{pendingQuotesCount}</span>}
                 </button>
               )}
 
@@ -266,18 +327,9 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {user && userRole === 'guest' && !isHost && !isSupplier && (
-          <a onClick={() => { goToPage('my-quotes'); refreshQuoteCount() }}>📋 Meus orçamentos</a>
-        )}
         {user && userRole !== 'guest' && (
           <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
             {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
-          </a>
-        )}
-        {user && (isHost || isSupplier || userRole === 'host' || userRole === 'supplier') && (
-          <a onClick={() => { goToPage('host-quotes'); refreshQuoteCount() }}>
-            📋 Orçamentos recebidos
-            {pendingQuotesCount > 0 && <span className="badge-count">{pendingQuotesCount}</span>}
           </a>
         )}
         <div className="mobile-auth">
@@ -344,6 +396,18 @@ function App() {
         {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
         )}
+        {page === 'guest-dashboard' && user && (
+          <GuestDashboard user={user} goToPage={goToPage} />
+        )}
+        {page === 'events' && user && (
+          <EventsListPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
+        )}
+        {page === 'event-detail' && user && selectedEvent && (
+          <EventDetailPage user={user} event={selectedEvent} goToPage={goToPage} back={() => goToPage('events')} />
+        )}
+        {page === 'event-detail' && user && !selectedEvent && (
+          <EventsListPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
+        )}
         {page === 'my-quotes' && user && (
           <MyQuotesPage user={user} goToPage={goToPage} />
         )}
@@ -352,8 +416,6 @@ function App() {
         )}
 
         {/* Área do Fornecedor */}
-        {page === 'supplier-login' && <SupplierLoginPage goToPage={goToPage} />}
-        {page === 'supplier-signup' && <SupplierSignupPage goToPage={goToPage} />}
         {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
         {page === 'terms' && <TermsPage goToPage={goToPage} />}
         {page === 'pricing' && <PricingPage goToPage={goToPage} />}
@@ -369,8 +431,10 @@ function App() {
           <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={editingSupplier} />
         )}
       </Suspense>
+      <CookieBanner user={user} onAccept={setCookieCategories} goToPage={goToPage} />
     </div>
   )
 }
 
 export default App
+
