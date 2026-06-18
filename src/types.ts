@@ -149,3 +149,54 @@ export const SUPPLIER_ATTRIBUTES = [
   'Bilíngue (inglês)',
   'Acessibilidade'
 ]
+
+
+// ── Gestor de Eventos (Fase 1) ──────────────────────────────────
+export interface EventItem {
+  id: string
+  owner_id: string
+  name: string
+  type: string
+  event_date: string | null
+  guests_estimate: number | null
+  budget_total: number | null
+  notes: string | null
+  status: 'planning' | 'confirmed' | 'done' | 'cancelled'
+  created_at: string
+  updated_at: string
+}
+
+export interface EventContract {
+  id: string
+  event_id: string
+  owner_id: string
+  supplier_name: string
+  category: string | null
+  contact_name: string | null
+  contact_phone: string | null
+  contact_email: string | null
+  total_value: number
+  signed_date: string | null
+  service_date: string | null
+  cancellation_policy: string | null
+  penalty_clause: string | null
+  special_clauses: string | null
+  contract_file_url: string | null
+  notes: string | null
+  status: 'draft' | 'active' | 'completed' | 'cancelled'
+  created_at: string
+  updated_at: string
+}
+
+export interface ContractPayment {
+  id: string
+  contract_id: string
+  owner_id: string
+  label: string | null
+  amount: number
+  due_date: string
+  paid: boolean
+  paid_date: string | null
+  payment_method: string | null
+  created_at: string
+}

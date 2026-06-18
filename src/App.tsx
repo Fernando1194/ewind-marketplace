@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
-import type { Space, Supplier } from './types'
+import type { Space, Supplier, EventItem } from './types'
 import './App.css'
 
 const HomePage = lazy(() => import('./pages/HomePageNew'))
@@ -25,6 +25,8 @@ const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PricingPage = lazy(() => import('./pages/PricingPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
+const EventsListPage = lazy(() => import('./pages/EventsListPage'))
+const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
 
 const PAGE_TO_URL: Partial<Record<Page, string>> = {
@@ -46,6 +48,8 @@ const PAGE_TO_URL: Partial<Record<Page, string>> = {
   'new-supplier': '/anunciar/servico',
   comparison: '/comparar',
   admin: '/admin',
+  events: '/eventos',
+  'event-detail': '/eventos/gerenciar',
 }
 
 const URL_TO_PAGE: Record<string, Page> = Object.fromEntries(
@@ -79,6 +83,7 @@ export type Page =
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
  
   | 'reset-password' | 'terms' | 'pricing' | 'admin'
+  | 'events' | 'event-detail'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -89,6 +94,7 @@ const PageLoader = () => (
 function App() {
   const [page, setPage] = useState<Page>(getInitialPage)
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
   const [editingSpace, setEditingSpace] = useState<Space | null>(null)
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
@@ -283,6 +289,10 @@ function App() {
 
           {user ? (
             <>
+              {/* Meus eventos — entrada principal (gestor de eventos) */}
+              <button className="btn-link" onClick={() => goToPage('events')} style={{ fontWeight: 600 }}>
+                🗓️ Meus eventos
+              </button>
               {/* Meu painel — todos os perfis */}
               {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
                 <button className="btn-primary" onClick={() => goToPage('admin')}>⚙️ Admin</button>
@@ -388,6 +398,15 @@ function App() {
         )}
         {page === 'guest-dashboard' && user && (
           <GuestDashboard user={user} goToPage={goToPage} />
+        )}
+        {page === 'events' && user && (
+          <EventsListPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
+        )}
+        {page === 'event-detail' && user && selectedEvent && (
+          <EventDetailPage user={user} event={selectedEvent} goToPage={goToPage} back={() => goToPage('events')} />
+        )}
+        {page === 'event-detail' && user && !selectedEvent && (
+          <EventsListPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
         )}
         {page === 'my-quotes' && user && (
           <MyQuotesPage user={user} goToPage={goToPage} />
