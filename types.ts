@@ -66,6 +66,16 @@ export default function EventDetailPage({ user, event, back }: Props) {
     load()
   }
 
+  const openContractFile = async (path: string) => {
+    // Gera URL assinada temporária (60s) para o bucket privado
+    const { data, error } = await supabase.storage.from('event-contracts').createSignedUrl(path, 60)
+    if (!error && data?.signedUrl) {
+      window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
+    } else {
+      alert('Não foi possível abrir o contrato. Tente novamente.')
+    }
+  }
+
   const budgetUsedPct = event.budget_total ? Math.min(100, (totalContracted / Number(event.budget_total)) * 100) : 0
 
   return (
@@ -221,9 +231,9 @@ export default function EventDetailPage({ user, event, back }: Props) {
                     <PaymentForm user={user} contractId={c.id} onSaved={load} />
 
                     {c.contract_file_url && (
-                      <a href={c.contract_file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#5aa800', fontWeight: 600 }}>
+                      <button onClick={() => openContractFile(c.contract_file_url!)} style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#5aa800', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>
                         📎 Ver contrato anexado
-                      </a>
+                      </button>
                     )}
                   </div>
                 )}
@@ -258,10 +268,9 @@ function ContractForm({ user, eventId, categories, onSaved, onCancel }: {
     if (file) {
       const path = `${user.id}/${eventId}/${Date.now()}-${file.name}`
       const { error: upErr } = await supabase.storage.from('event-contracts').upload(path, file)
-      if (!upErr) {
-        const { data } = supabase.storage.from('event-contracts').getPublicUrl(path)
-        fileUrl = data.publicUrl
-      }
+      // Bucket é privado: guardamos o caminho do arquivo, não uma URL pública.
+      // A URL assinada (temporária) é gerada na hora de abrir o contrato.
+      if (!upErr) fileUrl = path
     }
     await supabase.from('event_contracts').insert({
       event_id: eventId,
