@@ -1,362 +1,439 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
+import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
-import type { EventItem, EventContract, ContractPayment, Page } from '../types'
+import type { Space, Supplier, EventItem } from './types'
+import './App.css'
 
-interface Props {
-  user: User
-  event: EventItem
-  goToPage: (p: Page, data?: any) => void
-  back: () => void
+const HomePage = lazy(() => import('./pages/HomePageNew'))
+const ListingPage = lazy(() => import('./pages/ListingPage'))
+const DetailPage = lazy(() => import('./pages/DetailPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const SignupPage = lazy(() => import('./pages/SignupPage'))
+const HostDashboard = lazy(() => import('./pages/HostDashboard'))
+const SpaceFormPage = lazy(() => import('./pages/SpaceFormPage'))
+const MyQuotesPage = lazy(() => import('./pages/MyQuotesPage'))
+const HostQuotesPage = lazy(() => import('./pages/HostQuotesPage'))
+const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const ComparisonPage = lazy(() => import('./pages/ComparisonPage'))
+const SuppliersPage = lazy(() => import('./pages/SuppliersPage'))
+const SupplierDetailPage = lazy(() => import('./pages/SupplierDetailPage'))
+const SupplierFormPage = lazy(() => import('./pages/SupplierFormPage'))
+const SupplierDashboard = lazy(() => import('./pages/SupplierDashboard'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const PricingPage = lazy(() => import('./pages/PricingPage'))
+const AdminPage = lazy(() => import('./pages/AdminPage'))
+const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
+const EventsListPage = lazy(() => import('./pages/EventsListPage'))
+const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
+import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
+
+const PAGE_TO_URL: Partial<Record<Page, string>> = {
+  home: '/',
+  listing: '/espacos',
+  suppliers: '/fornecedores',
+  'how-it-works': '/como-funciona',
+  about: '/quem-somos',
+  pricing: '/planos',
+  terms: '/termos',
+  login: '/entrar',
+  signup: '/cadastro',
+  'host-dashboard': '/painel',
+  'supplier-dashboard': '/painel/fornecedor',
+  'guest-dashboard': '/painel/visitante',
+  'host-quotes': '/painel/orcamentos',
+  'my-quotes': '/orcamentos',
+  'new-space': '/anunciar/espaco',
+  'new-supplier': '/anunciar/servico',
+  comparison: '/comparar',
+  admin: '/admin',
+  events: '/eventos',
+  'event-detail': '/eventos/gerenciar',
 }
 
-const CONTRACT_CATEGORIES = ['Espaço', 'Buffet', 'Fotografia', 'Filmagem', 'Decoração', 'DJ/Música', 'Cerimonial', 'Doces e Bolos', 'Convites', 'Bar', 'Segurança', 'Transporte', 'Outro']
+const URL_TO_PAGE: Record<string, Page> = Object.fromEntries(
+  Object.entries(PAGE_TO_URL).map(([k, v]) => [v, k as Page])
+)
 
-interface ContractWithPayments extends EventContract {
-  payments: ContractPayment[]
+
+function slugify(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)
+}
+function getSpaceUrl(space) { return '/espacos/' + slugify(space.name) + '-' + space.id.slice(0,8) }
+function getSupplierUrl(supplier) { return '/fornecedores/' + slugify(supplier.name) + '-' + supplier.id.slice(0,8) }
+
+function getInitialPage(): Page {
+  const path = window.location.pathname
+  if (URL_TO_PAGE[path]) return URL_TO_PAGE[path]
+  if (path.match(/^\/espacos\/.+-[0-9a-f]{8}$/)) return 'detail'
+  if (path.startsWith('/espacos')) return 'listing'
+  if (path.match(/^\/fornecedores\/.+-[0-9a-f]{8}$/)) return 'supplier-detail'
+  if (path.startsWith('/fornecedores')) return 'suppliers'
+  if (path === '/reset-password') return 'reset-password'
+  return 'home'
 }
 
-export default function EventDetailPage({ user, event, back }: Props) {
-  const [contracts, setContracts] = useState<ContractWithPayments[]>([])
+export type Page =
+  | 'home' | 'listing' | 'detail'
+  | 'login' | 'signup'
+  | 'host-dashboard' | 'new-space' | 'edit-space'
+  | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
+  | 'how-it-works' | 'about' | 'comparison'
+  | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
+ 
+  | 'reset-password' | 'terms' | 'pricing' | 'admin'
+  | 'events' | 'event-detail'
+
+const PageLoader = () => (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+    <div style={{ fontSize: 14, color: '#6b7280' }}>Carregando...</div>
+  </div>
+)
+
+function App() {
+  const [page, setPage] = useState<Page>(getInitialPage)
+  const [selectedSpace, setSelectedSpace] = useState<Space | null>(null)
+  const [selectedEvent, setSelectedEvent] = useState<any>(null)
+  const [editingSpace, setEditingSpace] = useState<Space | null>(null)
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
+  const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null)
+  const [compareSpaces, setCompareSpaces] = useState<Space[]>([])
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [userRole, setUserRole] = useState<string>('guest')
+  const [isHost, setIsHost] = useState(false)
+  const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [showContractForm, setShowContractForm] = useState(false)
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
+  const [pageKey, setPageKey] = useState(0)
+  const [cookieCategories, setCookieCategories] = useState<CookieCategories>(() => getCookieConsent().categories)
 
-  useEffect(() => { load() }, [])
+  const loadUserRole = useCallback(async (userId: string) => {
+    // Tentar buscar perfil
+    let { data } = await supabase
+      .from('profiles')
+      .select('role, is_host, is_supplier')
+      .eq('id', userId)
+      .single()
 
-  const load = async () => {
-    setLoading(true)
-    const { data: cs } = await supabase
-      .from('event_contracts')
-      .select('*')
-      .eq('event_id', event.id)
-      .order('created_at', { ascending: true })
-    const { data: ps } = await supabase
-      .from('contract_payments')
-      .select('*')
-      .eq('owner_id', user.id)
-      .order('due_date', { ascending: true })
-
-    const list: ContractWithPayments[] = ((cs as EventContract[]) || []).map(c => ({
-      ...c,
-      payments: ((ps as ContractPayment[]) || []).filter(p => p.contract_id === c.id),
-    }))
-    setContracts(list)
-    setLoading(false)
-  }
-
-  const money = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  const fmtDate = (d: string | null) => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—'
-  const daysUntil = (d: string) => Math.ceil((new Date(d + 'T12:00:00').getTime() - Date.now()) / 86400000)
-
-  // Totals
-  const totalContracted = contracts.reduce((s, c) => s + Number(c.total_value || 0), 0)
-  const allPayments = contracts.flatMap(c => c.payments)
-  const totalPaid = allPayments.filter(p => p.paid).reduce((s, p) => s + Number(p.amount), 0)
-  const totalPending = totalContracted - totalPaid
-  const today = new Date().toISOString().split('T')[0]
-  const upcoming = allPayments.filter(p => !p.paid && p.due_date >= today).sort((a, b) => a.due_date.localeCompare(b.due_date))
-  const overdue = allPayments.filter(p => !p.paid && p.due_date < today)
-
-  const togglePaid = async (p: ContractPayment) => {
-    await supabase.from('contract_payments').update({
-      paid: !p.paid,
-      paid_date: !p.paid ? today : null,
-    }).eq('id', p.id)
-    load()
-  }
-
-  const openContractFile = async (path: string) => {
-    // Gera URL assinada temporária (60s) para o bucket privado
-    const { data, error } = await supabase.storage.from('event-contracts').createSignedUrl(path, 60)
-    if (!error && data?.signedUrl) {
-      window.open(data.signedUrl, '_blank', 'noopener,noreferrer')
-    } else {
-      alert('Não foi possível abrir o contrato. Tente novamente.')
+    // Se não encontrar perfil, criar a partir do user_metadata
+    if (!data) {
+      const { data: authData } = await supabase.auth.getUser()
+      const meta = authData?.user?.user_metadata
+      const role = meta?.role || 'guest'
+      await supabase.from('profiles').upsert({
+        id: userId,
+        email: authData?.user?.email,
+        full_name: meta?.full_name || '',
+        role,
+        is_host: role === 'host',
+        is_supplier: role === 'supplier',
+        updated_at: new Date().toISOString()
+      })
+      data = { role, is_host: role === 'host', is_supplier: role === 'supplier' }
     }
+
+    const role = data.role || 'guest'
+    const isH = !!(data.is_host || role === 'host')
+    const isS = !!(data.is_supplier || role === 'supplier')
+    setUserRole(role)
+    setIsHost(isH)
+    setIsSupplier(isS)
+
+    // Badge de orçamentos pendentes
+    if (isH || isS) {
+      const { count } = await supabase
+        .from('quotes')
+        .select('*', { count: 'exact', head: true })
+        .eq('host_id', userId)
+        .eq('status', 'pending')
+      setPendingQuotesCount(count || 0)
+    } else if (role === 'guest') {
+      const { count } = await supabase
+        .from('quotes')
+        .select('*', { count: 'exact', head: true })
+        .eq('guest_id', userId)
+      setPendingQuotesCount(count || 0)
+    }
+  }, [])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      if (session?.user) loadUserRole(session.user.id)
+      setLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) loadUserRole(session.user.id)
+      else { setUserRole('guest'); setIsHost(false); setIsSupplier(false); setPendingQuotesCount(0) }
+      // Redirecionar para redefinição de senha ao clicar no link do email
+      if (event === 'PASSWORD_RECOVERY') {
+        setPage('reset-password')
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [loadUserRole])
+
+  const handleLogout = useCallback(async () => {
+    await supabase.auth.signOut()
+    setPage('home')
+  }, [])
+
+  const goToPage = useCallback((p: Page, data?: Space | Supplier) => {
+    setMobileMenuOpen(false)
+    setPage(p)
+    setPageKey(k => k + 1)
+    let url = PAGE_TO_URL[p]
+    if (p === 'detail' && data && data.city) url = '/espacos/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
+    if (p === 'supplier-detail' && data && data.cities) url = '/fornecedores/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
+    if (url && window.location.pathname !== url) window.history.pushState({ page: p }, '', url)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (data) {
+      if (p === 'edit-space') setEditingSpace(data as Space)
+      else if (p === 'detail') setSelectedSpace(data as Space)
+      else if (p === 'supplier-detail') setSelectedSupplier(data as Supplier)
+      else if (p === 'edit-supplier') setEditingSupplier(data as Supplier)
+    }
+    if (p === 'new-space') setEditingSpace(null)
+    if (p === 'new-supplier') setEditingSupplier(null)
+    window.scrollTo(0, 0)
+  }, [])
+
+  const refreshQuoteCount = useCallback(() => {
+    if (user) loadUserRole(user.id)
+  }, [user, loadUserRole])
+
+  const handleCompareToggle = useCallback((space: Space) => {
+    setCompareSpaces(prev => {
+      const exists = prev.find(s => s.id === space.id)
+      if (exists) return prev.filter(s => s.id !== space.id)
+      if (prev.length >= 3) {
+        alert('Máximo de 3 espaços para comparar. Remova um antes de adicionar.')
+        return prev
+      }
+      return [...prev, space]
+    })
+  }, [])
+
+
+  useEffect(() => {
+    const handlePop = () => {
+      const path = window.location.pathname
+      const p = (URL_TO_PAGE[path] || 'home') as Page
+      setPage(p); window.scrollTo(0, 0)
+    }
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
+  }, [])
+  const handleClearCompare = useCallback(() => setCompareSpaces([]), [])
+  const handleRemoveFromCompare = useCallback((id: string) =>
+    setCompareSpaces(prev => prev.filter(s => s.id !== id)), [])
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div>Carregando...</div>
+      </div>
+    )
   }
 
-  const budgetUsedPct = event.budget_total ? Math.min(100, (totalContracted / Number(event.budget_total)) * 100) : 0
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0]
 
   return (
-    <div className="page-transition" style={{ maxWidth: 1000, margin: '0 auto', padding: '24px 20px' }}>
-      {/* Back + header */}
-      <button onClick={back} style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 16, padding: 0 }}>
-        ← Meus eventos
-      </button>
+    <div className="app">
+      <nav className="nav">
+        <button className="nav-hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
+          <span style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
+          <span style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
+          <span style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
+        </button>
+        <div className="nav-logo" onClick={() => goToPage('home')}>
+          <img src="/logo.png" alt="Ewind" className="logo-img" />
+        </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>{event.name}</h1>
-        <p style={{ fontSize: 14, color: '#6b7280' }}>
-          {event.type}{event.event_date && ` · ${fmtDate(event.event_date)}`}{event.guests_estimate && ` · ${event.guests_estimate} convidados`}
-        </p>
+        <div className="nav-center">
+          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
+          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
+          <a onClick={() => goToPage('listing')}>Espaços</a>
+          <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
+
+          {/* Nav items por role */}
+
+          <a onClick={() => goToPage('pricing')}>Planos</a>
+          <a onClick={() => goToPage('about')}>Quem somos</a>
+        </div>
+
+        <div className="nav-right">
+
+          {/* Badge comparação */}
+          {compareSpaces.length > 0 && (
+            <button
+              onClick={() => goToPage('comparison')}
+              style={{
+                padding: '8px 14px', fontSize: 13, fontWeight: 700,
+                background: '#f0fdf4', border: '1.5px solid #a3e635',
+                borderRadius: 8, cursor: 'pointer', color: '#1a2e05',
+                display: 'flex', alignItems: 'center', gap: 6
+              }}
+            >
+              📊 Comparar
+              <span className="badge-count" style={{ background: '#a3e635', color: '#1a2e05' }}>
+                {compareSpaces.length}
+              </span>
+            </button>
+          )}
+
+          {user ? (
+            <>
+              {/* Meus eventos — entrada principal (gestor de eventos) */}
+              <button className="btn-link" onClick={() => goToPage('events')} style={{ fontWeight: 600 }}>
+                🗓️ Meus eventos
+              </button>
+              {/* Meu painel — todos os perfis */}
+              {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+                <button className="btn-primary" onClick={() => goToPage('admin')}>⚙️ Admin</button>
+              )}
+              {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
+                <button className="btn-primary" onClick={() => {
+                  if (userRole === 'supplier' || isSupplier) goToPage('supplier-dashboard')
+                  else if (userRole === 'host' || isHost) goToPage('host-dashboard')
+                  else goToPage('guest-dashboard')
+                }}>
+                  {userRole === 'supplier' || isSupplier ? '🛠️' : userRole === 'host' || isHost ? '🏢' : '👤'} Meu painel{pendingQuotesCount > 0 && <span style={{marginLeft:6,background:'#dc2626',color:'#fff',borderRadius:'50%',padding:'0 6px',fontSize:11,fontWeight:800,lineHeight:'18px',display:'inline-block'}}>{pendingQuotesCount}</span>}
+                </button>
+              )}
+
+              <span className="user-greeting">Olá, {userName}</span>
+              <button className="btn-link" onClick={handleLogout}>Sair</button>
+            </>
+          ) : (
+            <>
+              <button className="btn-link" onClick={() => goToPage('login')}>Entrar</button>
+              <button className="btn-primary" onClick={() => goToPage('signup')}>Cadastrar</button>
+            </>
+          )}
+        </div>
+      </nav>
+
+      {/* MOBILE MENU */}
+      <div className={`nav-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
+        <a onClick={() => goToPage('home')}>🏠 Início</a>
+        <a onClick={() => goToPage('listing')}>🏢 Espaços</a>
+        <a onClick={() => goToPage('suppliers')}>🛠️ Fornecedores</a>
+        <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
+        <a onClick={() => goToPage('pricing')}>💎 Planos</a>
+        <a onClick={() => goToPage('about')}>👥 Quem somos</a>
+        {user && userRole !== 'guest' && (
+          <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
+            {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+          </a>
+        )}
+        <div className="mobile-auth">
+          {!user ? (
+            <>
+              <button className="btn-link" onClick={() => goToPage('login')}>Entrar</button>
+              <button className="btn-primary" onClick={() => goToPage('signup')}>Cadastrar</button>
+            </>
+          ) : (
+            <button className="btn-link" onClick={async () => { await supabase.auth.signOut(); setMobileMenuOpen(false) }}>
+              Sair da conta
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
-        <div className="stat-card" style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 16 }}>
-          <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>Total contratado</div>
-          <div style={{ fontSize: 20, fontWeight: 800 }}>{money(totalContracted)}</div>
-        </div>
-        <div className="stat-card" style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 16 }}>
-          <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>Já pago</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#16a34a' }}>{money(totalPaid)}</div>
-        </div>
-        <div className="stat-card" style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 16 }}>
-          <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>A pagar</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: totalPending > 0 ? '#d97706' : '#16a34a' }}>{money(totalPending)}</div>
-        </div>
-        {event.budget_total && (
-          <div className="stat-card" style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 16 }}>
-            <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>Orçamento ({budgetUsedPct.toFixed(0)}%)</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: budgetUsedPct > 100 ? '#dc2626' : '#2d2d2d' }}>{money(Number(event.budget_total))}</div>
+      <Suspense fallback={<PageLoader />}>
+        {/* Páginas públicas */}
+        {page === 'home' && <HomePage goToPage={goToPage} />}
+        {page === 'listing' && (
+          <ListingPage
+            goToPage={goToPage}
+            compareSpaces={compareSpaces}
+            onCompareToggle={handleCompareToggle}
+            onClearCompare={handleClearCompare}
+          />
+        )}
+        {page === 'detail' && selectedSpace && (
+          <DetailPage space={selectedSpace} goToPage={goToPage} user={user} />
+        )}
+        {page === 'suppliers' && <SuppliersPage goToPage={goToPage} user={user} />}
+        {page === 'supplier-detail' && selectedSupplier && (
+          <SupplierDetailPage supplier={selectedSupplier} goToPage={goToPage} user={user} />
+        )}
+        {page === 'how-it-works' && <HowItWorksPage goToPage={goToPage} />}
+        {page === 'about' && <AboutPage goToPage={goToPage} />}
+        {page === 'comparison' && (
+          <ComparisonPage
+            spaces={compareSpaces}
+            goToPage={goToPage}
+            onRemove={handleRemoveFromCompare}
+          />
+        )}
+
+        {/* Auth */}
+        {page === 'login' && <LoginPage goToPage={goToPage} />}
+        {page === 'signup' && <SignupPage goToPage={goToPage} />}
+
+        {/* Área do Host */}
+        {page === 'host-dashboard' && user && (
+          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
+        )}
+        {page === 'new-space' && user && userRole !== 'supplier' && (
+          <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
+        )}
+        {page === 'new-space' && user && userRole === 'supplier' && (
+          <div style={{ padding: '60px 24px', textAlign: 'center' }}>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🛠️</div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Seu perfil é de fornecedor</h2>
+            <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 24 }}>Para anunciar espaços, você precisa de um perfil de locatário.</p>
+            <button className="btn-primary" onClick={() => goToPage('supplier-dashboard')}>Voltar ao meu painel</button>
           </div>
         )}
-      </div>
-
-      {/* Alerts: overdue & upcoming */}
-      {overdue.length > 0 && (
-        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 16px', marginBottom: 12, fontSize: 13, color: '#991b1b' }}>
-          ⚠️ <strong>{overdue.length} pagamento(s) em atraso</strong> — totalizando {money(overdue.reduce((s, p) => s + Number(p.amount), 0))}
-        </div>
-      )}
-      {upcoming.length > 0 && (
-        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 12, padding: '12px 16px', marginBottom: 20, fontSize: 13, color: '#92400e' }}>
-          🔔 Próximo vencimento: <strong>{fmtDate(upcoming[0].due_date)}</strong> ({money(Number(upcoming[0].amount))})
-          {daysUntil(upcoming[0].due_date) <= 7 && <span> — em {daysUntil(upcoming[0].due_date)} dias</span>}
-        </div>
-      )}
-
-      {/* Contracts header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, marginTop: 8 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700 }}>Contratos e fornecedores</h2>
-        {!showContractForm && (
-          <button className="btn-primary" onClick={() => setShowContractForm(true)} style={{ padding: '9px 18px', fontSize: 13 }}>
-            + Adicionar contrato
-          </button>
+        {page === 'edit-space' && user && userRole !== 'supplier' && editingSpace && (
+          <SpaceFormPage user={user} goToPage={goToPage} editingSpace={editingSpace} />
         )}
-      </div>
+        {page === 'guest-dashboard' && user && (
+          <GuestDashboard user={user} goToPage={goToPage} />
+        )}
+        {page === 'events' && user && (
+          <EventsListPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
+        )}
+        {page === 'event-detail' && user && selectedEvent && (
+          <EventDetailPage user={user} event={selectedEvent} goToPage={goToPage} back={() => goToPage('events')} />
+        )}
+        {page === 'event-detail' && user && !selectedEvent && (
+          <EventsListPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
+        )}
+        {page === 'my-quotes' && user && (
+          <MyQuotesPage user={user} goToPage={goToPage} />
+        )}
+        {page === 'host-quotes' && user && (
+          <HostQuotesPage user={user} goToPage={goToPage} userRole={userRole} />
+        )}
 
-      {showContractForm && (
-        <ContractForm
-          user={user}
-          eventId={event.id}
-          categories={CONTRACT_CATEGORIES}
-          onSaved={() => { setShowContractForm(false); load() }}
-          onCancel={() => setShowContractForm(false)}
-        />
-      )}
-
-      {/* Contracts list */}
-      {loading ? (
-        <div className="skeleton" style={{ height: 80, borderRadius: 12 }} />
-      ) : contracts.length === 0 && !showContractForm ? (
-        <div style={{ textAlign: 'center', padding: '50px 24px', background: '#f9fafb', borderRadius: 14 }}>
-          <div style={{ fontSize: 40, marginBottom: 10 }}>📄</div>
-          <p style={{ fontSize: 14, color: '#6b7280' }}>Nenhum contrato ainda. Adicione seu primeiro fornecedor acima.</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {contracts.map(c => {
-            const paid = c.payments.filter(p => p.paid).reduce((s, p) => s + Number(p.amount), 0)
-            const hasRisk = c.penalty_clause || c.cancellation_policy || c.special_clauses
-            return (
-              <div key={c.id} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 12, overflow: 'hidden' }}>
-                <div onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
-                  style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', gap: 12, flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1, minWidth: 160 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
-                      {c.supplier_name}
-                      {c.category && <span style={{ fontSize: 11, fontWeight: 600, color: '#5aa800', background: '#f0fdf4', padding: '2px 8px', borderRadius: 100, marginLeft: 8 }}>{c.category}</span>}
-                      {hasRisk && <span title="Possui cláusulas de risco" style={{ marginLeft: 6 }}>⚠️</span>}
-                      {c.contract_file_url && <span title="Contrato anexado" style={{ marginLeft: 4 }}>📎</span>}
-                    </div>
-                    <div style={{ fontSize: 12, color: '#9ca3af' }}>
-                      {money(paid)} pago de {money(Number(c.total_value))}
-                      {c.payments.length > 0 && ` · ${c.payments.filter(p => p.paid).length}/${c.payments.length} parcelas`}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ fontSize: 15, fontWeight: 800 }}>{money(Number(c.total_value))}</div>
-                    <span style={{ fontSize: 14, color: '#9ca3af' }}>{expandedId === c.id ? '▲' : '▼'}</span>
-                  </div>
-                </div>
-
-                {expandedId === c.id && (
-                  <div style={{ borderTop: '1px solid #f3f4f6', padding: '16px 18px', background: '#fafafa' }}>
-                    {/* Contact */}
-                    {(c.contact_name || c.contact_phone || c.contact_email) && (
-                      <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 14 }}>
-                        📞 {[c.contact_name, c.contact_phone, c.contact_email].filter(Boolean).join(' · ')}
-                      </div>
-                    )}
-
-                    {/* Risk clauses */}
-                    {hasRisk && (
-                      <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: 14, marginBottom: 14 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#9a3412', marginBottom: 8 }}>⚠️ Cláusulas de atenção</div>
-                        {c.penalty_clause && <div style={{ fontSize: 13, color: '#7c2d12', marginBottom: 6 }}><strong>Multa:</strong> {c.penalty_clause}</div>}
-                        {c.cancellation_policy && <div style={{ fontSize: 13, color: '#7c2d12', marginBottom: 6 }}><strong>Cancelamento:</strong> {c.cancellation_policy}</div>}
-                        {c.special_clauses && <div style={{ fontSize: 13, color: '#7c2d12' }}><strong>Especiais:</strong> {c.special_clauses}</div>}
-                      </div>
-                    )}
-
-                    {/* Payments */}
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', marginBottom: 8 }}>PARCELAS</div>
-                    {c.payments.length === 0 ? (
-                      <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 12 }}>Nenhuma parcela cadastrada.</p>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-                        {c.payments.map(p => {
-                          const od = !p.paid && p.due_date < today
-                          return (
-                            <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#fff', borderRadius: 8, border: `1px solid ${od ? '#fecaca' : '#eee'}` }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <input type="checkbox" checked={p.paid} onChange={() => togglePaid(p)} style={{ width: 18, height: 18, cursor: 'pointer', accentColor: '#a3e635' }} />
-                                <div>
-                                  <div style={{ fontSize: 13, fontWeight: 600, textDecoration: p.paid ? 'line-through' : 'none', color: p.paid ? '#9ca3af' : '#2d2d2d' }}>
-                                    {p.label || 'Parcela'} · {money(Number(p.amount))}
-                                  </div>
-                                  <div style={{ fontSize: 11, color: od ? '#dc2626' : '#9ca3af' }}>
-                                    Vence {fmtDate(p.due_date)}{od && ' · EM ATRASO'}{p.paid && p.paid_date && ` · pago em ${fmtDate(p.paid_date)}`}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-
-                    <PaymentForm user={user} contractId={c.id} onSaved={load} />
-
-                    {c.contract_file_url && (
-                      <button onClick={() => openContractFile(c.contract_file_url!)} style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#5aa800', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>
-                        📎 Ver contrato anexado
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
+        {/* Área do Fornecedor */}
+        {page === 'reset-password' && <ResetPasswordPage goToPage={goToPage} />}
+        {page === 'terms' && <TermsPage goToPage={goToPage} />}
+        {page === 'pricing' && <PricingPage goToPage={goToPage} />}
+        {page === 'admin' && user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <AdminPage goToPage={goToPage} />}
+        {page === 'admin' && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && <div style={{padding:40,textAlign:'center'}}><h2>Acesso negado</h2></div>}
+        {page === 'supplier-dashboard' && user && (
+          <SupplierDashboard user={user} goToPage={goToPage} />
+        )}
+        {page === 'new-supplier' && user && (
+          <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={null} />
+        )}
+        {page === 'edit-supplier' && user && editingSupplier && (
+          <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={editingSupplier} />
+        )}
+      </Suspense>
+      <CookieBanner user={user} onAccept={setCookieCategories} goToPage={goToPage} />
     </div>
   )
 }
 
-// ── Inline contract form ──────────────────────────────────────────
-function ContractForm({ user, eventId, categories, onSaved, onCancel }: {
-  user: User; eventId: string; categories: string[]; onSaved: () => void; onCancel: () => void
-}) {
-  const [supplierName, setSupplierName] = useState('')
-  const [category, setCategory] = useState('')
-  const [totalValue, setTotalValue] = useState('')
-  const [contactPhone, setContactPhone] = useState('')
-  const [serviceDate, setServiceDate] = useState('')
-  const [penalty, setPenalty] = useState('')
-  const [cancellation, setCancellation] = useState('')
-  const [special, setSpecial] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-  const [saving, setSaving] = useState(false)
-
-  const save = async () => {
-    if (!supplierName.trim()) return
-    setSaving(true)
-    let fileUrl: string | null = null
-    if (file) {
-      const path = `${user.id}/${eventId}/${Date.now()}-${file.name}`
-      const { error: upErr } = await supabase.storage.from('event-contracts').upload(path, file)
-      // Bucket é privado: guardamos o caminho do arquivo, não uma URL pública.
-      // A URL assinada (temporária) é gerada na hora de abrir o contrato.
-      if (!upErr) fileUrl = path
-    }
-    await supabase.from('event_contracts').insert({
-      event_id: eventId,
-      owner_id: user.id,
-      supplier_name: supplierName.trim(),
-      category: category || null,
-      total_value: totalValue ? parseFloat(totalValue) : 0,
-      contact_phone: contactPhone || null,
-      service_date: serviceDate || null,
-      penalty_clause: penalty || null,
-      cancellation_policy: cancellation || null,
-      special_clauses: special || null,
-      contract_file_url: fileUrl,
-    })
-    setSaving(false)
-    onSaved()
-  }
-
-  return (
-    <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 20, marginBottom: 16 }}>
-      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Novo contrato</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-        <div className="fg"><label>Fornecedor *</label><input value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Ex: Buffet Sabor & Arte" autoFocus /></div>
-        <div className="fg"><label>Categoria</label><select value={category} onChange={e => setCategory(e.target.value)}><option value="">Selecione...</option>{categories.map(c => <option key={c}>{c}</option>)}</select></div>
-        <div className="fg"><label>Valor total (R$)</label><input type="number" value={totalValue} onChange={e => setTotalValue(e.target.value)} placeholder="Ex: 12000" /></div>
-        <div className="fg"><label>Telefone/contato</label><input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
-        <div className="fg"><label>Data do serviço</label><input type="date" value={serviceDate} onChange={e => setServiceDate(e.target.value)} /></div>
-      </div>
-      <details style={{ marginTop: 14 }}>
-        <summary style={{ fontSize: 13, fontWeight: 600, color: '#92400e', cursor: 'pointer' }}>⚠️ Cláusulas de risco (multa, cancelamento, especiais)</summary>
-        <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
-          <div className="fg"><label>Multa por rescisão</label><input value={penalty} onChange={e => setPenalty(e.target.value)} placeholder="Ex: 30% do valor se cancelar com menos de 60 dias" /></div>
-          <div className="fg"><label>Política de cancelamento</label><input value={cancellation} onChange={e => setCancellation(e.target.value)} placeholder="Ex: reembolso de 50% até 90 dias antes" /></div>
-          <div className="fg"><label>Cláusulas especiais</label><input value={special} onChange={e => setSpecial(e.target.value)} placeholder="Ex: horário extra cobrado à parte" /></div>
-        </div>
-      </details>
-      <div className="fg" style={{ marginTop: 14 }}>
-        <label>Anexar contrato (PDF)</label>
-        <input type="file" accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] || null)} />
-      </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-        <button className="btn-primary" onClick={save} disabled={!supplierName.trim() || saving} style={{ padding: '9px 20px', fontSize: 13 }}>
-          {saving ? 'Salvando...' : 'Salvar contrato'}
-        </button>
-        <button onClick={onCancel} style={{ padding: '9px 16px', fontSize: 13, background: '#f3f4f6', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>Cancelar</button>
-      </div>
-    </div>
-  )
-}
-
-// ── Inline payment form ───────────────────────────────────────────
-function PaymentForm({ user, contractId, onSaved }: { user: User; contractId: string; onSaved: () => void }) {
-  const [show, setShow] = useState(false)
-  const [label, setLabel] = useState('')
-  const [amount, setAmount] = useState('')
-  const [dueDate, setDueDate] = useState('')
-  const [saving, setSaving] = useState(false)
-
-  const save = async () => {
-    if (!amount || !dueDate) return
-    setSaving(true)
-    await supabase.from('contract_payments').insert({
-      contract_id: contractId,
-      owner_id: user.id,
-      label: label || null,
-      amount: parseFloat(amount),
-      due_date: dueDate,
-    })
-    setSaving(false)
-    setLabel(''); setAmount(''); setDueDate(''); setShow(false)
-    onSaved()
-  }
-
-  if (!show) return (
-    <button onClick={() => setShow(true)} style={{ fontSize: 12, color: '#5aa800', background: 'none', border: '1px dashed #a3e635', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-      + Adicionar parcela
-    </button>
-  )
-
-  return (
-    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', background: '#fff', padding: 12, borderRadius: 8, border: '1px solid #eee' }}>
-      <div className="fg" style={{ flex: 1, minWidth: 100, margin: 0 }}><label style={{ fontSize: 11 }}>Descrição</label><input value={label} onChange={e => setLabel(e.target.value)} placeholder="Entrada" style={{ fontSize: 13 }} /></div>
-      <div className="fg" style={{ width: 110, margin: 0 }}><label style={{ fontSize: 11 }}>Valor</label><input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="R$" style={{ fontSize: 13 }} /></div>
-      <div className="fg" style={{ width: 150, margin: 0 }}><label style={{ fontSize: 11 }}>Vencimento</label><input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ fontSize: 13 }} /></div>
-      <button className="btn-primary" onClick={save} disabled={!amount || !dueDate || saving} style={{ padding: '8px 14px', fontSize: 12 }}>{saving ? '...' : 'OK'}</button>
-      <button onClick={() => setShow(false)} style={{ padding: '8px 10px', fontSize: 12, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
-    </div>
-  )
-}
+export default App
