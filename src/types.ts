@@ -208,5 +208,11 @@ export interface EventGuest {
   owner_id: string
   name: string
   status: 'confirmed' | 'declined' | 'pending'
+  category: 'adult' | 'child' | 'baby'
+  billing: 'full' | 'half' | 'exempt'
+  phone: string | null
+  email: string | null
+  companions: string | null
+  guest_group: string | null
   created_at: string
 }
