@@ -359,7 +359,8 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }
       }
       setAiConfidence(fields.confidence || null)
       setAiStatus('done')
-    } catch {
+    } catch (err: any) {
+      setAiErrorDetail(err?.message ? `leitura do PDF: ${err.message}` : 'erro ao ler o PDF')
       setAiStatus('error')
     }
   }
