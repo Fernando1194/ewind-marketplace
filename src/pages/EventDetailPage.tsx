@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventContract, ContractPayment, Page } from '../types'
+import EventTimeline from '../components/EventTimeline'
 
 interface Props {
   user: User
@@ -141,6 +142,9 @@ export default function EventDetailPage({ user, event, back }: Props) {
           {daysUntil(upcoming[0].due_date) <= 7 && <span> — em {daysUntil(upcoming[0].due_date)} dias</span>}
         </div>
       )}
+
+      {/* Linha do tempo */}
+      <EventTimeline event={event} contracts={contracts} />
 
       {/* Contracts header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, marginTop: 8 }}>
