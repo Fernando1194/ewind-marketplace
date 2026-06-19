@@ -97,6 +97,51 @@ export default function EventGuestsTab({ user, event }: Props) {
     load()
   }
 
+  // Gera e baixa um template .xlsx padronizado
+  const downloadTemplate = async () => {
+    const XLSX = await import('xlsx')
+
+    // Linhas de exemplo + cabeçalho
+    const headers = ['Nome', 'Status', 'Categoria', 'Cobrança', 'Telefone', 'Email']
+    const examples = [
+      ['Maria Silva', 'confirmado', 'adulto', 'inteira', '(41) 99999-0001', 'maria@email.com'],
+      ['João Pedro', 'pendente', 'criança', 'meia', '(41) 99999-0002', 'joao@email.com'],
+      ['Bebê Ana', 'confirmado', 'bebê', 'isento', '', ''],
+      ['Carlos Souza', 'recusado', 'adulto', 'inteira', '', ''],
+    ]
+
+    // Aba 1: lista
+    const wsData = [headers, ...examples]
+    const ws = XLSX.utils.aoa_to_sheet(wsData)
+    ws['!cols'] = [{ wch: 26 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 20 }, { wch: 28 }]
+
+    // Aba 2: instruções/legenda
+    const guide = [
+      ['COMO PREENCHER A LISTA DE CONVIDADOS — EWIND'],
+      [''],
+      ['Preencha a aba "Convidados". Apenas a coluna NOME é obrigatória.'],
+      ['As demais colunas são opcionais — se deixar em branco, usamos um padrão inteligente.'],
+      [''],
+      ['COLUNA', 'VALORES ACEITOS', 'OBSERVAÇÃO'],
+      ['Nome', 'texto livre', 'Obrigatório'],
+      ['Status', 'confirmado / pendente / recusado', 'Em branco = pendente. Aceita também: sim, não'],
+      ['Categoria', 'adulto / criança / bebê', 'Em branco = adulto'],
+      ['Cobrança', 'inteira / meia / isento', 'Em branco: bebê vira isento, criança vira meia, adulto inteira'],
+      ['Telefone', 'texto livre', 'Opcional'],
+      ['Email', 'texto livre', 'Opcional'],
+      [''],
+      ['DICA: não renomeie nem reordene as colunas da aba "Convidados".'],
+      ['O cálculo de custo soma inteiras (100%) + meias (50%) e ignora isentos — só dos confirmados.'],
+    ]
+    const wsGuide = XLSX.utils.aoa_to_sheet(guide)
+    wsGuide['!cols'] = [{ wch: 16 }, { wch: 38 }, { wch: 50 }]
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Convidados')
+    XLSX.utils.book_append_sheet(wb, wsGuide, 'Instruções')
+    XLSX.writeFile(wb, 'modelo-lista-convidados-ewind.xlsx')
+  }
+
   // Importação de Excel com mapeamento de categoria/cobrança
   const handleImport = async (file: File | null) => {
     if (!file) return
@@ -216,6 +261,9 @@ export default function EventGuestsTab({ user, event }: Props) {
 
       {/* Importar + adicionar */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <button onClick={downloadTemplate} style={{ fontSize: 13, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          ⬇️ Baixar modelo
+        </button>
         <label style={{ fontSize: 13, fontWeight: 600, color: '#2d2d2d', background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
           📄 Importar Excel
           <input type="file" accept=".xlsx,.xls" onChange={e => handleImport(e.target.files?.[0] || null)} style={{ display: 'none' }} disabled={importing} />
