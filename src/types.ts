@@ -216,3 +216,19 @@ export interface EventGuest {
   guest_group: string | null
   created_at: string
 }
+
+export interface EventTask {
+  id: string
+  event_id: string
+  owner_id: string
+  title: string
+  category: string | null
+  assignee: string | null
+  notes: string | null
+  due_offset_days: number | null
+  due_date: string | null
+  done: boolean
+  done_at: string | null
+  sort_order: number
+  created_at: string
+}
