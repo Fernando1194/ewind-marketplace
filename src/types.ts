@@ -160,6 +160,7 @@ export interface EventItem {
   event_date: string | null
   guests_estimate: number | null
   budget_total: number | null
+  cost_per_guest: number | null
   notes: string | null
   status: 'planning' | 'confirmed' | 'done' | 'cancelled'
   created_at: string
@@ -198,5 +199,14 @@ export interface ContractPayment {
   paid: boolean
   paid_date: string | null
   payment_method: string | null
+  created_at: string
+}
+
+export interface EventGuest {
+  id: string
+  event_id: string
+  owner_id: string
+  name: string
+  status: 'confirmed' | 'declined' | 'pending'
   created_at: string
 }

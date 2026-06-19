@@ -3,6 +3,7 @@ import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventContract, ContractPayment, Page } from '../types'
 import EventTimeline from '../components/EventTimeline'
+import EventGuestsTab from '../components/EventGuestsTab'
 
 interface Props {
   user: User
@@ -22,6 +23,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
   const [loading, setLoading] = useState(true)
   const [showContractForm, setShowContractForm] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'guests'>('overview')
   const [editingContract, setEditingContract] = useState<EventContract | null>(null)
   const [editingPayment, setEditingPayment] = useState<ContractPayment | null>(null)
 
@@ -108,6 +110,23 @@ export default function EventDetailPage({ user, event, back }: Props) {
         </p>
       </div>
 
+      {/* Barra de abas */}
+      <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid #f0f0f0', marginBottom: 22 }}>
+        {([
+          { key: 'overview', label: '📊 Visão geral' },
+          { key: 'timeline', label: '🗺️ Linha do tempo' },
+          { key: 'guests',   label: '👥 Convidados' },
+        ] as const).map(tab => (
+          <button key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{ padding: '10px 18px', fontSize: 14, fontWeight: activeTab === tab.key ? 700 : 500, border: 'none', borderBottom: activeTab === tab.key ? '2.5px solid #a3e635' : '2.5px solid transparent', background: 'none', color: activeTab === tab.key ? '#2d2d2d' : '#9ca3af', cursor: 'pointer', fontFamily: 'inherit', marginBottom: -2, transition: 'all .15s' }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ══ ABA: VISÃO GERAL ══ */}
+      {activeTab === 'overview' && (<>
       {/* Summary cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
         <div className="stat-card" style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 16 }}>
@@ -142,9 +161,6 @@ export default function EventDetailPage({ user, event, back }: Props) {
           {daysUntil(upcoming[0].due_date) <= 7 && <span> — em {daysUntil(upcoming[0].due_date)} dias</span>}
         </div>
       )}
-
-      {/* Linha do tempo */}
-      <EventTimeline event={event} contracts={contracts} />
 
       {/* Contracts header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, marginTop: 8 }}>
@@ -288,6 +304,17 @@ export default function EventDetailPage({ user, event, back }: Props) {
             )
           })}
         </div>
+      )}
+      </>)}
+
+      {/* ══ ABA: LINHA DO TEMPO ══ */}
+      {activeTab === 'timeline' && (
+        <EventTimeline event={event} contracts={contracts} />
+      )}
+
+      {/* ══ ABA: CONVIDADOS ══ */}
+      {activeTab === 'guests' && (
+        <EventGuestsTab user={user} event={event} />
       )}
     </div>
   )
