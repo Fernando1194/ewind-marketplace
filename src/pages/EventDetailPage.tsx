@@ -21,6 +21,8 @@ export default function EventDetailPage({ user, event, back }: Props) {
   const [loading, setLoading] = useState(true)
   const [showContractForm, setShowContractForm] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [editingContract, setEditingContract] = useState<EventContract | null>(null)
+  const [editingPayment, setEditingPayment] = useState<ContractPayment | null>(null)
 
   useEffect(() => { load() }, [])
 
@@ -63,6 +65,19 @@ export default function EventDetailPage({ user, event, back }: Props) {
       paid: !p.paid,
       paid_date: !p.paid ? today : null,
     }).eq('id', p.id)
+    load()
+  }
+
+  const deleteContract = async (id: string) => {
+    if (!confirm('Excluir este contrato e todas as suas parcelas? Esta ação não pode ser desfeita.')) return
+    await supabase.from('event_contracts').delete().eq('id', id)
+    setExpandedId(null)
+    load()
+  }
+
+  const deletePayment = async (id: string) => {
+    if (!confirm('Excluir esta parcela?')) return
+    await supabase.from('contract_payments').delete().eq('id', id)
     load()
   }
 
@@ -182,8 +197,26 @@ export default function EventDetailPage({ user, event, back }: Props) {
                   </div>
                 </div>
 
-                {expandedId === c.id && (
+                {expandedId === c.id && editingContract?.id === c.id && (
                   <div style={{ borderTop: '1px solid #f3f4f6', padding: '16px 18px', background: '#fafafa' }}>
+                    <ContractForm
+                      user={user}
+                      eventId={event.id}
+                      categories={CONTRACT_CATEGORIES}
+                      existing={editingContract}
+                      onSaved={() => { setEditingContract(null); load() }}
+                      onCancel={() => setEditingContract(null)}
+                    />
+                  </div>
+                )}
+
+                {expandedId === c.id && editingContract?.id !== c.id && (
+                  <div style={{ borderTop: '1px solid #f3f4f6', padding: '16px 18px', background: '#fafafa' }}>
+                    {/* Edit / delete actions */}
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 14, justifyContent: 'flex-end' }}>
+                      <button onClick={() => setEditingContract(c)} style={{ fontSize: 12, fontWeight: 600, color: '#2d2d2d', background: '#fff', border: '1px solid #e8e8e8', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>✏️ Editar contrato</button>
+                      <button onClick={() => deleteContract(c.id)} style={{ fontSize: 12, fontWeight: 600, color: '#991b1b', background: '#fff', border: '1px solid #fecaca', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>🗑️ Excluir</button>
+                    </div>
                     {/* Contact */}
                     {(c.contact_name || c.contact_phone || c.contact_email) && (
                       <div style={{ fontSize: 13, color: '#4b5563', marginBottom: 14 }}>
@@ -222,12 +255,22 @@ export default function EventDetailPage({ user, event, back }: Props) {
                                   </div>
                                 </div>
                               </div>
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                <button onClick={() => setEditingPayment(p)} title="Editar parcela" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, padding: 4, opacity: 0.6 }}>✏️</button>
+                                <button onClick={() => deletePayment(p.id)} title="Excluir parcela" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, padding: 4, opacity: 0.6 }}>🗑️</button>
+                              </div>
                             </div>
                           )
                         })}
                       </div>
                     )}
 
+                    {editingPayment && editingPayment.contract_id === c.id && (
+                      <div style={{ marginBottom: 10 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>EDITANDO PARCELA</div>
+                        <PaymentForm user={user} contractId={c.id} existing={editingPayment} onSaved={() => { setEditingPayment(null); load() }} onCancel={() => setEditingPayment(null)} />
+                      </div>
+                    )}
                     <PaymentForm user={user} contractId={c.id} onSaved={load} />
 
                     {c.contract_file_url && (
@@ -247,34 +290,89 @@ export default function EventDetailPage({ user, event, back }: Props) {
 }
 
 // ── Inline contract form ──────────────────────────────────────────
-function ContractForm({ user, eventId, categories, onSaved, onCancel }: {
-  user: User; eventId: string; categories: string[]; onSaved: () => void; onCancel: () => void
+function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }: {
+  user: User; eventId: string; categories: string[]
+  existing?: EventContract | null
+  onSaved: () => void; onCancel: () => void
 }) {
-  const [supplierName, setSupplierName] = useState('')
-  const [category, setCategory] = useState('')
-  const [totalValue, setTotalValue] = useState('')
-  const [contactPhone, setContactPhone] = useState('')
-  const [serviceDate, setServiceDate] = useState('')
-  const [penalty, setPenalty] = useState('')
-  const [cancellation, setCancellation] = useState('')
-  const [special, setSpecial] = useState('')
+  const isEdit = !!existing
+  const [supplierName, setSupplierName] = useState(existing?.supplier_name || '')
+  const [category, setCategory] = useState(existing?.category || '')
+  const [totalValue, setTotalValue] = useState(existing?.total_value ? String(existing.total_value) : '')
+  const [contactPhone, setContactPhone] = useState(existing?.contact_phone || '')
+  const [serviceDate, setServiceDate] = useState(existing?.service_date || '')
+  const [penalty, setPenalty] = useState(existing?.penalty_clause || '')
+  const [cancellation, setCancellation] = useState(existing?.cancellation_policy || '')
+  const [special, setSpecial] = useState(existing?.special_clauses || '')
   const [file, setFile] = useState<File | null>(null)
   const [saving, setSaving] = useState(false)
+  const [showClauses, setShowClauses] = useState(!!(existing?.penalty_clause || existing?.cancellation_policy || existing?.special_clauses))
+
+  // ── IA extraction state ──
+  const [aiStatus, setAiStatus] = useState<'idle' | 'reading' | 'analyzing' | 'done' | 'scanned' | 'error'>('idle')
+  const [aiReviewed, setAiReviewed] = useState(false)   // usuário precisa confirmar revisão
+  const [aiConfidence, setAiConfidence] = useState<string | null>(null)
+
+  const handleFile = async (f: File | null) => {
+    setFile(f)
+    setAiStatus('idle'); setAiReviewed(false); setAiConfidence(null)
+    if (!f) return
+
+    // Só tenta extrair de PDF
+    const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
+    if (!isPdf) return  // imagens: sem extração automática (precisaria OCR)
+
+    try {
+      setAiStatus('reading')
+      const { extractPdfText } = await import('../lib/pdfText')
+      const { text, scanned } = await extractPdfText(f)
+
+      if (scanned) { setAiStatus('scanned'); return }
+
+      setAiStatus('analyzing')
+      const resp = await fetch('/api/extract-contract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contractText: text }),
+      })
+      if (!resp.ok) { setAiStatus('error'); return }
+      const { fields } = await resp.json()
+      if (!fields) { setAiStatus('error'); return }
+
+      // Preenche apenas campos vazios OU sempre? Preenchemos sempre que a IA achou algo,
+      // mas o usuário revisa tudo antes de salvar.
+      if (fields.supplier_name) setSupplierName(fields.supplier_name)
+      if (fields.category && categories.includes(fields.category)) setCategory(fields.category)
+      if (fields.total_value != null) setTotalValue(String(fields.total_value))
+      if (fields.service_date) setServiceDate(fields.service_date)
+      if (fields.contact_phone) setContactPhone(fields.contact_phone)
+      if (fields.penalty_clause || fields.cancellation_policy || fields.special_clauses) {
+        setShowClauses(true)
+        if (fields.penalty_clause) setPenalty(fields.penalty_clause)
+        if (fields.cancellation_policy) setCancellation(fields.cancellation_policy)
+        if (fields.special_clauses) setSpecial(fields.special_clauses)
+      }
+      setAiConfidence(fields.confidence || null)
+      setAiStatus('done')
+    } catch {
+      setAiStatus('error')
+    }
+  }
 
   const save = async () => {
     if (!supplierName.trim()) return
+    // Se a IA preencheu e o usuário ainda não confirmou a revisão, bloqueia
+    if (aiStatus === 'done' && !aiReviewed) return
     setSaving(true)
-    let fileUrl: string | null = null
+
+    let fileUrl: string | null = existing?.contract_file_url || null
     if (file) {
       const path = `${user.id}/${eventId}/${Date.now()}-${file.name}`
       const { error: upErr } = await supabase.storage.from('event-contracts').upload(path, file)
-      // Bucket é privado: guardamos o caminho do arquivo, não uma URL pública.
-      // A URL assinada (temporária) é gerada na hora de abrir o contrato.
       if (!upErr) fileUrl = path
     }
-    await supabase.from('event_contracts').insert({
-      event_id: eventId,
-      owner_id: user.id,
+
+    const payload = {
       supplier_name: supplierName.trim(),
       category: category || null,
       total_value: totalValue ? parseFloat(totalValue) : 0,
@@ -284,79 +382,146 @@ function ContractForm({ user, eventId, categories, onSaved, onCancel }: {
       cancellation_policy: cancellation || null,
       special_clauses: special || null,
       contract_file_url: fileUrl,
-    })
+    }
+
+    if (isEdit) {
+      await supabase.from('event_contracts').update(payload).eq('id', existing!.id)
+    } else {
+      await supabase.from('event_contracts').insert({ event_id: eventId, owner_id: user.id, ...payload })
+    }
     setSaving(false)
     onSaved()
   }
 
+  const saveBlocked = aiStatus === 'done' && !aiReviewed
+
   return (
     <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 20, marginBottom: 16 }}>
-      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Novo contrato</h3>
+      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>{isEdit ? 'Editar contrato' : 'Novo contrato'}</h3>
+
+      {/* Upload + IA primeiro, para já preencher os campos */}
+      {!isEdit && (
+        <div className="fg" style={{ marginBottom: 14, background: '#f0fdf4', border: '1px dashed #a3e635', borderRadius: 10, padding: 14 }}>
+          <label style={{ fontWeight: 700, color: '#3f6212' }}>🤖 Anexar contrato (PDF) — preenchimento automático</label>
+          <p style={{ fontSize: 12, color: '#4d7c0f', margin: '4px 0 8px' }}>
+            Suba o PDF e a IA tenta preencher os campos abaixo. Você revisa e confirma antes de salvar.
+          </p>
+          <input type="file" accept=".pdf,image/*" onChange={e => handleFile(e.target.files?.[0] || null)} />
+
+          {aiStatus === 'reading' && <p style={{ fontSize: 12, color: '#6b7280', marginTop: 8 }}>📖 Lendo o PDF...</p>}
+          {aiStatus === 'analyzing' && <p style={{ fontSize: 12, color: '#6b7280', marginTop: 8 }}>🤖 Analisando cláusulas...</p>}
+          {aiStatus === 'scanned' && (
+            <p style={{ fontSize: 12, color: '#92400e', marginTop: 8, background: '#fffbeb', padding: '8px 10px', borderRadius: 6 }}>
+              ⚠️ Este PDF parece ser escaneado (imagem), sem texto que a IA consiga ler. O arquivo será anexado, mas preencha os campos manualmente.
+            </p>
+          )}
+          {aiStatus === 'error' && (
+            <p style={{ fontSize: 12, color: '#991b1b', marginTop: 8, background: '#fef2f2', padding: '8px 10px', borderRadius: 6 }}>
+              Não consegui extrair os dados automaticamente. O arquivo será anexado — preencha os campos manualmente.
+            </p>
+          )}
+          {aiStatus === 'done' && (
+            <div style={{ fontSize: 12, marginTop: 8, background: '#ecfccb', padding: '10px 12px', borderRadius: 8, color: '#3f6212' }}>
+              ✅ Campos preenchidos pela IA{aiConfidence ? ` (confiança: ${aiConfidence})` : ''}. <strong>Revise tudo com atenção</strong> — a IA pode errar valores e datas.
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, cursor: 'pointer', fontWeight: 600 }}>
+                <input type="checkbox" checked={aiReviewed} onChange={e => setAiReviewed(e.target.checked)} style={{ width: 16, height: 16, accentColor: '#a3e635' }} />
+                Revisei os campos e confirmo que estão corretos
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
-        <div className="fg"><label>Fornecedor *</label><input value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Ex: Buffet Sabor & Arte" autoFocus /></div>
+        <div className="fg"><label>Fornecedor *</label><input value={supplierName} onChange={e => setSupplierName(e.target.value)} placeholder="Ex: Buffet Sabor & Arte" /></div>
         <div className="fg"><label>Categoria</label><select value={category} onChange={e => setCategory(e.target.value)}><option value="">Selecione...</option>{categories.map(c => <option key={c}>{c}</option>)}</select></div>
         <div className="fg"><label>Valor total (R$)</label><input type="number" value={totalValue} onChange={e => setTotalValue(e.target.value)} placeholder="Ex: 12000" /></div>
         <div className="fg"><label>Telefone/contato</label><input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="(41) 99999-9999" /></div>
         <div className="fg"><label>Data do serviço</label><input type="date" value={serviceDate} onChange={e => setServiceDate(e.target.value)} /></div>
       </div>
-      <details style={{ marginTop: 14 }}>
-        <summary style={{ fontSize: 13, fontWeight: 600, color: '#92400e', cursor: 'pointer' }}>⚠️ Cláusulas de risco (multa, cancelamento, especiais)</summary>
-        <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
-          <div className="fg"><label>Multa por rescisão</label><input value={penalty} onChange={e => setPenalty(e.target.value)} placeholder="Ex: 30% do valor se cancelar com menos de 60 dias" /></div>
-          <div className="fg"><label>Política de cancelamento</label><input value={cancellation} onChange={e => setCancellation(e.target.value)} placeholder="Ex: reembolso de 50% até 90 dias antes" /></div>
-          <div className="fg"><label>Cláusulas especiais</label><input value={special} onChange={e => setSpecial(e.target.value)} placeholder="Ex: horário extra cobrado à parte" /></div>
-        </div>
-      </details>
-      <div className="fg" style={{ marginTop: 14 }}>
-        <label>Anexar contrato (PDF)</label>
-        <input type="file" accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] || null)} />
+
+      <div style={{ marginTop: 14 }}>
+        <button type="button" onClick={() => setShowClauses(s => !s)} style={{ fontSize: 13, fontWeight: 600, color: '#92400e', cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit', padding: 0 }}>
+          ⚠️ Cláusulas de risco (multa, cancelamento, especiais) {showClauses ? '▲' : '▼'}
+        </button>
+        {showClauses && (
+          <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+            <div className="fg"><label>Multa por rescisão</label><input value={penalty} onChange={e => setPenalty(e.target.value)} placeholder="Ex: 30% do valor se cancelar com menos de 60 dias" /></div>
+            <div className="fg"><label>Política de cancelamento</label><input value={cancellation} onChange={e => setCancellation(e.target.value)} placeholder="Ex: reembolso de 50% até 90 dias antes" /></div>
+            <div className="fg"><label>Cláusulas especiais</label><input value={special} onChange={e => setSpecial(e.target.value)} placeholder="Ex: horário extra cobrado à parte" /></div>
+          </div>
+        )}
       </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-        <button className="btn-primary" onClick={save} disabled={!supplierName.trim() || saving} style={{ padding: '9px 20px', fontSize: 13 }}>
-          {saving ? 'Salvando...' : 'Salvar contrato'}
+
+      {/* Em modo edição, troca de anexo opcional */}
+      {isEdit && (
+        <div className="fg" style={{ marginTop: 14 }}>
+          <label>{existing?.contract_file_url ? 'Substituir contrato anexado (PDF)' : 'Anexar contrato (PDF)'}</label>
+          <input type="file" accept=".pdf,image/*" onChange={e => setFile(e.target.files?.[0] || null)} />
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center' }}>
+        <button className="btn-primary" onClick={save} disabled={!supplierName.trim() || saving || saveBlocked} style={{ padding: '9px 20px', fontSize: 13 }}>
+          {saving ? 'Salvando...' : isEdit ? 'Salvar alterações' : 'Salvar contrato'}
         </button>
         <button onClick={onCancel} style={{ padding: '9px 16px', fontSize: 13, background: '#f3f4f6', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>Cancelar</button>
+        {saveBlocked && <span style={{ fontSize: 12, color: '#92400e' }}>Confirme a revisão dos campos acima para salvar</span>}
       </div>
     </div>
   )
 }
 
-// ── Inline payment form ───────────────────────────────────────────
-function PaymentForm({ user, contractId, onSaved }: { user: User; contractId: string; onSaved: () => void }) {
-  const [show, setShow] = useState(false)
-  const [label, setLabel] = useState('')
-  const [amount, setAmount] = useState('')
-  const [dueDate, setDueDate] = useState('')
+// ── Inline payment form (cria ou edita) ──────────────────────
+function PaymentForm({ user, contractId, existing, onSaved, onCancel }: {
+  user: User; contractId: string
+  existing?: ContractPayment | null
+  onSaved: () => void; onCancel?: () => void
+}) {
+  const isEdit = !!existing
+  const [show, setShow] = useState(isEdit)
+  const [label, setLabel] = useState(existing?.label || '')
+  const [amount, setAmount] = useState(existing?.amount ? String(existing.amount) : '')
+  const [dueDate, setDueDate] = useState(existing?.due_date || '')
   const [saving, setSaving] = useState(false)
 
   const save = async () => {
     if (!amount || !dueDate) return
     setSaving(true)
-    await supabase.from('contract_payments').insert({
-      contract_id: contractId,
-      owner_id: user.id,
-      label: label || null,
-      amount: parseFloat(amount),
-      due_date: dueDate,
-    })
+    if (isEdit) {
+      await supabase.from('contract_payments').update({
+        label: label || null,
+        amount: parseFloat(amount),
+        due_date: dueDate,
+      }).eq('id', existing!.id)
+    } else {
+      await supabase.from('contract_payments').insert({
+        contract_id: contractId,
+        owner_id: user.id,
+        label: label || null,
+        amount: parseFloat(amount),
+        due_date: dueDate,
+      })
+    }
     setSaving(false)
-    setLabel(''); setAmount(''); setDueDate(''); setShow(false)
+    setLabel(''); setAmount(''); setDueDate('')
+    if (!isEdit) setShow(false)
     onSaved()
   }
 
-  if (!show) return (
+  if (!show && !isEdit) return (
     <button onClick={() => setShow(true)} style={{ fontSize: 12, color: '#5aa800', background: 'none', border: '1px dashed #a3e635', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
       + Adicionar parcela
     </button>
   )
 
   return (
-    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', background: '#fff', padding: 12, borderRadius: 8, border: '1px solid #eee' }}>
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', background: '#fff', padding: 12, borderRadius: 8, border: '1px solid #eee', marginBottom: isEdit ? 8 : 0 }}>
       <div className="fg" style={{ flex: 1, minWidth: 100, margin: 0 }}><label style={{ fontSize: 11 }}>Descrição</label><input value={label} onChange={e => setLabel(e.target.value)} placeholder="Entrada" style={{ fontSize: 13 }} /></div>
       <div className="fg" style={{ width: 110, margin: 0 }}><label style={{ fontSize: 11 }}>Valor</label><input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="R$" style={{ fontSize: 13 }} /></div>
       <div className="fg" style={{ width: 150, margin: 0 }}><label style={{ fontSize: 11 }}>Vencimento</label><input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ fontSize: 13 }} /></div>
-      <button className="btn-primary" onClick={save} disabled={!amount || !dueDate || saving} style={{ padding: '8px 14px', fontSize: 12 }}>{saving ? '...' : 'OK'}</button>
-      <button onClick={() => setShow(false)} style={{ padding: '8px 10px', fontSize: 12, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
+      <button className="btn-primary" onClick={save} disabled={!amount || !dueDate || saving} style={{ padding: '8px 14px', fontSize: 12 }}>{saving ? '...' : isEdit ? 'Salvar' : 'OK'}</button>
+      <button onClick={() => { if (isEdit && onCancel) onCancel(); else setShow(false) }} style={{ padding: '8px 10px', fontSize: 12, background: '#f3f4f6', border: 'none', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
     </div>
   )
 }
