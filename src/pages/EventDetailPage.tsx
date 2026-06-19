@@ -312,6 +312,7 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }
   const [aiStatus, setAiStatus] = useState<'idle' | 'reading' | 'analyzing' | 'done' | 'scanned' | 'error'>('idle')
   const [aiReviewed, setAiReviewed] = useState(false)   // usuário precisa confirmar revisão
   const [aiConfidence, setAiConfidence] = useState<string | null>(null)
+  const [aiErrorDetail, setAiErrorDetail] = useState<string>('')
 
   const handleFile = async (f: File | null) => {
     setFile(f)
@@ -335,9 +336,13 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contractText: text }),
       })
-      if (!resp.ok) { setAiStatus('error'); return }
-      const { fields } = await resp.json()
-      if (!fields) { setAiStatus('error'); return }
+      const result = await resp.json().catch(() => ({}))
+      if (!resp.ok || !result.fields) {
+        setAiErrorDetail(result?.detail || result?.error || `HTTP ${resp.status}`)
+        setAiStatus('error')
+        return
+      }
+      const { fields } = result
 
       // Preenche apenas campos vazios OU sempre? Preenchemos sempre que a IA achou algo,
       // mas o usuário revisa tudo antes de salvar.
@@ -416,9 +421,10 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }
             </p>
           )}
           {aiStatus === 'error' && (
-            <p style={{ fontSize: 12, color: '#991b1b', marginTop: 8, background: '#fef2f2', padding: '8px 10px', borderRadius: 6 }}>
+            <div style={{ fontSize: 12, color: '#991b1b', marginTop: 8, background: '#fef2f2', padding: '8px 10px', borderRadius: 6 }}>
               Não consegui extrair os dados automaticamente. O arquivo será anexado — preencha os campos manualmente.
-            </p>
+              {aiErrorDetail && <div style={{ marginTop: 4, fontSize: 11, color: '#7f1d1d', fontFamily: 'monospace' }}>Detalhe: {aiErrorDetail}</div>}
+            </div>
           )}
           {aiStatus === 'done' && (
             <div style={{ fontSize: 12, marginTop: 8, background: '#ecfccb', padding: '10px 12px', borderRadius: 8, color: '#3f6212' }}>
