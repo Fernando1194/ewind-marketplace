@@ -142,13 +142,13 @@ export default function HowItWorksPage({ goToPage }: Props) {
       <section style={{ padding: '60px 24px', background: '#fafafa', borderTop: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <h2 style={{ fontSize: 28, fontWeight: 800, textAlign: 'center', marginBottom: 12 }}>Por que usar o Ewind?</h2>
-          <p style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 40 }}>Uma plataforma pensada para ser justa para todos os lados</p>
+          <p style={{ fontSize: 14, color: '#6b7280', textAlign: 'center', marginBottom: 40 }}>A ferramenta que organiza seu evento do início ao fim</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
             {[
-              { icon: '💸', title: 'Sem taxas escondidas', desc: 'Quem busca usa de graça. Quem anuncia não paga comissão. O que você negocia é o que você paga.' },
-              { icon: '⚡', title: 'Orçamentos em até 24h', desc: 'Anunciantes recebem notificação imediata e respondem com proposta personalizada rapidamente.' },
-              { icon: '🔒', title: 'Dados protegidos', desc: 'Suas informações são compartilhadas apenas com os anunciantes dos espaços que você selecionou.' },
-              { icon: '🎯', title: 'Comunicação direta', desc: 'Fale diretamente com o dono do espaço ou fornecedor. Sem call centers, sem robôs, sem intermediários.' },
+              { icon: '💸', title: 'Grátis para organizar', desc: 'Criar eventos, gerenciar contratos, pagamentos, convidados e checklist não custa nada — e continuará assim.' },
+              { icon: '🗂️', title: 'Tudo num lugar só', desc: 'Chega de planilhas espalhadas e mensagens perdidas. Contratos, prazos e convidados num painel único.' },
+              { icon: '🔒', title: 'Dados protegidos', desc: 'Seus eventos, contratos e convidados são privados e visíveis apenas para você. Não vendemos seus dados.' },
+              { icon: '⚠️', title: 'Nada passa batido', desc: 'Cláusulas de risco destacadas, vencimentos à vista e checklist com prazos calculados a partir da data do evento.' },
             ].map((item, i) => (
               <div key={i} style={{ background: '#fff', padding: 24, borderRadius: 14, border: '1px solid #e8e8e8' }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>{item.icon}</div>

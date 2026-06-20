@@ -193,7 +193,7 @@ export default function PricingPage({ goToPage }: Props) {
           <div style={{ fontSize: 30, marginBottom: 10 }}>🚀</div>
           <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Seja um <span style={{ color: '#a3e635' }}>Early Adopter</span></h2>
           <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.65, marginBottom: 22 }}>
-            90 dias grátis + <strong style={{ color: '#fff' }}>desconto exclusivo garantido</strong> para sempre enquanto mantiver a assinatura ativa.
+Cadastre seu espaço ou serviço agora, gerencie seus contratos na plataforma e garanta <strong style={{ color: '#fff' }}>condições exclusivas</strong> quando o marketplace for lançado.
           </p>
           {!submitted ? (
             <form onSubmit={handleNotify} style={{ display: 'flex', gap: 8, maxWidth: 400, margin: '0 auto' }}>

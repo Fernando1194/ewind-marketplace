@@ -91,7 +91,7 @@ export default function SignupPage({ goToPage }: Props) {
       <div className="auth-card" style={{ maxWidth: 500 }}>
         <img src="/logo.png" alt="Ewind" className="logo-img-md" onClick={() => goToPage('home')} style={{ cursor: 'pointer' }} />
         <h1 className="auth-title">Criar conta gratuita</h1>
-        <p className="auth-sub">Faça parte do marketplace de eventos do Brasil</p>
+        <p className="auth-sub">Organize seu evento ou cadastre-se como anunciante</p>
 
         <form onSubmit={handleSignUp}>
           <div className="fg">

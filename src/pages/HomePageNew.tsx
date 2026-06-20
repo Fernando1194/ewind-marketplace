@@ -90,7 +90,7 @@ export default function HomePage({ goToPage }: Props) {
 
         <div style={{ position: 'relative', zIndex: 3, padding: '60px 24px', width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            O marketplace de eventos do Brasil
+            Gestão de eventos · 100% grátis
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 820, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
             Organize seu evento do início ao fim,{' '}
@@ -133,14 +133,14 @@ className="hero-arrow hero-arrow-right"
         )}
       </section>
 
-      {/* PROPOSTA DE VALOR */}
-      <section style={{ background: '#f9fafb', padding: '32px 24px', borderBottom: '1px solid #e8e8e8' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
+      {/* PROPOSTA DE VALOR — 4 pilares */}
+      <section style={{ background: '#f9fafb', padding: '40px 24px', borderBottom: '1px solid #e8e8e8' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
           {[
-            { icon: '📄', title: 'Contratos organizados', desc: 'Todos os fornecedores, valores e cláusulas de risco num só lugar' },
-            { icon: '💰', title: 'Pagamentos e prazos', desc: 'Acompanhe parcelas, vencimentos e o que já foi pago' },
-            { icon: '👥', title: 'Lista de convidados', desc: 'Importe do Excel, controle confirmações e custos' },
-            { icon: '✅', title: 'Checklist com prazos', desc: 'Saiba o que fazer e quando, do save the date ao grande dia' },
+            { icon: '📄', title: 'Contratos organizados', desc: 'Fornecedores, valores e cláusulas de risco num só lugar — com o PDF anexado.' },
+            { icon: '💰', title: 'Pagamentos e prazos', desc: 'Acompanhe parcelas, vencimentos e quanto já foi pago, sem perder uma data.' },
+            { icon: '👥', title: 'Lista de convidados', desc: 'Importe do Excel, controle confirmações e estime o custo por convidado.' },
+            { icon: '✅', title: 'Checklist com prazos', desc: 'Saiba o que fazer e quando, do save the date ao grande dia.' },
           ].map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
@@ -153,96 +153,7 @@ className="hero-arrow hero-arrow-right"
         </div>
       </section>
 
-      {/* COMO FUNCIONA — GESTÃO (3 passos) */}
-      <section className="section">
-        <h2 className="sec-title">Tudo que você precisa para não perder o controle</h2>
-        <p style={{ textAlign: 'center', color: '#6b7280', fontSize: 15, maxWidth: 600, margin: '0 auto 36px', lineHeight: 1.6 }}>
-          Organizar um evento envolve dezenas de contratos, pagamentos e prazos. O Ewind reúne tudo em um painel simples — de graça.
-        </p>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
-          {[
-            { n: '1', icon: '🗓️', title: 'Crie seu evento', desc: 'Cadastre seu casamento, aniversário ou festa em segundos. Defina data, convidados e orçamento.' },
-            { n: '2', icon: '📋', title: 'Organize contratos e prazos', desc: 'Adicione fornecedores, anexe contratos, registre parcelas e cláusulas. Veja a linha do tempo de tudo.' },
-            { n: '3', icon: '🔔', title: 'Acompanhe sem estresse', desc: 'Saiba o que pagar, quando, e o que falta fazer. Lista de convidados e checklist inclusos.' },
-          ].map(s => (
-            <div key={s.n} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 16, padding: 24, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 32, fontWeight: 900, color: '#f0fdf4' }}>{s.n}</div>
-              <div style={{ fontSize: 34, marginBottom: 12 }}>{s.icon}</div>
-              <div style={{ fontSize: 17, fontWeight: 700, marginBottom: 8 }}>{s.title}</div>
-              <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>{s.desc}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 32 }}>
-          <button className="btn-primary" onClick={() => goToPage('events')} style={{ fontSize: 16, padding: '14px 36px', fontWeight: 700 }}>
-            Começar agora — é grátis
-          </button>
-        </div>
-      </section>
-
-      {/* MARKETPLACE — EM BREVE */}
-      <section style={{ background: 'linear-gradient(135deg, #1a2e05, #2d4a08)', padding: '40px 24px', margin: '0' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <span style={{ display: 'inline-block', background: '#a3e635', color: '#1a2e05', fontSize: 12, fontWeight: 800, padding: '4px 14px', borderRadius: 100, marginBottom: 16, letterSpacing: 0.5 }}>
-            EM BREVE
-          </span>
-          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 14, lineHeight: 1.2 }}>
-            Em breve: encontre espaços e fornecedores direto na plataforma
-          </h2>
-          <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.85)', maxWidth: 620, margin: '0 auto', lineHeight: 1.7 }}>
-            Estamos construindo um marketplace onde você vai comparar espaços, buffets, fotógrafos e mais — e solicitar orçamentos sem sair do Ewind. Por enquanto, foque em organizar seu evento; o resto vem aí.
-          </p>
-        </div>
-      </section>
-
-
-      {/* COMO FUNCIONA — GESTOR DE EVENTOS */}
-      <section className="section">
-        <h2 className="sec-title">Tudo que você precisa para não perder nada de vista</h2>
-        <p style={{ textAlign: 'center', fontSize: 15, color: '#6b7280', maxWidth: 640, margin: '-8px auto 36px', lineHeight: 1.6 }}>
-          Organizar um evento envolve dezenas de contratos, pagamentos e prazos. O Ewind reúne tudo em um painel simples — de graça, sem planilhas espalhadas.
-        </p>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
-          {[
-            { step: '1', icon: '🗓️', title: 'Crie seu evento', desc: 'Casamento, aniversário, formatura... defina data, orçamento e número de convidados.' },
-            { step: '2', icon: '📄', title: 'Cadastre contratos e pagamentos', desc: 'Anexe contratos, registre valores, parcelas, vencimentos e cláusulas de risco de cada fornecedor.' },
-            { step: '3', icon: '📊', title: 'Acompanhe tudo num lugar', desc: 'Linha do tempo, lista de convidados, checklist com prazos e o controle do que já foi pago.' },
-          ].map((s, i) => (
-            <div key={i} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 16, padding: 24, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 18, right: 20, fontSize: 36, fontWeight: 900, color: '#f0fdf4' }}>{s.step}</div>
-              <div style={{ fontSize: 32, marginBottom: 12 }}>{s.icon}</div>
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{s.title}</div>
-              <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>{s.desc}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 32 }}>
-          <button className="btn-primary" onClick={() => goToPage('events')} style={{ fontSize: 16, padding: '14px 36px', fontWeight: 700 }}>
-            Começar agora — é grátis
-          </button>
-        </div>
-      </section>
-
-      {/* MARKETPLACE — EM BREVE */}
-      <section className="section" style={{ background: '#f9fafb', borderTop: '1px solid #e8e8e8', borderBottom: '1px solid #e8e8e8' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <span style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#3f6212', background: '#ecfccb', padding: '4px 14px', borderRadius: 100, marginBottom: 16 }}>
-            🚧 EM CONSTRUÇÃO
-          </span>
-          <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 14, color: '#1a1a1a' }}>
-            Em breve: encontre espaços e fornecedores direto no Ewind
-          </h2>
-          <p style={{ fontSize: 15, color: '#6b7280', maxWidth: 620, margin: '0 auto 28px', lineHeight: 1.7 }}>
-            Estamos construindo um marketplace onde você vai descobrir chácaras, salões, buffets, fotógrafos e muito mais — e pedir orçamento sem sair da plataforma onde já organiza seu evento. Dê uma espiada no que está vindo.
-          </p>
-          <button onClick={() => goToPage('listing')} style={{ fontSize: 14, fontWeight: 600, color: '#3f6212', background: '#fff', border: '1.5px solid #a3e635', borderRadius: 10, padding: '12px 26px', cursor: 'pointer', fontFamily: 'inherit' }}>
-            Ver prévia do marketplace →
-          </button>
-        </div>
-      </section>
-
-
-      {/* FERRAMENTA DE GESTÃO — 3 passos */}
+      {/* COMO FUNCIONA — 3 passos (única seção) */}
       <section className="section">
         <h2 className="sec-title">Como o Ewind organiza seu evento</h2>
         <p style={{ textAlign: 'center', fontSize: 15, color: '#6b7280', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.6 }}>
@@ -252,7 +163,7 @@ className="hero-arrow hero-arrow-right"
           {[
             { n: '1', icon: '🗓️', title: 'Crie seu evento', desc: 'Casamento, aniversário, formatura ou corporativo. Defina a data, o orçamento e comece.' },
             { n: '2', icon: '📄', title: 'Centralize contratos e pagamentos', desc: 'Cadastre cada fornecedor, anexe o contrato, registre parcelas e veja o que já foi pago.' },
-            { n: '3', icon: '✅', title: 'Acompanhe prazos e convidados', desc: 'Linha do tempo, checklist com lembretes e lista de convidados — tudo num painel só.' },
+            { n: '3', icon: '✅', title: 'Acompanhe prazos e convidados', desc: 'Linha do tempo, checklist e lista de convidados — tudo num painel só.' },
           ].map((s, i) => (
             <div key={i} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 16, padding: 24, position: 'relative' }}>
               <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 32, fontWeight: 900, color: '#f0fdf4' }}>{s.n}</div>
@@ -269,7 +180,7 @@ className="hero-arrow hero-arrow-right"
         </div>
       </section>
 
-      {/* MARKETPLACE — EM BREVE */}
+      {/* MARKETPLACE — EM BREVE (única faixa) */}
       <section className="section" style={{ background: '#f9fafb', borderTop: '1px solid #e8e8e8', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, color: '#3f6212', background: '#ecfccb', padding: '4px 12px', borderRadius: 100, marginBottom: 14 }}>EM BREVE</span>
