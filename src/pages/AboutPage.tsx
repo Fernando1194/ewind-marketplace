@@ -13,10 +13,10 @@ export default function AboutPage({ goToPage }: Props) {
   ]
 
   const stats = [
-    { number: '7', label: 'categorias de espaços' },
-    { number: '15', label: 'categorias de fornecedores' },
-    { number: '90', label: 'dias grátis para anunciantes' },
-    { number: '0', label: 'taxas sobre negociações' },
+    { number: '100%', label: 'gratuito para organizadores' },
+    { number: '1', label: 'painel para todo o evento' },
+    { number: '5', label: 'ferramentas: contratos, pagamentos, prazos, convidados e checklist' },
+    { number: '0', label: 'planilhas espalhadas' },
   ]
 
   return (
@@ -27,15 +27,14 @@ export default function AboutPage({ goToPage }: Props) {
         <div style={{ maxWidth: 760, margin: '0 auto' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.12em' }}>QUEM SOMOS</div>
           <h1 style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1.15, marginBottom: 20 }}>
-            Mais visibilidade para quem anuncia.{' '}
-            <span style={{ color: '#a3e635' }}>Mais facilidade</span>{' '}
-            para quem organiza eventos
+            Organizar um evento{' '}
+            <span style={{ color: '#a3e635' }}>não precisa ser um caos</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.75)', lineHeight: 1.7, maxWidth: 580, margin: '0 auto 32px' }}>
-            O Ewind nasceu de uma crença simples: organizar um evento especial não precisa ser sinônimo de ansiedade, pesquisa interminável e orçamentos que nunca chegam.
+            O Ewind nasceu de uma crença simples: quem organiza um casamento ou qualquer evento merece ter contratos, pagamentos e prazos sob controle — sem dezenas de planilhas e mensagens perdidas.
           </p>
-          <button className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }} onClick={() => goToPage('listing')}>
-            Conhecer os espaços →
+          <button className="btn-primary" style={{ fontSize: 15, padding: '14px 32px' }} onClick={() => goToPage('events')}>
+            Criar meu evento grátis →
           </button>
         </div>
       </section>
@@ -46,16 +45,16 @@ export default function AboutPage({ goToPage }: Props) {
           <div>
             <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>NOSSA MISSÃO</div>
             <h2 style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.25, marginBottom: 20, color: '#2d2d2d' }}>
-              Conectar quem organiza eventos com quem faz eles acontecerem
+              Dar controle a quem organiza eventos
             </h2>
             <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8, marginBottom: 16 }}>
-              Eventos marcam a vida das pessoas. Um casamento, uma formatura, um aniversário ou uma confraternização — cada um carrega emoção, expectativa e muito trabalho por trás.
+              Eventos marcam a vida das pessoas. Um casamento, uma formatura, um aniversário — cada um carrega emoção, expectativa e muito trabalho por trás. E muitos contratos, pagamentos e prazos para não deixar passar.
             </p>
             <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8, marginBottom: 16 }}>
-              O que percebemos é que encontrar o espaço certo ou o fornecedor ideal ainda é difícil. São horas de pesquisa no Google, ligações sem retorno e orçamentos que chegam dias depois — quando chegam.
+              Hoje, quem organiza faz tudo isso em planilhas espalhadas, grupos de WhatsApp e papéis soltos. É fácil perder um vencimento, esquecer uma cláusula de multa ou não saber quanto já foi gasto.
             </p>
             <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8 }}>
-              O Ewind resolve isso. Reunimos num só lugar espaços para eventos, fornecedores de serviços e quem precisa deles — de forma rápida, gratuita e transparente.
+              O Ewind resolve isso. Começamos por uma ferramenta gratuita que centraliza contratos, pagamentos, prazos e convidados num só lugar. E estamos construindo um marketplace para conectar organizadores a espaços e fornecedores — tudo na mesma plataforma.
             </p>
           </div>
 
@@ -100,10 +99,10 @@ export default function AboutPage({ goToPage }: Props) {
               <div style={{ fontSize: 28, marginBottom: 12 }}>🎉</div>
               <h4 style={{ fontSize: 15, fontWeight: 700, marginBottom: 10, color: '#1a2e05' }}>Com o Ewind</h4>
               <ul style={{ fontSize: 13, color: '#166534', lineHeight: 2, paddingLeft: 18 }}>
-                <li>Tudo em um lugar: espaços e fornecedores</li>
-                <li>Orçamentos enviados em minutos</li>
-                <li>Respostas em até 24 horas</li>
-                <li>Comparação lado a lado, clara e objetiva</li>
+                <li>Contratos e cláusulas de risco num só lugar</li>
+                <li>Pagamentos e prazos sempre à vista</li>
+                <li>Lista de convidados e checklist organizados</li>
+                <li>Nada de planilhas espalhadas</li>
                 <li>Foco no que importa: o evento</li>
               </ul>
             </div>
@@ -114,7 +113,7 @@ export default function AboutPage({ goToPage }: Props) {
       {/* NÚMEROS */}
       <section style={{ padding: '72px 24px', maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>EWIND EM NÚMEROS</div>
-        <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 40, color: '#2d2d2d' }}>Uma plataforma completa para o universo de eventos</h2>
+        <h2 style={{ fontSize: 26, fontWeight: 800, marginBottom: 40, color: '#2d2d2d' }}>Uma ferramenta completa para organizar seu evento</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
           {stats.map((s, i) => (
             <div key={i} style={{ background: '#f9fafb', borderRadius: 14, padding: 28, border: '1px solid #e8e8e8' }}>
