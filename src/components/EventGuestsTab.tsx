@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventGuest } from '../types'
+import { useEventFeedback, Toast, ConfirmModal } from './useEventFeedback'
 
 interface Props {
   user: User
@@ -27,7 +28,9 @@ const BILLING_META: Record<string, { label: string; factor: number }> = {
 }
 
 export default function EventGuestsTab({ user, event }: Props) {
+  const fb = useEventFeedback()
   const [guests, setGuests] = useState<EventGuest[]>([])
+  const [savingGuest, setSavingGuest] = useState(false)
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState('')
@@ -73,28 +76,33 @@ export default function EventGuestsTab({ user, event }: Props) {
 
   const saveCost = async () => {
     setSavingCost(true)
-    await supabase.from('events').update({ cost_per_guest: costPerGuest ? parseFloat(costPerGuest) : null }).eq('id', event.id)
+    await fb.run(() => supabase.from('events').update({ cost_per_guest: costPerGuest ? parseFloat(costPerGuest) : null }).eq('id', event.id))
     setSavingCost(false)
   }
 
   const addGuest = async () => {
-    if (!nName.trim()) return
-    await supabase.from('event_guests').insert({
+    if (!nName.trim() || savingGuest) return
+    setSavingGuest(true)
+    const ok = await fb.run(() => supabase.from('event_guests').insert({
       event_id: event.id, owner_id: user.id, name: nName.trim(), status: 'pending',
       category: nCategory, billing: nBilling, phone: nPhone || null, email: nEmail || null,
-    })
+    }))
+    setSavingGuest(false)
+    if (!ok) return
     setNName(''); setNPhone(''); setNEmail(''); setNCategory('adult'); setNBilling('full'); setShowAdd(false)
     load()
   }
 
   const updateGuest = async (g: EventGuest, patch: Partial<EventGuest>) => {
-    await supabase.from('event_guests').update(patch).eq('id', g.id)
-    load()
+    const ok = await fb.run(() => supabase.from('event_guests').update(patch).eq('id', g.id))
+    if (ok) load()
   }
 
-  const removeGuest = async (id: string) => {
-    await supabase.from('event_guests').delete().eq('id', id)
-    load()
+  const removeGuest = (id: string) => {
+    fb.confirm('Remover este convidado?', async () => {
+      const ok = await fb.run(() => supabase.from('event_guests').delete().eq('id', id))
+      if (ok) load()
+    })
   }
 
   // Gera e baixa um template .xlsx padronizado
@@ -289,7 +297,7 @@ export default function EventGuestsTab({ user, event }: Props) {
             <div className="fg"><label>Email</label><input value={nEmail} onChange={e => setNEmail(e.target.value)} placeholder="email@exemplo.com" /></div>
           </div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn-primary" onClick={addGuest} disabled={!nName.trim()} style={{ padding: '8px 18px', fontSize: 13 }}>Adicionar</button>
+            <button className="btn-primary" onClick={addGuest} disabled={!nName.trim() || savingGuest} style={{ padding: '8px 18px', fontSize: 13 }}>{savingGuest ? 'Adicionando...' : 'Adicionar'}</button>
             <button onClick={() => setShowAdd(false)} style={{ padding: '8px 14px', fontSize: 13, background: '#f3f4f6', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>Cancelar</button>
           </div>
         </div>
@@ -380,6 +388,8 @@ export default function EventGuestsTab({ user, event }: Props) {
           })}
         </div>
       )}
+      <Toast toast={fb.toast} />
+      <ConfirmModal state={fb.confirmState} onClose={() => fb.setConfirmState(null)} />
     </div>
   )
 }

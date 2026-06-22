@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventGuest, EventTable } from '../types'
+import { useEventFeedback, Toast, ConfirmModal } from './useEventFeedback'
 
 interface Props {
   user: User
@@ -11,6 +12,7 @@ interface Props {
 const CATEGORY_ICON: Record<string, string> = { adult: '🧑', child: '🧒', baby: '👶' }
 
 export default function EventTablesTab({ user, event }: Props) {
+  const fb = useEventFeedback()
   const [tables, setTables] = useState<EventTable[]>([])
   const [guests, setGuests] = useState<EventGuest[]>([])
   const [loading, setLoading] = useState(true)
@@ -40,30 +42,32 @@ export default function EventTablesTab({ user, event }: Props) {
 
   const addTable = async () => {
     if (!tLabel.trim()) return
-    await supabase.from('event_tables').insert({
+    const ok = await fb.run(() => supabase.from('event_tables').insert({
       event_id: event.id, owner_id: user.id, label: tLabel.trim(),
       capacity: tCapacity ? parseInt(tCapacity) : 8, sort_order: tables.length,
-    })
+    }))
+    if (!ok) return
     setTLabel(''); setTCapacity('8'); setShowAddTable(false)
     load()
   }
 
   const updateTable = async (id: string, patch: Partial<EventTable>) => {
-    await supabase.from('event_tables').update(patch).eq('id', id)
-    load()
+    const ok = await fb.run(() => supabase.from('event_tables').update(patch).eq('id', id))
+    if (ok) load()
   }
 
-  const deleteTable = async (id: string) => {
-    if (!confirm('Excluir esta mesa? Os convidados dela voltam para "não alocados".')) return
-    await supabase.from('event_tables').delete().eq('id', id)
-    load()
+  const deleteTable = (id: string) => {
+    fb.confirm('Excluir esta mesa? Os convidados dela voltam para "não alocados".', async () => {
+      const ok = await fb.run(() => supabase.from('event_tables').delete().eq('id', id))
+      if (ok) load()
+    })
   }
 
   // aloca/desaloca convidado
   const assignGuest = async (guestId: string, tableId: string | null) => {
-    await supabase.from('event_guests').update({ table_id: tableId }).eq('id', guestId)
+    const ok = await fb.run(() => supabase.from('event_guests').update({ table_id: tableId }).eq('id', guestId))
     setPendingGuest(null)
-    load()
+    if (ok) load()
   }
 
   const unassigned = guests.filter(g => !g.table_id)
@@ -228,6 +232,8 @@ export default function EventTablesTab({ user, event }: Props) {
           </div>
         )}
       </div>
+      <Toast toast={fb.toast} />
+      <ConfirmModal state={fb.confirmState} onClose={() => fb.setConfirmState(null)} />
     </div>
   )
 }

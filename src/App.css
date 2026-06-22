@@ -1196,3 +1196,9 @@ a[href*="wa.me"]:hover { transform: translateY(-2px) scale(1.02) !important; }
     transition-duration: 0.01ms !important;
   }
   }
+
+/* Toast de feedback (polimento) */
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}

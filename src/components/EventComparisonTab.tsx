@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventComparison, ComparisonOption } from '../types'
+import { useEventFeedback, Toast, ConfirmModal } from './useEventFeedback'
 
 interface Props {
   user: User
@@ -12,7 +13,9 @@ interface Props {
 const SUGGESTED_ITEMS = ['Decoração', 'Buffet', 'DJ / Som', 'Fotografia', 'Mesas e cadeiras', 'Estacionamento', 'Limpeza', 'Bebidas']
 
 export default function EventComparisonTab({ user, event }: Props) {
+  const fb = useEventFeedback()
   const [comparisons, setComparisons] = useState<EventComparison[]>([])
+  const [savingOption, setSavingOption] = useState(false)
   const [options, setOptions] = useState<ComparisonOption[]>([])
   const [loading, setLoading] = useState(true)
   const [activeComp, setActiveComp] = useState<string | null>(null)
@@ -60,19 +63,27 @@ export default function EventComparisonTab({ user, event }: Props) {
 
   const createComparison = async () => {
     if (!newCompTitle.trim()) return
-    const { data } = await supabase.from('event_comparisons').insert({
-      event_id: event.id, owner_id: user.id, title: newCompTitle.trim(),
-    }).select().single()
+    let created: any = null
+    const ok = await fb.run(async () => {
+      const res = await supabase.from('event_comparisons').insert({
+        event_id: event.id, owner_id: user.id, title: newCompTitle.trim(),
+      }).select().single()
+      created = res.data
+      return res
+    })
+    if (!ok) return
     setNewCompTitle(''); setShowNewComp(false)
-    if (data) setActiveComp((data as EventComparison).id)
+    if (created) setActiveComp((created as EventComparison).id)
     load()
   }
 
-  const deleteComparison = async (id: string) => {
-    if (!confirm('Excluir esta comparação e todas as cotações dentro dela?')) return
-    await supabase.from('event_comparisons').delete().eq('id', id)
-    if (activeComp === id) setActiveComp(null)
-    load()
+  const deleteComparison = (id: string) => {
+    fb.confirm('Excluir esta comparação e todas as cotações dentro dela?', async () => {
+      const ok = await fb.run(() => supabase.from('event_comparisons').delete().eq('id', id))
+      if (!ok) return
+      if (activeComp === id) setActiveComp(null)
+      load()
+    })
   }
 
   const toggleIncludedItem = (item: string) => {
@@ -80,22 +91,25 @@ export default function EventComparisonTab({ user, event }: Props) {
   }
 
   const addOption = async () => {
-    if (!oName.trim() || !activeComp) return
+    if (!oName.trim() || !activeComp || savingOption) return
+    setSavingOption(true)
     const maxOrder = options.filter(o => o.comparison_id === activeComp).length
-    await supabase.from('comparison_options').insert({
+    const ok = await fb.run(() => supabase.from('comparison_options').insert({
       comparison_id: activeComp, owner_id: user.id, name: oName.trim(),
       price: oPrice ? parseFloat(oPrice) : null,
       capacity: oCapacity ? parseInt(oCapacity) : null,
       contact: oContact || null, notes: oNotes || null,
       included: oIncluded, sort_order: maxOrder,
-    })
+    }))
+    setSavingOption(false)
+    if (!ok) return
     setOName(''); setOPrice(''); setOCapacity(''); setOContact(''); setONotes(''); setOIncluded({}); setShowAddOption(false)
     load()
   }
 
   const deleteOption = async (id: string) => {
-    await supabase.from('comparison_options').delete().eq('id', id)
-    load()
+    const ok = await fb.run(() => supabase.from('comparison_options').delete().eq('id', id))
+    if (ok) load()
   }
 
   const setChosen = async (opt: ComparisonOption) => {
@@ -104,8 +118,8 @@ export default function EventComparisonTab({ user, event }: Props) {
     for (const o of sameComp) {
       if (o.chosen && o.id !== opt.id) await supabase.from('comparison_options').update({ chosen: false }).eq('id', o.id)
     }
-    await supabase.from('comparison_options').update({ chosen: !opt.chosen }).eq('id', opt.id)
-    load()
+    const ok = await fb.run(() => supabase.from('comparison_options').update({ chosen: !opt.chosen }).eq('id', opt.id))
+    if (ok) load()
   }
 
   const currentOptions = options.filter(o => o.comparison_id === activeComp)
@@ -200,7 +214,7 @@ export default function EventComparisonTab({ user, event }: Props) {
               </div>
               <div className="fg" style={{ marginTop: 12 }}><label>Notas</label><input value={oNotes} onChange={e => setONotes(e.target.value)} placeholder="Observações (opcional)" /></div>
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                <button className="btn-primary" onClick={addOption} disabled={!oName.trim()} style={{ padding: '8px 18px', fontSize: 13 }}>Adicionar cotação</button>
+                <button className="btn-primary" onClick={addOption} disabled={!oName.trim() || savingOption} style={{ padding: '8px 18px', fontSize: 13 }}>{savingOption ? 'Adicionando...' : 'Adicionar cotação'}</button>
                 <button onClick={() => setShowAddOption(false)} style={{ padding: '8px 14px', fontSize: 13, background: '#f3f4f6', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>Cancelar</button>
               </div>
             </div>
@@ -287,6 +301,8 @@ export default function EventComparisonTab({ user, event }: Props) {
           )}
         </div>
       )}
+      <Toast toast={fb.toast} />
+      <ConfirmModal state={fb.confirmState} onClose={() => fb.setConfirmState(null)} />
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventTask } from '../types'
+import { useEventFeedback, Toast, ConfirmModal } from './useEventFeedback'
 
 interface Props {
   user: User
@@ -47,6 +48,7 @@ const WEDDING_TEMPLATE: { title: string; category: string; days: number }[] = [
 const CATEGORIES = ['Planejamento', 'Espaço', 'Cerimônia', 'Buffet', 'Decoração', 'Foto e Vídeo', 'Convidados', 'Documentos', 'Financeiro', 'Noivos', 'Outro']
 
 export default function EventChecklistTab({ user, event }: Props) {
+  const fb = useEventFeedback()
   const [tasks, setTasks] = useState<EventTask[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -92,40 +94,47 @@ export default function EventChecklistTab({ user, event }: Props) {
 
   const fmtDate = (d: Date | null) => d ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Sem prazo'
 
+  const [savingTask, setSavingTask] = useState(false)
   const addTask = async () => {
-    if (!tTitle.trim()) return
-    await supabase.from('event_tasks').insert({
+    if (!tTitle.trim() || savingTask) return
+    setSavingTask(true)
+    const ok = await fb.run(() => supabase.from('event_tasks').insert({
       event_id: event.id, owner_id: user.id, title: tTitle.trim(),
       category: tCategory || null, assignee: tAssignee || null, notes: tNotes || null,
       due_offset_days: tMode === 'offset' ? parseInt(tOffset) : null,
       due_date: tMode === 'date' ? (tDate || null) : null,
-    })
+    }))
+    setSavingTask(false)
+    if (!ok) return
     setTTitle(''); setTCategory(''); setTAssignee(''); setTNotes(''); setShowAdd(false)
     load()
   }
 
   const toggleDone = async (t: EventTask) => {
-    await supabase.from('event_tasks').update({
+    const ok = await fb.run(() => supabase.from('event_tasks').update({
       done: !t.done, done_at: !t.done ? new Date().toISOString() : null,
-    }).eq('id', t.id)
-    load()
+    }).eq('id', t.id))
+    if (ok) load()
   }
 
-  const removeTask = async (id: string) => {
-    await supabase.from('event_tasks').delete().eq('id', id)
-    load()
+  const removeTask = (id: string) => {
+    fb.confirm('Remover esta tarefa?', async () => {
+      const ok = await fb.run(() => supabase.from('event_tasks').delete().eq('id', id))
+      if (ok) load()
+    })
   }
 
-  const seedWedding = async () => {
-    if (!confirm('Adicionar as tarefas sugeridas de casamento? Você poderá editar ou remover qualquer uma depois.')) return
-    setSeeding(true)
-    const rows = WEDDING_TEMPLATE.map((t, i) => ({
-      event_id: event.id, owner_id: user.id, title: t.title, category: t.category,
-      due_offset_days: t.days, sort_order: i,
-    }))
-    await supabase.from('event_tasks').insert(rows)
-    setSeeding(false)
-    load()
+  const seedWedding = () => {
+    fb.confirm('Adicionar as tarefas sugeridas de casamento? Você poderá editar ou remover qualquer uma depois.', async () => {
+      setSeeding(true)
+      const rows = WEDDING_TEMPLATE.map((t, i) => ({
+        event_id: event.id, owner_id: user.id, title: t.title, category: t.category,
+        due_offset_days: t.days, sort_order: i,
+      }))
+      const ok = await fb.run(() => supabase.from('event_tasks').insert(rows))
+      setSeeding(false)
+      if (ok) load()
+    })
   }
 
   const total = tasks.length
@@ -217,7 +226,7 @@ export default function EventChecklistTab({ user, event }: Props) {
           </div>
           <div className="fg" style={{ marginTop: 10 }}><label>Notas</label><input value={tNotes} onChange={e => setTNotes(e.target.value)} placeholder="Observações (opcional)" /></div>
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn-primary" onClick={addTask} disabled={!tTitle.trim()} style={{ padding: '8px 18px', fontSize: 13 }}>Adicionar</button>
+            <button className="btn-primary" onClick={addTask} disabled={!tTitle.trim() || savingTask} style={{ padding: '8px 18px', fontSize: 13 }}>{savingTask ? 'Adicionando...' : 'Adicionar'}</button>
             <button onClick={() => setShowAdd(false)} style={{ padding: '8px 14px', fontSize: 13, background: '#f3f4f6', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#6b7280' }}>Cancelar</button>
           </div>
         </div>
@@ -265,6 +274,8 @@ export default function EventChecklistTab({ user, event }: Props) {
           </div>
         </div>
       ))}
+      <Toast toast={fb.toast} />
+      <ConfirmModal state={fb.confirmState} onClose={() => fb.setConfirmState(null)} />
     </div>
   )
 }

@@ -7,6 +7,7 @@ import EventGuestsTab from '../components/EventGuestsTab'
 import EventChecklistTab from '../components/EventChecklistTab'
 import EventComparisonTab from '../components/EventComparisonTab'
 import EventTablesTab from '../components/EventTablesTab'
+import { useEventFeedback, Toast, ConfirmModal } from '../components/useEventFeedback'
 
 interface Props {
   user: User
@@ -25,6 +26,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
   const [contracts, setContracts] = useState<ContractWithPayments[]>([])
   const [loading, setLoading] = useState(true)
   const [showContractForm, setShowContractForm] = useState(false)
+  const fb = useEventFeedback()
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'guests' | 'checklist' | 'comparison' | 'tables'>('overview')
   const [editingContract, setEditingContract] = useState<EventContract | null>(null)
@@ -67,24 +69,27 @@ export default function EventDetailPage({ user, event, back }: Props) {
   const overdue = allPayments.filter(p => !p.paid && p.due_date < today)
 
   const togglePaid = async (p: ContractPayment) => {
-    await supabase.from('contract_payments').update({
+    const ok = await fb.run(() => supabase.from('contract_payments').update({
       paid: !p.paid,
       paid_date: !p.paid ? today : null,
-    }).eq('id', p.id)
-    load()
+    }).eq('id', p.id))
+    if (ok) load()
   }
 
-  const deleteContract = async (id: string) => {
-    if (!confirm('Excluir este contrato e todas as suas parcelas? Esta ação não pode ser desfeita.')) return
-    await supabase.from('event_contracts').delete().eq('id', id)
-    setExpandedId(null)
-    load()
+  const deleteContract = (id: string) => {
+    fb.confirm('Excluir este contrato e todas as suas parcelas? Esta ação não pode ser desfeita.', async () => {
+      const ok = await fb.run(() => supabase.from('event_contracts').delete().eq('id', id))
+      if (!ok) return
+      setExpandedId(null)
+      load()
+    })
   }
 
-  const deletePayment = async (id: string) => {
-    if (!confirm('Excluir esta parcela?')) return
-    await supabase.from('contract_payments').delete().eq('id', id)
-    load()
+  const deletePayment = (id: string) => {
+    fb.confirm('Excluir esta parcela?', async () => {
+      const ok = await fb.run(() => supabase.from('contract_payments').delete().eq('id', id))
+      if (ok) load()
+    })
   }
 
   const openContractFile = async (path: string) => {
@@ -185,6 +190,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
           categories={CONTRACT_CATEGORIES}
           onSaved={() => { setShowContractForm(false); load() }}
           onCancel={() => setShowContractForm(false)}
+          onError={() => fb.showError('Não foi possível salvar o contrato. Tente novamente.')}
         />
       )}
 
@@ -232,6 +238,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
                       existing={editingContract}
                       onSaved={() => { setEditingContract(null); load() }}
                       onCancel={() => setEditingContract(null)}
+                      onError={() => fb.showError('Não foi possível salvar o contrato. Tente novamente.')}
                     />
                   </div>
                 )}
@@ -294,10 +301,10 @@ export default function EventDetailPage({ user, event, back }: Props) {
                     {editingPayment && editingPayment.contract_id === c.id && (
                       <div style={{ marginBottom: 10 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>EDITANDO PARCELA</div>
-                        <PaymentForm user={user} contractId={c.id} existing={editingPayment} onSaved={() => { setEditingPayment(null); load() }} onCancel={() => setEditingPayment(null)} />
+                        <PaymentForm user={user} contractId={c.id} existing={editingPayment} onSaved={() => { setEditingPayment(null); load() }} onCancel={() => setEditingPayment(null)} onError={() => fb.showError('Não foi possível salvar a parcela. Tente novamente.')} />
                       </div>
                     )}
-                    <PaymentForm user={user} contractId={c.id} onSaved={load} />
+                    <PaymentForm user={user} contractId={c.id} onSaved={load} onError={() => fb.showError('Não foi possível salvar a parcela. Tente novamente.')} />
 
                     {c.contract_file_url && (
                       <button onClick={() => openContractFile(c.contract_file_url!)} style={{ display: 'inline-block', marginTop: 12, fontSize: 13, color: '#5aa800', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>
@@ -337,15 +344,18 @@ export default function EventDetailPage({ user, event, back }: Props) {
       {activeTab === 'tables' && (
         <EventTablesTab user={user} event={event} />
       )}
+
+      <Toast toast={fb.toast} />
+      <ConfirmModal state={fb.confirmState} onClose={() => fb.setConfirmState(null)} />
     </div>
   )
 }
 
 // ── Inline contract form ──────────────────────────────────────────
-function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }: {
+function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, onError }: {
   user: User; eventId: string; categories: string[]
   existing?: EventContract | null
-  onSaved: () => void; onCancel: () => void
+  onSaved: () => void; onCancel: () => void; onError: () => void
 }) {
   const isEdit = !!existing
   const [supplierName, setSupplierName] = useState(existing?.supplier_name || '')
@@ -442,12 +452,11 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }
       contract_file_url: fileUrl,
     }
 
-    if (isEdit) {
-      await supabase.from('event_contracts').update(payload).eq('id', existing!.id)
-    } else {
-      await supabase.from('event_contracts').insert({ event_id: eventId, owner_id: user.id, ...payload })
-    }
+    const res = isEdit
+      ? await supabase.from('event_contracts').update(payload).eq('id', existing!.id)
+      : await supabase.from('event_contracts').insert({ event_id: eventId, owner_id: user.id, ...payload })
     setSaving(false)
+    if (res.error) { onError(); return }
     onSaved()
   }
 
@@ -532,10 +541,10 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel }
 }
 
 // ── Inline payment form (cria ou edita) ──────────────────────
-function PaymentForm({ user, contractId, existing, onSaved, onCancel }: {
+function PaymentForm({ user, contractId, existing, onSaved, onCancel, onError }: {
   user: User; contractId: string
   existing?: ContractPayment | null
-  onSaved: () => void; onCancel?: () => void
+  onSaved: () => void; onCancel?: () => void; onError?: () => void
 }) {
   const isEdit = !!existing
   const [show, setShow] = useState(isEdit)
@@ -547,22 +556,21 @@ function PaymentForm({ user, contractId, existing, onSaved, onCancel }: {
   const save = async () => {
     if (!amount || !dueDate) return
     setSaving(true)
-    if (isEdit) {
-      await supabase.from('contract_payments').update({
-        label: label || null,
-        amount: parseFloat(amount),
-        due_date: dueDate,
-      }).eq('id', existing!.id)
-    } else {
-      await supabase.from('contract_payments').insert({
-        contract_id: contractId,
-        owner_id: user.id,
-        label: label || null,
-        amount: parseFloat(amount),
-        due_date: dueDate,
-      })
-    }
+    const res = isEdit
+      ? await supabase.from('contract_payments').update({
+          label: label || null,
+          amount: parseFloat(amount),
+          due_date: dueDate,
+        }).eq('id', existing!.id)
+      : await supabase.from('contract_payments').insert({
+          contract_id: contractId,
+          owner_id: user.id,
+          label: label || null,
+          amount: parseFloat(amount),
+          due_date: dueDate,
+        })
     setSaving(false)
+    if (res.error) { onError?.(); return }
     setLabel(''); setAmount(''); setDueDate('')
     if (!isEdit) setShow(false)
     onSaved()
