@@ -6,6 +6,7 @@ import EventTimeline from '../components/EventTimeline'
 import EventGuestsTab from '../components/EventGuestsTab'
 import EventChecklistTab from '../components/EventChecklistTab'
 import EventComparisonTab from '../components/EventComparisonTab'
+import EventTablesTab from '../components/EventTablesTab'
 
 interface Props {
   user: User
@@ -25,7 +26,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
   const [loading, setLoading] = useState(true)
   const [showContractForm, setShowContractForm] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'guests' | 'checklist' | 'comparison'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'guests' | 'checklist' | 'comparison' | 'tables'>('overview')
   const [editingContract, setEditingContract] = useState<EventContract | null>(null)
   const [editingPayment, setEditingPayment] = useState<ContractPayment | null>(null)
 
@@ -120,6 +121,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
           { key: 'guests',   label: '👥 Convidados' },
           { key: 'checklist', label: '✅ Checklist' },
           { key: 'comparison', label: '⚖️ Orçamentos' },
+          { key: 'tables', label: '🪑 Mesas' },
         ] as const).map(tab => (
           <button key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -329,6 +331,11 @@ export default function EventDetailPage({ user, event, back }: Props) {
       {/* ══ ABA: COMPARADOR DE ORÇAMENTOS ══ */}
       {activeTab === 'comparison' && (
         <EventComparisonTab user={user} event={event} />
+      )}
+
+      {/* ══ ABA: MAPA DE MESAS ══ */}
+      {activeTab === 'tables' && (
+        <EventTablesTab user={user} event={event} />
       )}
     </div>
   )

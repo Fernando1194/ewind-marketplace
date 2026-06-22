@@ -214,6 +214,7 @@ export interface EventGuest {
   email: string | null
   companions: string | null
   guest_group: string | null
+  table_id: string | null
   created_at: string
 }
 
@@ -252,6 +253,16 @@ export interface ComparisonOption {
   notes: string | null
   included: Record<string, boolean>
   chosen: boolean
+  sort_order: number
+  created_at: string
+}
+
+export interface EventTable {
+  id: string
+  event_id: string
+  owner_id: string
+  label: string
+  capacity: number
   sort_order: number
   created_at: string
 }
