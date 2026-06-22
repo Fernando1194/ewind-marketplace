@@ -232,3 +232,26 @@ export interface EventTask {
   sort_order: number
   created_at: string
 }
+
+export interface EventComparison {
+  id: string
+  event_id: string
+  owner_id: string
+  title: string
+  created_at: string
+}
+
+export interface ComparisonOption {
+  id: string
+  comparison_id: string
+  owner_id: string
+  name: string
+  price: number | null
+  capacity: number | null
+  contact: string | null
+  notes: string | null
+  included: Record<string, boolean>
+  chosen: boolean
+  sort_order: number
+  created_at: string
+}
