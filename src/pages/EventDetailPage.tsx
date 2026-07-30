@@ -188,7 +188,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
           categories={CONTRACT_CATEGORIES}
           onSaved={() => { setShowContractForm(false); load() }}
           onCancel={() => setShowContractForm(false)}
-          onError={() => fb.showError('Não foi possível salvar o contrato. Tente novamente.')}
+          onError={(msg) => fb.showError(msg || 'Não foi possível salvar o contrato. Tente novamente.')}
         />
       )}
 
@@ -236,7 +236,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
                       existing={editingContract}
                       onSaved={() => { setEditingContract(null); load() }}
                       onCancel={() => setEditingContract(null)}
-                      onError={() => fb.showError('Não foi possível salvar o contrato. Tente novamente.')}
+                      onError={(msg) => fb.showError(msg || 'Não foi possível salvar o contrato. Tente novamente.')}
                     />
                   </div>
                 )}
@@ -348,7 +348,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
 function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, onError }: {
   user: User; eventId: string; categories: string[]
   existing?: EventContract | null
-  onSaved: () => void; onCancel: () => void; onError: () => void
+  onSaved: () => void; onCancel: () => void; onError: (msg?: string) => void
 }) {
   const isEdit = !!existing
   const [supplierName, setSupplierName] = useState(existing?.supplier_name || '')
@@ -367,6 +367,8 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, 
   const [aiStatus, setAiStatus] = useState<'idle' | 'reading' | 'analyzing' | 'done' | 'scanned' | 'error'>('idle')
   const [aiReviewed, setAiReviewed] = useState(false)   // usuário precisa confirmar revisão
   const [aiConfidence, setAiConfidence] = useState<string | null>(null)
+  const [aiPayments, setAiPayments] = useState<{ label: string | null; amount: number; due_date: string | null }[]>([])
+  const [aiKeyDates, setAiKeyDates] = useState<{ title: string; date: string }[]>([])
   const [aiErrorDetail, setAiErrorDetail] = useState<string>('')
 
   const handleFile = async (f: File | null) => {
@@ -413,6 +415,8 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, 
         if (fields.special_clauses) setSpecial(fields.special_clauses)
       }
       setAiConfidence(fields.confidence || null)
+      setAiPayments(Array.isArray(fields.payments) ? fields.payments : [])
+      setAiKeyDates(Array.isArray(fields.key_dates) ? fields.key_dates : [])
       setAiStatus('done')
     } catch (err: any) {
       setAiErrorDetail(err?.message ? `leitura do PDF: ${err.message}` : 'erro ao ler o PDF')
@@ -447,9 +451,27 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, 
 
     const res = isEdit
       ? await supabase.from('event_contracts').update(payload).eq('id', existing!.id)
-      : await supabase.from('event_contracts').insert({ event_id: eventId, owner_id: user.id, ...payload })
+      : await supabase.from('event_contracts').insert({ event_id: eventId, owner_id: user.id, ...payload }).select().single()
     setSaving(false)
     if (res.error) { onError(); return }
+
+    // Parcelas e datas-chave extraídas pela IA (só na criação, após revisão do usuário)
+    if (!isEdit && res.data) {
+      const newId = (res.data as any).id
+      const validPayments = aiPayments.filter(p => p.amount > 0 && p.due_date)
+      if (validPayments.length) {
+        const { error: pmErr } = await supabase.from('contract_payments').insert(
+          validPayments.map(p => ({ contract_id: newId, owner_id: user.id, label: p.label, amount: p.amount, due_date: p.due_date }))
+        )
+        if (pmErr) onError('Contrato salvo, mas houve erro ao criar as parcelas. Adicione-as manualmente.')
+      }
+      if (aiKeyDates.length) {
+        const { error: kdErr } = await supabase.from('agenda_reminders').insert(
+          aiKeyDates.map(k => ({ owner_id: user.id, date: k.date, title: `${k.title} — ${supplierName.trim()}` }))
+        )
+        if (kdErr) onError('Contrato salvo, mas houve erro ao criar os lembretes das datas-chave.')
+      }
+    }
     onSaved()
   }
 
@@ -484,6 +506,34 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, 
           {aiStatus === 'done' && (
             <div style={{ fontSize: 12, marginTop: 8, background: '#ecfccb', padding: '10px 12px', borderRadius: 8, color: '#3f6212' }}>
               ✅ Campos preenchidos pela IA{aiConfidence ? ` (confiança: ${aiConfidence})` : ''}. <strong>Revise tudo com atenção</strong> — a IA pode errar valores e datas.
+
+              {!isEdit && aiPayments.length > 0 && (
+                <div style={{ marginTop: 10, background: '#fff', borderRadius: 8, padding: '10px 12px', border: '1px solid #d9f99d' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>💰 Cronograma de pagamento detectado ({aiPayments.length} parcela{aiPayments.length > 1 ? 's' : ''}) — será criado junto com o contrato:</div>
+                  {aiPayments.map((p, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12 }}>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.label || 'Parcela'} · <strong>R$ {p.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong> · {p.due_date ? p.due_date.split('-').reverse().join('/') : <span style={{ color: '#dc2626' }}>sem data (não será criada)</span>}
+                      </span>
+                      <button type="button" onClick={() => setAiPayments(aiPayments.filter((_, j) => j !== i))} title="Remover" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, opacity: 0.5, padding: 2 }}>✕</button>
+                    </div>
+                  ))}
+                  <div style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>Você pode editar cada parcela depois, dentro do contrato.</div>
+                </div>
+              )}
+
+              {!isEdit && aiKeyDates.length > 0 && (
+                <div style={{ marginTop: 8, background: '#fff', borderRadius: 8, padding: '10px 12px', border: '1px solid #e9d5ff' }}>
+                  <div style={{ fontWeight: 700, marginBottom: 6 }}>📌 Datas-chave detectadas — virarão lembretes na Agenda:</div>
+                  {aiKeyDates.map((k, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12 }}>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{k.date.split('-').reverse().join('/')} · {k.title}</span>
+                      <button type="button" onClick={() => setAiKeyDates(aiKeyDates.filter((_, j) => j !== i))} title="Remover" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, opacity: 0.5, padding: 2 }}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, cursor: 'pointer', fontWeight: 600 }}>
                 <input type="checkbox" checked={aiReviewed} onChange={e => setAiReviewed(e.target.checked)} style={{ width: 16, height: 16, accentColor: '#a3e635' }} />
                 Revisei os campos e confirmo que estão corretos

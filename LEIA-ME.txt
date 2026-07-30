@@ -1,20 +1,32 @@
 ════════════════════════════════════════════════════
- EWIND — AGENDA v3 (calendário anual contínuo)
+ EWIND — Extração de contrato v2
+ (parcelas e datas-chave direto pra Agenda)
 ════════════════════════════════════════════════════
 
-Só 1 arquivo. Sem SQL novo (a tabela de lembretes
-da v2 continua sendo usada).
+2 arquivos. Sem SQL novo.
 
-UPLOAD: extraia o ZIP, abra a pasta extraída e
-arraste APENAS a pasta "src" na página RAIZ do
-repositório (Add file → Upload files).
-O GitHub deve mostrar o caminho:
-    src/pages/AgendaPage.tsx
-Se aparecer outro prefixo, cancele e repita.
+UPLOAD (2 lotes, na página RAIZ do repositório):
+  1. Arraste a pasta "src"  → deve mostrar
+     src/pages/EventDetailPage.tsx
+  2. Arraste a pasta "api"  → deve mostrar
+     api/extract-contract.ts
+  Se aparecer outro prefixo no caminho, cancele e repita.
 
-DEPOIS DO DEPLOY (~1 min):
-Abra a Agenda com Ctrl+Shift+R (refresh forçado).
-Você deve ver: os 12 meses empilhados com a faixa
-verde do mês à esquerda, barra de rolagem própria,
-e a coluna "LINHA DO TEMPO" à direita com todos os
-marcos em ordem cronológica.
+COMO TESTAR (após deploy ~1 min + Ctrl+Shift+R):
+  1. Num evento, crie Novo contrato e suba um PDF
+     que tenha cronograma de pagamento (sinal/parcelas
+     com datas) e, se possível, datas de degustação/
+     prova/entrega.
+  2. Após a análise, além dos campos preenchidos,
+     aparecem dois blocos de revisão:
+       💰 Cronograma de pagamento detectado
+       📌 Datas-chave detectadas
+     Revise, remova o que estiver errado (✕),
+     marque "Revisei os campos" e salve.
+  3. Abra a Agenda: as parcelas e os lembretes
+     já estarão nas datas corretas.
+
+OBS: parcela extraída SEM data de vencimento não é
+criada (aparece marcada em vermelho na revisão).
+Datas-chave viram lembretes 📌 com o nome do
+fornecedor no título.

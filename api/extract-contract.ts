@@ -42,8 +42,13 @@ Responda SOMENTE com um objeto JSON válido, sem markdown, sem explicação, nes
   "penalty_clause": string | null,
   "cancellation_policy": string | null,
   "special_clauses": string | null,
+  "payments": [{ "label": string, "amount": number, "due_date": string | null }] | null,
+  "key_dates": [{ "title": string, "date": string }] | null,
   "confidence": "alta" | "media" | "baixa"
-}`
+}
+
+Sobre "payments": é o cronograma de pagamento do contrato (sinal, parcelas, saldo final). Extraia cada pagamento com rótulo (ex: "Sinal (30%)", "Parcela 2", "Saldo"), valor numérico e data de vencimento ISO. Se o contrato define percentuais sobre o total, calcule o valor. Se não houver cronograma claro, retorne null.
+Sobre "key_dates": são marcos de execução do contrato que exigem ação, como degustação, prova de traje, visita técnica, montagem, entrega. NÃO repita a data do serviço principal nem vencimentos de pagamento. Se não houver, retorne null.`
 
   // Tenta uma lista de modelos em ordem; usa o primeiro que responder.
   const models = ['claude-sonnet-4-6', 'claude-haiku-4-5', 'claude-opus-4-8']
@@ -96,6 +101,22 @@ Responda SOMENTE com um objeto JSON válido, sem markdown, sem explicação, nes
         cancellation_policy: parsed.cancellation_policy ?? null,
         special_clauses: parsed.special_clauses ?? null,
         confidence: ['alta', 'media', 'baixa'].includes(parsed.confidence) ? parsed.confidence : 'baixa',
+        payments: Array.isArray(parsed.payments)
+          ? parsed.payments
+              .filter((p: any) => p && typeof p.amount === 'number' && p.amount > 0)
+              .slice(0, 12)
+              .map((p: any) => ({
+                label: typeof p.label === 'string' ? p.label.slice(0, 80) : null,
+                amount: p.amount,
+                due_date: typeof p.due_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(p.due_date) ? p.due_date : null,
+              }))
+          : null,
+        key_dates: Array.isArray(parsed.key_dates)
+          ? parsed.key_dates
+              .filter((k: any) => k && typeof k.title === 'string' && typeof k.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(k.date))
+              .slice(0, 8)
+              .map((k: any) => ({ title: k.title.slice(0, 100), date: k.date }))
+          : null,
       }
 
       return res.status(200).json({ fields: clean, model_used: model })
