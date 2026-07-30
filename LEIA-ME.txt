@@ -1,0 +1,22 @@
+════════════════════════════════════════════════════
+ EWIND — AGENDA v2 (modal de dia + lembretes)
+════════════════════════════════════════════════════
+
+PASSO 1 — SQL (Supabase → SQL Editor):
+  Rode o arquivo agenda-lembretes.sql
+  (cria a tabela de lembretes; seguro rodar 2x)
+
+PASSO 2 — Upload no GitHub:
+  Extraia o ZIP. NÃO arraste a pasta extraída inteira.
+  Abra a pasta extraída e arraste APENAS a pasta "src"
+  na página RAIZ do repositório (Add file → Upload files).
+  O GitHub deve mostrar:
+      src/types.ts
+      src/pages/AgendaPage.tsx
+  Se aparecer outro prefixo no caminho, cancele e repita.
+
+PASSO 3 — Conferir (após ~1 min de deploy):
+  Na Agenda, clique em qualquer dia:
+  abre o painel do dia com eventos, serviços,
+  parcelas (com botão "Marcar como paga") e
+  o formulário de lembrete.

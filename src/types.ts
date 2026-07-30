@@ -266,3 +266,13 @@ export interface EventTable {
   sort_order: number
   created_at: string
 }
+
+export interface AgendaReminder {
+  id: string
+  owner_id: string
+  date: string
+  title: string
+  notes: string | null
+  done: boolean
+  created_at: string
+}
