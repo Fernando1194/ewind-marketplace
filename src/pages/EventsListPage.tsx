@@ -112,9 +112,14 @@ export default function EventsListPage({ user, openEvent }: Props) {
           <p style={{ fontSize: 14, color: '#6b7280' }}>Gerencie contratos, pagamentos e prazos de cada evento em um só lugar.</p>
         </div>
         {!showForm && (
-          <button className="btn-primary" onClick={() => setShowForm(true)} style={{ padding: '11px 22px', fontSize: 14 }}>
-            + Novo evento
-          </button>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <button onClick={() => goToPage('agenda')} style={{ padding: '11px 20px', fontSize: 14, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+              📅 Agenda
+            </button>
+            <button className="btn-primary" onClick={() => setShowForm(true)} style={{ padding: '11px 22px', fontSize: 14 }}>
+              + Novo evento
+            </button>
+          </div>
         )}
       </div>
 

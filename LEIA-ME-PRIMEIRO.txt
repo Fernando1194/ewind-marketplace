@@ -1,0 +1,56 @@
+════════════════════════════════════════════════════════
+ EWIND — AGENDA (pacote corrigido)
+ Siga EXATAMENTE estes 3 passos, na ordem.
+════════════════════════════════════════════════════════
+
+O erro anterior: os arquivos subiram para uma pasta
+"ewind-agenda/" dentro do repositório, em vez de
+substituírem os originais. O build ignora essa pasta,
+por isso nada mudou no site.
+
+─── PASSO 1: apagar a pasta errada no GitHub ───────────
+
+1. Abra o repositório no GitHub
+2. Entre na pasta "ewind-agenda"
+3. Clique no botão "..." (canto superior direito)
+   e escolha "Delete directory"
+   (se não aparecer, abra cada arquivo e use
+   "..." → Delete file, um por um)
+4. Confirme o commit da exclusão
+
+─── PASSO 2: subir estes arquivos DO JEITO CERTO ───────
+
+O segredo: NÃO arraste a pasta extraída inteira.
+Arraste as pastas "src" e "public" que estão DENTRO dela.
+
+1. Extraia este ZIP no seu computador
+2. Abra a pasta extraída. Dentro dela existem:
+      LEIA-ME-PRIMEIRO.txt  (este arquivo, não suba)
+      src/
+      public/
+3. No GitHub, vá na PÁGINA INICIAL do repositório
+   (a raiz, onde aparecem src, public, index.html...)
+4. Clique em "Add file" → "Upload files"
+5. Arraste JUNTAS as duas pastas "src" e "public"
+   (selecione as duas e arraste de uma vez)
+6. O GitHub vai mostrar os caminhos:
+      src/App.tsx
+      src/pages/AgendaPage.tsx
+      src/pages/EventsListPage.tsx
+      src/pages/EventDetailPage.tsx
+      public/robots.txt
+   Se aparecer "ewind-agenda/" em algum caminho,
+   CANCELE e repita: você arrastou a pasta errada.
+7. Commit changes
+
+─── PASSO 3: conferir ──────────────────────────────────
+
+1. No GitHub, abra src/pages/ e confirme que
+   AgendaPage.tsx está lá
+2. Aguarde ~1 min (deploy do Vercel)
+3. No site (ewind.com.br), faça login e abra
+   "Meus eventos": deve aparecer o botão 📅 Agenda
+4. Dentro de um evento, a aba "Linha do tempo"
+   não existe mais
+
+Qualquer coisa estranha, me chama no chat.

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventContract, ContractPayment, Page } from '../types'
-import EventTimeline from '../components/EventTimeline'
 import EventGuestsTab from '../components/EventGuestsTab'
 import EventChecklistTab from '../components/EventChecklistTab'
 import EventComparisonTab from '../components/EventComparisonTab'
@@ -28,7 +27,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
   const [showContractForm, setShowContractForm] = useState(false)
   const fb = useEventFeedback()
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'guests' | 'checklist' | 'comparison' | 'tables'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'guests' | 'checklist' | 'comparison' | 'tables'>('overview')
   const [editingContract, setEditingContract] = useState<EventContract | null>(null)
   const [editingPayment, setEditingPayment] = useState<ContractPayment | null>(null)
 
@@ -122,7 +121,6 @@ export default function EventDetailPage({ user, event, back }: Props) {
       <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid #f0f0f0', marginBottom: 22 }}>
         {([
           { key: 'overview', label: '📊 Visão geral' },
-          { key: 'timeline', label: '🗺️ Linha do tempo' },
           { key: 'guests',   label: '👥 Convidados' },
           { key: 'checklist', label: '✅ Checklist' },
           { key: 'comparison', label: '⚖️ Orçamentos' },
@@ -319,11 +317,6 @@ export default function EventDetailPage({ user, event, back }: Props) {
         </div>
       )}
       </>)}
-
-      {/* ══ ABA: LINHA DO TEMPO ══ */}
-      {activeTab === 'timeline' && (
-        <EventTimeline event={event} contracts={contracts} />
-      )}
 
       {/* ══ ABA: CONVIDADOS ══ */}
       {activeTab === 'guests' && (

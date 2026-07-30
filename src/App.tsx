@@ -26,6 +26,7 @@ const PricingPage = lazy(() => import('./pages/PricingPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
 const EventsListPage = lazy(() => import('./pages/EventsListPage'))
+const AgendaPage = lazy(() => import('./pages/AgendaPage'))
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
 
@@ -50,6 +51,7 @@ const PAGE_TO_URL: Partial<Record<Page, string>> = {
   admin: '/admin',
   events: '/eventos',
   'event-detail': '/eventos/gerenciar',
+  agenda: '/agenda',
 }
 
 const URL_TO_PAGE: Record<string, Page> = Object.fromEntries(
@@ -83,7 +85,7 @@ export type Page =
   | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
  
   | 'reset-password' | 'terms' | 'pricing' | 'admin'
-  | 'events' | 'event-detail'
+  | 'events' | 'event-detail' | 'agenda'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -401,6 +403,9 @@ function App() {
         )}
         {page === 'events' && user && (
           <EventsListPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
+        )}
+        {page === 'agenda' && user && (
+          <AgendaPage user={user} goToPage={goToPage} openEvent={(ev: EventItem) => { setSelectedEvent(ev); goToPage('event-detail') }} />
         )}
         {page === 'event-detail' && user && selectedEvent && (
           <EventDetailPage user={user} event={selectedEvent} goToPage={goToPage} back={() => goToPage('events')} />
