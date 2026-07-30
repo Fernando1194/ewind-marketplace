@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /eventos
+Disallow: /agenda
+Disallow: /admin
+
+Sitemap: https://ewind.com.br/sitemap.xml
