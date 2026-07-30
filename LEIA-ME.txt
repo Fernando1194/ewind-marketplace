@@ -1,16 +1,25 @@
-════════════════════════════════════════════════
- EWIND — Correção do botão Agenda (1 palavra)
-════════════════════════════════════════════════
+════════════════════════════════════════════════════
+ EWIND — Agenda por evento
+════════════════════════════════════════════════════
 
-BUG: o botão 📅 Agenda chamava uma função que o
-componente não recebia (goToPage faltando na
-assinatura). O clique lançava erro silencioso.
+PASSO 1 — SQL (Supabase → SQL Editor):
+  Rode agenda-evento.sql
+  (adiciona vínculo de lembrete com evento; seguro rodar 2x)
 
-UPLOAD: extraia o ZIP, abra a pasta extraída e
-arraste a pasta "src" na página RAIZ do repo.
-Caminho esperado no GitHub:
-    src/pages/EventsListPage.tsx
+PASSO 2 — Upload no GitHub (página RAIZ do repo):
+  Extraia o ZIP e arraste APENAS a pasta "src".
+  Caminhos esperados:
+      src/types.ts
+      src/pages/AgendaPage.tsx
+      src/pages/EventDetailPage.tsx
+      src/components/AgendaCalendar.tsx
+      src/components/EventAgendaTab.tsx
+  Se aparecer outro prefixo, cancele e repita.
 
-TESTE (após ~1 min de deploy):
-ewind.com.br → Ctrl+Shift+R → login →
-Meus eventos → 📅 Agenda → o calendário anual abre.
+PASSO 3 — Teste (deploy ~1 min + Ctrl+Shift+R):
+  • Agenda geral: Meus eventos → 📅 Agenda (como antes)
+  • Agenda do evento: abra um evento → nova aba 📅 Agenda
+    (só os marcos daquele evento)
+  • Crie um lembrete dentro da aba do evento: ele aparece
+    lá E na agenda geral. Lembrete criado na geral fica
+    avulso (não aparece em nenhum evento específico).

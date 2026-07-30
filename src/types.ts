@@ -270,6 +270,7 @@ export interface EventTable {
 export interface AgendaReminder {
   id: string
   owner_id: string
+  event_id: string | null
   date: string
   title: string
   notes: string | null

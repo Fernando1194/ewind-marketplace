@@ -6,6 +6,7 @@ import EventGuestsTab from '../components/EventGuestsTab'
 import EventChecklistTab from '../components/EventChecklistTab'
 import EventComparisonTab from '../components/EventComparisonTab'
 import EventTablesTab from '../components/EventTablesTab'
+import EventAgendaTab from '../components/EventAgendaTab'
 import { useEventFeedback, Toast, ConfirmModal } from '../components/useEventFeedback'
 
 interface Props {
@@ -27,7 +28,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
   const [showContractForm, setShowContractForm] = useState(false)
   const fb = useEventFeedback()
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'overview' | 'guests' | 'checklist' | 'comparison' | 'tables'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'guests' | 'checklist' | 'comparison' | 'tables' | 'agenda'>('overview')
   const [editingContract, setEditingContract] = useState<EventContract | null>(null)
   const [editingPayment, setEditingPayment] = useState<ContractPayment | null>(null)
 
@@ -125,6 +126,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
           { key: 'checklist', label: '✅ Checklist' },
           { key: 'comparison', label: '⚖️ Orçamentos' },
           { key: 'tables', label: '🪑 Mesas' },
+          { key: 'agenda', label: '📅 Agenda' },
         ] as const).map(tab => (
           <button key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -336,6 +338,11 @@ export default function EventDetailPage({ user, event, back }: Props) {
       {/* ══ ABA: MAPA DE MESAS ══ */}
       {activeTab === 'tables' && (
         <EventTablesTab user={user} event={event} />
+      )}
+
+      {/* ══ ABA: AGENDA DO EVENTO ══ */}
+      {activeTab === 'agenda' && (
+        <EventAgendaTab user={user} event={event} />
       )}
 
       <Toast toast={fb.toast} />
