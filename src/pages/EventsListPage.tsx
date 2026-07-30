@@ -16,7 +16,7 @@ const TYPE_ICON: Record<string, string> = {
   'Corporativo': '💼', 'Chá de bebê': '🍼', 'Bodas': '🥂', 'Outro': '🎉',
 }
 
-export default function EventsListPage({ user, openEvent }: Props) {
+export default function EventsListPage({ user, goToPage, openEvent }: Props) {
   const [events, setEvents] = useState<EventItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)

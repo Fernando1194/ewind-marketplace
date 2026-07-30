@@ -1,32 +1,16 @@
-════════════════════════════════════════════════════
- EWIND — Extração de contrato v2
- (parcelas e datas-chave direto pra Agenda)
-════════════════════════════════════════════════════
+════════════════════════════════════════════════
+ EWIND — Correção do botão Agenda (1 palavra)
+════════════════════════════════════════════════
 
-2 arquivos. Sem SQL novo.
+BUG: o botão 📅 Agenda chamava uma função que o
+componente não recebia (goToPage faltando na
+assinatura). O clique lançava erro silencioso.
 
-UPLOAD (2 lotes, na página RAIZ do repositório):
-  1. Arraste a pasta "src"  → deve mostrar
-     src/pages/EventDetailPage.tsx
-  2. Arraste a pasta "api"  → deve mostrar
-     api/extract-contract.ts
-  Se aparecer outro prefixo no caminho, cancele e repita.
+UPLOAD: extraia o ZIP, abra a pasta extraída e
+arraste a pasta "src" na página RAIZ do repo.
+Caminho esperado no GitHub:
+    src/pages/EventsListPage.tsx
 
-COMO TESTAR (após deploy ~1 min + Ctrl+Shift+R):
-  1. Num evento, crie Novo contrato e suba um PDF
-     que tenha cronograma de pagamento (sinal/parcelas
-     com datas) e, se possível, datas de degustação/
-     prova/entrega.
-  2. Após a análise, além dos campos preenchidos,
-     aparecem dois blocos de revisão:
-       💰 Cronograma de pagamento detectado
-       📌 Datas-chave detectadas
-     Revise, remova o que estiver errado (✕),
-     marque "Revisei os campos" e salve.
-  3. Abra a Agenda: as parcelas e os lembretes
-     já estarão nas datas corretas.
-
-OBS: parcela extraída SEM data de vencimento não é
-criada (aparece marcada em vermelho na revisão).
-Datas-chave viram lembretes 📌 com o nome do
-fornecedor no título.
+TESTE (após ~1 min de deploy):
+ewind.com.br → Ctrl+Shift+R → login →
+Meus eventos → 📅 Agenda → o calendário anual abre.
