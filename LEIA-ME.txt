@@ -1,22 +1,20 @@
 ════════════════════════════════════════════════════
- EWIND — AGENDA v2 (modal de dia + lembretes)
+ EWIND — AGENDA v3 (calendário anual contínuo)
 ════════════════════════════════════════════════════
 
-PASSO 1 — SQL (Supabase → SQL Editor):
-  Rode o arquivo agenda-lembretes.sql
-  (cria a tabela de lembretes; seguro rodar 2x)
+Só 1 arquivo. Sem SQL novo (a tabela de lembretes
+da v2 continua sendo usada).
 
-PASSO 2 — Upload no GitHub:
-  Extraia o ZIP. NÃO arraste a pasta extraída inteira.
-  Abra a pasta extraída e arraste APENAS a pasta "src"
-  na página RAIZ do repositório (Add file → Upload files).
-  O GitHub deve mostrar:
-      src/types.ts
-      src/pages/AgendaPage.tsx
-  Se aparecer outro prefixo no caminho, cancele e repita.
+UPLOAD: extraia o ZIP, abra a pasta extraída e
+arraste APENAS a pasta "src" na página RAIZ do
+repositório (Add file → Upload files).
+O GitHub deve mostrar o caminho:
+    src/pages/AgendaPage.tsx
+Se aparecer outro prefixo, cancele e repita.
 
-PASSO 3 — Conferir (após ~1 min de deploy):
-  Na Agenda, clique em qualquer dia:
-  abre o painel do dia com eventos, serviços,
-  parcelas (com botão "Marcar como paga") e
-  o formulário de lembrete.
+DEPOIS DO DEPLOY (~1 min):
+Abra a Agenda com Ctrl+Shift+R (refresh forçado).
+Você deve ver: os 12 meses empilhados com a faixa
+verde do mês à esquerda, barra de rolagem própria,
+e a coluna "LINHA DO TEMPO" à direita com todos os
+marcos em ordem cronológica.
