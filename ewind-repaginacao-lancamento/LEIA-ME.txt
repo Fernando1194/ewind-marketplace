@@ -1,0 +1,34 @@
+════════════════════════════════════════════════════
+ EWIND — Repaginação: narrativa de lançamento único
+════════════════════════════════════════════════════
+
+O que mudou: toda linguagem de "em breve / em
+construção / quando o marketplace abrir" foi trocada
+pela narrativa de lançamento conjunto com early
+adopter (mínimo 6 meses, começando por Curitiba).
+
+Regra aplicada em todo o texto: o grátis do
+ORGANIZADOR é permanente. O prazo de 6 meses vale
+só para ANUNCIANTES (locadores e fornecedores).
+
+4 arquivos, sem SQL.
+
+UPLOAD: extraia o ZIP e arraste a pasta "src" na
+página RAIZ do repositório (Add file → Upload files).
+Caminhos esperados no GitHub:
+    src/pages/HomePageNew.tsx
+    src/pages/HowItWorksPage.tsx
+    src/pages/PricingPage.tsx
+    src/pages/AboutPage.tsx
+Se aparecer outro prefixo, cancele e repita.
+
+TESTE (após deploy ~1 min + Ctrl+Shift+R):
+  • Home: faixa do marketplace com badge
+    "EARLY ADOPTER · CURITIBA"
+  • Como Funciona: abas "Tenho um espaço" /
+    "Sou fornecedor" sem "(em breve)"; FAQ nova
+    sobre o que é o early adopter
+  • Planos: aviso "grátis hoje e sempre" para
+    organizador vs "grátis no early adopter" para
+    anunciante; cards com nota verde em vez de "⏳"
+  • Sobre: parágrafo da missão atualizado
