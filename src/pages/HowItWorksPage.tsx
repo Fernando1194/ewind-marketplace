@@ -20,7 +20,7 @@ export default function HowItWorksPage({ goToPage }: Props) {
   ]
 
   const hostSteps = [
-    { icon: '✍️', title: 'Cadastre seu espaço gratuitamente', desc: 'Crie sua conta como anunciante e cadastre seu espaço com fotos, atributos e preços orientativos. O marketplace está em construção — cadastre-se para ter prioridade no lançamento.' },
+    { icon: '✍️', title: 'Cadastre seu espaço gratuitamente', desc: 'Crie sua conta como anunciante e cadastre seu espaço com fotos, atributos e preços orientativos. Durante o early adopter, anunciar é gratuito, começando por Curitiba.' },
     { icon: '🌐', title: 'Apareça para quem busca', desc: 'Seu espaço entra na vitrine do Ewind e é encontrado por pessoas que já estão prontas para organizar um evento.' },
     { icon: '📨', title: 'Receba solicitações qualificadas', desc: 'As solicitações chegam com data, número de convidados e tipo de evento já informados. Sem perda de tempo com leads frios.' },
     { icon: '💰', title: 'Responda com sua proposta', desc: 'Envie um orçamento personalizado com texto e valor. Você controla cada negociação do início ao fim.' },
@@ -36,13 +36,13 @@ export default function HowItWorksPage({ goToPage }: Props) {
   ]
 
   const faqs = [
-    { q: 'O que é o Ewind?', a: 'O Ewind é uma ferramenta gratuita para organizar eventos. Você centraliza contratos, pagamentos, prazos, lista de convidados e checklist em um só lugar — sem precisar de planilhas. Em breve, também terá um marketplace para encontrar espaços e fornecedores.' },
+    { q: 'O que é o Ewind?', a: 'O Ewind é uma plataforma gratuita para organizar eventos, com um marketplace para encontrar espaços e fornecedores. Você centraliza contratos, pagamentos, prazos, convidados, checklist e agenda em um só lugar, sem precisar de planilhas.' },
     { q: 'A ferramenta de gestão é mesmo gratuita?', a: 'Sim. Criar eventos, cadastrar contratos, controlar pagamentos, gerenciar convidados e usar o checklist é totalmente gratuito para quem organiza eventos.' },
     { q: 'Preciso anexar meus contratos? É seguro?', a: 'Anexar o PDF do contrato é opcional, mas ajuda a manter tudo num lugar só. Os arquivos ficam privados e acessíveis apenas por você, através de links temporários e seguros.' },
     { q: 'Posso importar minha lista de convidados de uma planilha?', a: 'Sim. Na aba de convidados você baixa um modelo de planilha, preenche com seus convidados e importa de uma vez. Depois gerencia confirmações, categorias e custos dentro do Ewind.' },
     { q: 'O checklist serve para qualquer tipo de evento?', a: 'Sim. Você cria suas próprias tarefas com prazos calculados a partir da data do evento. Para casamentos, há ainda um botão que sugere uma lista de tarefas pronta para começar.' },
-    { q: 'Quando o marketplace de espaços e fornecedores estará disponível?', a: 'O marketplace está em construção. Ele permitirá comparar espaços e fornecedores e solicitar orçamentos sem sair do Ewind. Enquanto isso, a ferramenta de gestão já está 100% disponível.' },
-    { q: 'Tenho um espaço ou sou fornecedor. Como funciona para mim?', a: 'Você poderá anunciar no marketplace quando ele abrir — e já pode se cadastrar para ter prioridade. Além de anunciar, vai usar as mesmas ferramentas do Ewind para gerenciar seus próprios contratos, pagamentos e datas com clientes.' },
+    { q: 'O que é o período early adopter?', a: 'É a fase de avaliação da plataforma, com no mínimo 6 meses e começando por Curitiba. Nesse período, tudo é gratuito para todos os públicos, incluindo anunciantes. Ao fim dele, os planos por assinatura são ativados para quem anuncia, e quem entrou no início mantém condições exclusivas.' },
+    { q: 'Tenho um espaço ou sou fornecedor. Como funciona para mim?', a: 'Cadastre-se gratuitamente, anuncie no marketplace e use as mesmas ferramentas do Ewind para gerenciar seus contratos, pagamentos, datas e agenda com clientes. Durante o early adopter, tudo é gratuito.' },
     { q: 'Meus dados ficam protegidos?', a: 'Sim. Seus eventos, contratos e convidados são privados e visíveis apenas para você. Não vendemos dados e não compartilhamos suas informações com terceiros.' },
   ]
 
@@ -72,8 +72,8 @@ export default function HowItWorksPage({ goToPage }: Props) {
         <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 40 }}>
           {[
             { key: 'guest', icon: '🗓️', label: 'Estou organizando um evento' },
-            { key: 'host', icon: '🏢', label: 'Tenho um espaço (em breve)' },
-            { key: 'supplier', icon: '🛠️', label: 'Sou fornecedor (em breve)' },
+            { key: 'host', icon: '🏢', label: 'Tenho um espaço' },
+            { key: 'supplier', icon: '🛠️', label: 'Sou fornecedor' },
           ].map(tab => (
             <button key={tab.key} onClick={() => setAudience(tab.key as Audience)}
               style={{ padding: '14px 24px', border: audience === tab.key ? '2px solid #a3e635' : '1.5px solid #e8e8e8', borderRadius: 12, background: audience === tab.key ? '#f0fdf4' : '#fff', color: audience === tab.key ? '#1a2e05' : '#2d2d2d', fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
@@ -94,8 +94,8 @@ export default function HowItWorksPage({ goToPage }: Props) {
             </h3>
             <p style={{ fontSize: 14, color: '#6b7280' }}>
               {audience === 'guest' && 'Da criação do evento ao grande dia, tudo organizado'}
-              {audience === 'host' && 'Anuncie e gerencie seus contratos — marketplace em breve'}
-              {audience === 'supplier' && 'Cadastre seu serviço e gerencie seus contratos — em breve'}
+              {audience === 'host' && 'Anuncie, gerencie contratos e receba orçamentos'}
+              {audience === 'supplier' && 'Cadastre seu serviço e seja encontrado'}
             </p>
           </div>
 

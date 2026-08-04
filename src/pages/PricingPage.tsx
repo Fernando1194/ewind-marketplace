@@ -79,9 +79,9 @@ export default function PricingPage({ goToPage }: Props) {
 
   const faqs = [
     { q: 'A ferramenta de gestão de eventos é paga?', a: 'Não. Criar eventos, gerenciar contratos, pagamentos, prazos, convidados e checklist é totalmente gratuito para quem organiza eventos — e continuará sendo.' },
-    { q: 'Então o que é pago?', a: 'Os planos desta página são para anunciantes (donos de espaços e fornecedores de serviços) e só entram em vigor quando o marketplace for lançado. Por enquanto, o cadastro de anunciante é gratuito.' },
+    { q: 'Então o que é pago?', a: 'Os planos desta página são para anunciantes (donos de espaços e fornecedores de serviços) e só entram em vigor ao fim do período early adopter. Durante o early adopter, anunciar é totalmente gratuito.' },
     { q: 'Os valores mostrados são definitivos?', a: 'Não. São valores previstos para o lançamento do marketplace e podem mudar. Quem se cadastrar agora como early adopter terá condições especiais e prioridade.' },
-    { q: 'Quando o marketplace estará disponível?', a: 'Está em construção. Ele permitirá comparar espaços e fornecedores e solicitar orçamentos dentro do Ewind. Enquanto isso, a ferramenta de gestão já está 100% disponível e gratuita.' },
+    { q: 'O que é o período early adopter?', a: 'É a fase de avaliação da plataforma: no mínimo 6 meses, começando por Curitiba, com tudo gratuito para todos os públicos. Serve para avaliarmos e corrigirmos a plataforma com feedback real antes de ativar as assinaturas.' },
     { q: 'Quem se cadastra como anunciante agora tem benefício?', a: 'Sim. Além de já poder gerenciar seus próprios contratos na plataforma, os primeiros anunciantes terão condições exclusivas quando os planos pagos forem ativados.' },
     { q: 'O Ewind cobra comissão sobre eventos fechados?', a: 'Não. O modelo é assinatura, não comissão. Anunciantes negociam e fecham diretamente com o cliente, sem taxa sobre cada negócio.' },
   ]
@@ -98,12 +98,12 @@ export default function PricingPage({ goToPage }: Props) {
           Organizar é grátis.<br /><span style={{ color: '#a3e635' }}>Sempre.</span>
         </h1>
         <p style={{ fontSize: 15, color: '#9ca3af', maxWidth: 520, margin: '0 auto 28px', lineHeight: 1.65 }}>
-          Criar eventos, gerenciar contratos, pagamentos, convidados e checklist não custa nada. Os planos abaixo são para <strong style={{ color: '#fff' }}>anunciantes</strong> e entram em vigor quando o marketplace for lançado.
+          Para quem organiza, o Ewind é gratuito hoje e sempre. Para <strong style={{ color: '#fff' }}>anunciantes</strong>, tudo é gratuito durante o early adopter (mínimo 6 meses, começando por Curitiba); os planos abaixo só entram em vigor depois desse período.
         </p>
         <button onClick={() => goToPage('events')} style={{ background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 10, padding: '13px 30px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 28 }}>
           🗓️ Criar meu evento grátis
         </button>
-        <div style={{ fontSize: 12, color: '#666', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 700, marginBottom: 16 }}>Planos para anunciantes · em breve</div>
+        <div style={{ fontSize: 12, color: '#666', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 700, marginBottom: 16 }}>Planos para anunciantes · ativam após o early adopter</div>
         <div style={{ display: 'inline-flex', background: '#1a1a1a', borderRadius: 100, padding: 4, gap: 4 }}>
           {(['monthly', 'annual'] as const).map(b => (
             <button key={b} onClick={() => setBilling(b)} style={{ padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, transition: 'all .2s', background: billing === b ? (b === 'annual' ? '#a3e635' : '#fff') : 'transparent', color: billing === b ? (b === 'annual' ? '#1a2e05' : '#111') : '#666', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -134,7 +134,7 @@ export default function PricingPage({ goToPage }: Props) {
                 {plan.id === 'pro' && <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>vs R${getPrice(59) + getPrice(49)}/mês comprando separado</div>}
               </div>
               <div style={{ background: '#f9fafb', border: '1px solid #e8e8e8', borderRadius: 8, padding: '7px 12px', marginBottom: 18, fontSize: 11, color: '#6b7280' }}>
-                ⏳ <strong>Em breve</strong> — valor previsto para o lançamento
+                🟢 <strong>Grátis no early adopter</strong> · valor previsto para depois
               </div>
               <button onClick={() => goToPage('signup')} style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 800, background: plan.highlight ? plan.color : '#111', color: plan.highlight ? '#1a2e05' : '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
                 {plan.cta} →
@@ -193,7 +193,7 @@ export default function PricingPage({ goToPage }: Props) {
           <div style={{ fontSize: 30, marginBottom: 10 }}>🚀</div>
           <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Seja um <span style={{ color: '#a3e635' }}>Early Adopter</span></h2>
           <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.65, marginBottom: 22 }}>
-Cadastre seu espaço ou serviço agora, gerencie seus contratos na plataforma e garanta <strong style={{ color: '#fff' }}>condições exclusivas</strong> quando o marketplace for lançado.
+Cadastre seu espaço ou serviço agora, use tudo gratuitamente durante o early adopter e garanta <strong style={{ color: '#fff' }}>condições exclusivas</strong> quando as assinaturas forem ativadas.
           </p>
           {!submitted ? (
             <form onSubmit={handleNotify} style={{ display: 'flex', gap: 8, maxWidth: 400, margin: '0 auto' }}>

@@ -1,56 +1,66 @@
-════════════════════════════════════════════════════════
- EWIND — AGENDA (pacote corrigido)
- Siga EXATAMENTE estes 3 passos, na ordem.
-════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════════
+ EWIND — Remoção final de "(em breve)" do site
+════════════════════════════════════════════════════════════
 
-O erro anterior: os arquivos subiram para uma pasta
-"ewind-agenda/" dentro do repositório, em vez de
-substituírem os originais. O build ignora essa pasta,
-por isso nada mudou no site.
+⚠️ AVISO IMPORTANTE, LEIA ANTES DE FAZER UPLOAD:
 
-─── PASSO 1: apagar a pasta errada no GitHub ───────────
+O ZIP anterior ("ewind-repaginacao-lancamento") NÃO foi
+aplicado corretamente. Ele foi arrastado inteiro para o
+GitHub, criando uma pasta chamada
+"ewind-repaginacao-lancamento/" DENTRO do repositório —
+em vez de substituir os arquivos reais em src/pages/.
+Por isso "(em breve)" continuava aparecendo no site.
 
-1. Abra o repositório no GitHub
-2. Entre na pasta "ewind-agenda"
-3. Clique no botão "..." (canto superior direito)
-   e escolha "Delete directory"
-   (se não aparecer, abra cada arquivo e use
-   "..." → Delete file, um por um)
-4. Confirme o commit da exclusão
+Isso já aconteceu 3 vezes. Para NÃO acontecer de novo,
+siga exatamente estes passos:
 
-─── PASSO 2: subir estes arquivos DO JEITO CERTO ───────
+─── PASSO 1: apagar as pastas fantasmas ───────────────
+No GitHub, na raiz do repositório, apague estas pastas
+inteiras (clique em cada uma → "..." → Delete directory):
+    ewind-agenda/
+    ewind-orcamento-aceito/
+    ewind-repaginacao-lancamento/
+E estes arquivos soltos na raiz (não deveriam estar lá):
+    HowItWorksPage.tsx
+    ListingPage.tsx
+    MyQuotesPage.tsx
+    SpaceFormPage.tsx
+    LEIA-ME.txt / LEIA-ME-PRIMEIRO.txt (versões antigas)
 
-O segredo: NÃO arraste a pasta extraída inteira.
-Arraste as pastas "src" e "public" que estão DENTRO dela.
+─── PASSO 2: extrair ESTE zip no computador ───────────
+Depois de extrair, você verá uma pasta com:
+    index.html
+    src/pages/AboutPage.tsx
+    src/pages/HomePageNew.tsx
+    src/pages/HowItWorksPage.tsx
+    src/pages/PricingPage.tsx
+    public/og-image.png
 
-1. Extraia este ZIP no seu computador
-2. Abra a pasta extraída. Dentro dela existem:
-      LEIA-ME-PRIMEIRO.txt  (este arquivo, não suba)
-      src/
-      public/
-3. No GitHub, vá na PÁGINA INICIAL do repositório
-   (a raiz, onde aparecem src, public, index.html...)
-4. Clique em "Add file" → "Upload files"
-5. Arraste JUNTAS as duas pastas "src" e "public"
-   (selecione as duas e arraste de uma vez)
-6. O GitHub vai mostrar os caminhos:
-      src/App.tsx
-      src/pages/AgendaPage.tsx
-      src/pages/EventsListPage.tsx
-      src/pages/EventDetailPage.tsx
-      public/robots.txt
-   Se aparecer "ewind-agenda/" em algum caminho,
-   CANCELE e repita: você arrastou a pasta errada.
-7. Commit changes
+─── PASSO 3: upload no GitHub (2 lotes) ───────────────
+Na página RAIZ do repositório → "Add file" → "Upload files":
 
-─── PASSO 3: conferir ──────────────────────────────────
+  Lote 1: abra a pasta extraída e arraste a pasta "src"
+          (a pasta inteira, não os arquivos de dentro)
+  Lote 2: arraste a pasta "public" e o arquivo
+          "index.html" juntos
 
-1. No GitHub, abra src/pages/ e confirme que
-   AgendaPage.tsx está lá
-2. Aguarde ~1 min (deploy do Vercel)
-3. No site (ewind.com.br), faça login e abra
-   "Meus eventos": deve aparecer o botão 📅 Agenda
-4. Dentro de um evento, a aba "Linha do tempo"
-   não existe mais
+Antes de clicar em "Commit changes", o GitHub mostra a
+lista de caminhos que serão criados/atualizados. Confira
+que aparecem exatamente estes 6 caminhos, sem nenhum
+nome de pasta extra na frente:
 
-Qualquer coisa estranha, me chama no chat.
+    index.html
+    public/og-image.png
+    src/pages/AboutPage.tsx
+    src/pages/HomePageNew.tsx
+    src/pages/HowItWorksPage.tsx
+    src/pages/PricingPage.tsx
+
+Se aparecer qualquer prefixo diferente (tipo "ewind-.../"
+antes do caminho), CANCELE e repita o passo 3.
+
+─── PASSO 4: conferir depois do deploy (~1 min) ───────
+ewind.com.br → Ctrl+Shift+R (refresh forçado) →
+  • Como Funciona: os botões "Tenho um espaço" e
+    "Sou fornecedor" não têm mais "(em breve)"
+  • Planos: o card de anunciante não tem mais "⏳ Em breve"

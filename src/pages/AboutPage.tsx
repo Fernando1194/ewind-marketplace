@@ -54,7 +54,7 @@ export default function AboutPage({ goToPage }: Props) {
               Hoje, quem organiza faz tudo isso em planilhas espalhadas, grupos de WhatsApp e papéis soltos. É fácil perder um vencimento, esquecer uma cláusula de multa ou não saber quanto já foi gasto.
             </p>
             <p style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.8 }}>
-              O Ewind resolve isso. Começamos por uma ferramenta gratuita que centraliza contratos, pagamentos, prazos e convidados num só lugar. E estamos construindo um marketplace para conectar organizadores a espaços e fornecedores — tudo na mesma plataforma.
+              O Ewind resolve isso. Uma ferramenta gratuita centraliza contratos, pagamentos, prazos, convidados e agenda num só lugar. E um marketplace conecta organizadores a espaços e fornecedores na mesma plataforma, em período early adopter começando por Curitiba.
             </p>
           </div>
 
