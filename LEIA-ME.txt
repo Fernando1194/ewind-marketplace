@@ -1,25 +1,29 @@
 ════════════════════════════════════════════════════
- EWIND — Agenda por evento
+ EWIND — Remoção de "de graça" do copy público
 ════════════════════════════════════════════════════
 
-PASSO 1 — SQL (Supabase → SQL Editor):
-  Rode agenda-evento.sql
-  (adiciona vínculo de lembrete com evento; seguro rodar 2x)
+O que mudou: a expressão literal "de graça" foi
+removida do site (headline da Home, seção "Como
+funciona", título/meta tags e imagem de
+compartilhamento). O motivo: só os ANUNCIANTES vão
+ficar pagos no futuro; o organizador continua
+gratuito para sempre, mas isso já está garantido de
+forma mais sóbria na página de Planos ("gratuito
+hoje e sempre"), sem depender da palavra "de graça"
+espalhada pelo site.
 
-PASSO 2 — Upload no GitHub (página RAIZ do repo):
-  Extraia o ZIP e arraste APENAS a pasta "src".
-  Caminhos esperados:
-      src/types.ts
-      src/pages/AgendaPage.tsx
-      src/pages/EventDetailPage.tsx
-      src/components/AgendaCalendar.tsx
-      src/components/EventAgendaTab.tsx
-  Se aparecer outro prefixo, cancele e repita.
+3 arquivos.
 
-PASSO 3 — Teste (deploy ~1 min + Ctrl+Shift+R):
-  • Agenda geral: Meus eventos → 📅 Agenda (como antes)
-  • Agenda do evento: abra um evento → nova aba 📅 Agenda
-    (só os marcos daquele evento)
-  • Crie um lembrete dentro da aba do evento: ele aparece
-    lá E na agenda geral. Lembrete criado na geral fica
-    avulso (não aparece em nenhum evento específico).
+UPLOAD (2 lotes, na página RAIZ do repositório):
+  1. Arraste a pasta "src" →
+     src/pages/HomePageNew.tsx
+  2. Arraste a pasta "public" (substitui a imagem) →
+     public/og-image.png
+  3. O arquivo "index.html" vai sozinho, solto na
+     raiz do repositório (não tem pasta)
+
+TESTE (após deploy ~1 min + Ctrl+Shift+R):
+  • Home: headline agora diz "Organize seu evento
+    do início ao fim, sem perder nada" (sem "de graça")
+  • Compartilhe ewind.com.br no WhatsApp: o card de
+    preview mostra a nova imagem sem menção a preço

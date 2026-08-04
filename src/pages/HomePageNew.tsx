@@ -94,7 +94,7 @@ export default function HomePage({ goToPage }: Props) {
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 820, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
             Organize seu evento do início ao fim,{' '}
-            <span style={{ color: '#a3e635' }}>de graça</span>
+            <span style={{ color: '#a3e635' }}>sem perder nada</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 600, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
             Centralize contratos, pagamentos, prazos e convidados em um só lugar. O Ewind é a ferramenta gratuita para quem está organizando um casamento, aniversário ou qualquer evento — sem planilhas espalhadas.
@@ -157,7 +157,7 @@ className="hero-arrow hero-arrow-right"
       <section className="section">
         <h2 className="sec-title">Como o Ewind organiza seu evento</h2>
         <p style={{ textAlign: 'center', fontSize: 15, color: '#6b7280', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.6 }}>
-          Tudo o que você precisa para não perder nenhum prazo, contrato ou pagamento — de graça, sem planilha.
+          Tudo o que você precisa para não perder nenhum prazo, contrato ou pagamento, sem planilha.
         </p>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
           {[
@@ -180,23 +180,23 @@ className="hero-arrow hero-arrow-right"
         </div>
       </section>
 
-      {/* MARKETPLACE — EM BREVE (única faixa) */}
+      {/* MARKETPLACE — EARLY ADOPTER (única faixa) */}
       <section className="section" style={{ background: '#f9fafb', borderTop: '1px solid #e8e8e8', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, color: '#3f6212', background: '#ecfccb', padding: '4px 12px', borderRadius: 100, marginBottom: 14 }}>EM BREVE</span>
+          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, color: '#1a2e05', background: '#a3e635', padding: '4px 12px', borderRadius: 100, marginBottom: 14 }}>EARLY ADOPTER · CURITIBA</span>
           <h2 className="sec-title" style={{ marginBottom: 12 }}>Encontre espaços e fornecedores na plataforma</h2>
           <p style={{ fontSize: 15, color: '#6b7280', maxWidth: 620, margin: '0 auto 8px', lineHeight: 1.7 }}>
-            Estamos construindo um marketplace onde você vai comparar chácaras, salões, buffets, fotógrafos e muito mais — e solicitar orçamentos sem sair do Ewind, já conectado à organização do seu evento.
+            Compare chácaras, salões, buffets, fotógrafos e muito mais, e solicite orçamentos sem sair do Ewind, já conectado à organização do seu evento. Estamos no período early adopter: tudo gratuito, começando por Curitiba.
           </p>
           <p style={{ fontSize: 13, color: '#9ca3af' }}>
-            Enquanto isso, a ferramenta de gestão já está 100% disponível e gratuita.
+            Para organizadores, a plataforma é gratuita hoje e sempre. Para anunciantes, gratuita durante todo o período early adopter, com no mínimo 6 meses.
           </p>
         </div>
       </section>
 
       {/* CATEGORIAS */}
       <section className="section">
-        <h2 className="sec-title">Categorias que estarão disponíveis</h2>
+        <h2 className="sec-title">Explore por categoria</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
           {CATEGORIES.map(c => (
             <div key={c.name} onClick={() => goToPage('listing')}
@@ -247,7 +247,7 @@ className="hero-arrow hero-arrow-right"
             <div style={{ fontSize: 42, marginBottom: 14 }}>🎪</div>
             <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros anunciantes!</h3>
             <p style={{ fontSize: 14, color: '#365314', marginBottom: 20, lineHeight: 1.6, maxWidth: 460, margin: '0 auto 20px' }}>
-              O marketplace está em construção. Cadastre seu espaço agora, gerencie seus contratos na plataforma e garanta prioridade quando os orçamentos começarem a fluir.
+              Anuncie gratuitamente durante o early adopter, gerencie seus contratos e sua agenda na plataforma, e garanta condições exclusivas quando as assinaturas forem ativadas.
             </p>
             <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage('signup')}>
               Cadastrar meu espaço gratuitamente
@@ -302,7 +302,7 @@ className="hero-arrow hero-arrow-right"
             <div style={{ fontSize: 38, marginBottom: 12 }}>🛠️</div>
             <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros fornecedores!</h3>
             <p style={{ fontSize: 13, color: '#365314', marginBottom: 18, lineHeight: 1.6, maxWidth: 420, margin: '0 auto 18px' }}>
-              Fotógrafos, DJs, decoradores e confeiteiros — cadastre seu serviço, gerencie seus contratos e seja um dos primeiros quando o marketplace abrir.
+              Fotógrafos, DJs, decoradores e confeiteiros: cadastre seu serviço gratuitamente no early adopter, gerencie seus contratos e seja encontrado por quem organiza.
             </p>
             <button className="btn-primary" style={{ padding: '11px 24px', fontSize: 14 }} onClick={() => goToPage('signup')}>
               Cadastrar meu serviço gratuitamente
@@ -317,7 +317,7 @@ className="hero-arrow hero-arrow-right"
           <div>
             <div className="cta-title">Tem um espaço para eventos?</div>
             <div className="cta-desc">
-              Em breve, anuncie seu espaço no marketplace do Ewind e gerencie seus próprios contratos, pagamentos e prazos na mesma plataforma. Cadastre-se para garantir prioridade no lançamento.
+              Anuncie seu espaço gratuitamente durante o período early adopter e gerencie seus contratos, pagamentos e prazos na mesma plataforma. Quem entra agora mantém condições exclusivas quando as assinaturas forem ativadas.
             </div>
           </div>
           <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage('signup')}>
@@ -336,7 +336,7 @@ className="hero-arrow hero-arrow-right"
                 É fornecedor de eventos? Anuncie e gerencie seus contratos no mesmo lugar
               </div>
               <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', maxWidth: 540, lineHeight: 1.7 }}>
-                Em breve você poderá exibir seu portfólio no marketplace do Ewind <strong>e</strong> usar as mesmas ferramentas de gestão de contratos, pagamentos e prazos que os organizadores já usam — tudo num só painel. Cadastre-se para ser avisado no lançamento.
+                Exiba seu portfólio no marketplace do Ewind <strong>e</strong> use as mesmas ferramentas de gestão de contratos, pagamentos e prazos que os organizadores já usam, tudo num só painel. Gratuito durante o early adopter, começando por Curitiba.
               </div>
             </div>
           </div>
