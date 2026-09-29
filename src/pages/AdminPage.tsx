@@ -150,9 +150,20 @@ export default function AdminPage({ goToPage }: Props) {
 
   useEffect(() => { loadData() }, [loadData])
 
+  // update() sem .select() não lança erro quando a RLS bloqueia e 0 linhas são afetadas
+  // (foi exatamente assim que a moderação de espaço/fornecedor ficou quebrada em silêncio
+  // por falta de policy de UPDATE para o admin). Por isso aqui sempre confirmamos com
+  // .select().single() que a linha voltou antes de considerar sucesso e atualizar a UI.
+
   const updateSpaceStatus = async (id: string, status: string, name: string) => {
     setActionLoading(id)
-    await supabase.from('spaces').update({ status }).eq('id', id)
+    const { data, error } = await supabase.from('spaces').update({ status }).eq('id', id).select('id, status').single()
+    if (error || !data) {
+      console.error(error)
+      alert(`Não foi possível atualizar "${name}". A alteração não foi salva no banco.`)
+      setActionLoading(null)
+      return
+    }
     setSpaces(prev => prev.map(s => s.id === id ? { ...s, status } : s))
     addLog('Espaço', `"${name}" → ${STATUS_LABEL[status]}`)
     setActionLoading(null)
@@ -160,7 +171,13 @@ export default function AdminPage({ goToPage }: Props) {
 
   const updateSupplierStatus = async (id: string, status: string, name: string) => {
     setActionLoading(id)
-    await supabase.from('suppliers').update({ status }).eq('id', id)
+    const { data, error } = await supabase.from('suppliers').update({ status }).eq('id', id).select('id, status').single()
+    if (error || !data) {
+      console.error(error)
+      alert(`Não foi possível atualizar "${name}". A alteração não foi salva no banco.`)
+      setActionLoading(null)
+      return
+    }
     setSuppliers(prev => prev.map(s => s.id === id ? { ...s, status } : s))
     addLog('Fornecedor', `"${name}" → ${STATUS_LABEL[status]}`)
     setActionLoading(null)
@@ -168,7 +185,13 @@ export default function AdminPage({ goToPage }: Props) {
 
   const deleteSupplier = async (id: string, name: string) => {
     setActionLoading(id)
-    await supabase.from('suppliers').delete().eq('id', id)
+    const { error } = await supabase.from('suppliers').delete().eq('id', id).select('id').single()
+    if (error) {
+      console.error(error)
+      alert(`Não foi possível excluir "${name}". A exclusão não foi salva no banco.`)
+      setActionLoading(null)
+      return
+    }
     setSuppliers(prev => prev.filter(s => s.id !== id))
     addLog('Fornecedor excluído', `"${name}"`)
     setDeleteSupplierConfirm(null)
@@ -177,7 +200,13 @@ export default function AdminPage({ goToPage }: Props) {
 
   const deleteSpace = async (id: string, name: string) => {
     setActionLoading(id)
-    await supabase.from('spaces').delete().eq('id', id)
+    const { error } = await supabase.from('spaces').delete().eq('id', id).select('id').single()
+    if (error) {
+      console.error(error)
+      alert(`Não foi possível excluir "${name}". A exclusão não foi salva no banco.`)
+      setActionLoading(null)
+      return
+    }
     setSpaces(prev => prev.filter(s => s.id !== id))
     addLog('Espaço excluído', `"${name}"`)
     setDeleteSpaceConfirm(null)
@@ -187,7 +216,13 @@ export default function AdminPage({ goToPage }: Props) {
   const deleteUser = async (id: string, name: string) => {
     if (id === ADMIN_ID) return
     setActionLoading(id)
-    await supabase.from('profiles').delete().eq('id', id)
+    const { error } = await supabase.from('profiles').delete().eq('id', id).select('id').single()
+    if (error) {
+      console.error(error)
+      alert(`Não foi possível excluir "${name}". A exclusão não foi salva no banco.`)
+      setActionLoading(null)
+      return
+    }
     setUsers(prev => prev.filter(u => u.id !== id))
     addLog('Usuário excluído', name)
     setDeleteConfirm(null)
