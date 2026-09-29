@@ -395,9 +395,12 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, 
       if (scanned) { setAiStatus('scanned'); return }
 
       setAiStatus('analyzing')
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
+      if (!accessToken) { setAiStatus('error'); return }
       const resp = await fetch('/api/extract-contract', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
         body: JSON.stringify({ contractText: text }),
       })
       const result = await resp.json().catch(() => ({}))

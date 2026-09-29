@@ -1,6 +1,6 @@
 import AvailabilityCalendar from '../components/AvailabilityCalendar'
 import Reviews from '../components/Reviews'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import MediaCarousel from '../components/MediaCarousel'
 import type { User } from '@supabase/supabase-js'
@@ -27,6 +27,18 @@ export default function DetailPage({ space, user, goToPage }: Props) {
   const [success, setSuccess] = useState(false)
   const [quoteData, setQuoteData] = useState<any>(null)
   const [whatsappSent, setWhatsappSent] = useState(false)
+
+  // Endereço exato: só existe para o host do espaço ou para quem já solicitou orçamento
+  // (RLS da tabela space_addresses). Para qualquer outro visitante, a consulta volta vazia.
+  const [exactAddress, setExactAddress] = useState<string | null>(null)
+  useEffect(() => {
+    setExactAddress(null)
+    if (!user) return
+    let cancelled = false
+    supabase.from('space_addresses').select('address').eq('space_id', space.id).maybeSingle()
+      .then(({ data }) => { if (!cancelled) setExactAddress(data?.address || null) })
+    return () => { cancelled = true }
+  }, [space.id, user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -149,7 +161,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
           )}
 
           {/* Mapa */}
-          {(space.address || space.neighborhood || space.city) && (
+          {(space.neighborhood || space.city) && (
             <div style={{ marginTop: 24 }}>
               <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>📍 Localização</h3>
               {space.neighborhood && (
@@ -165,13 +177,15 @@ export default function DetailPage({ space, user, goToPage }: Props) {
                   style={{ border: 0, display: 'block' }}
                   loading="lazy"
                   src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                    [space.address, space.neighborhood, space.city, space.state, 'Brasil']
+                    [exactAddress, !exactAddress ? space.neighborhood : null, space.city, space.state, 'Brasil']
                       .filter(Boolean).join(', ')
-                  )}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                  )}&t=&z=${exactAddress ? 15 : 13}&ie=UTF8&iwloc=&output=embed`}
                 />
               </div>
               <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 6 }}>
-                📌 Endereço completo compartilhado após confirmação do orçamento.
+                {exactAddress
+                  ? '📌 Endereço exato liberado porque você já solicitou orçamento (ou é o dono) deste espaço.'
+                  : '📌 Este mapa mostra apenas a região. O endereço exato aparece aqui depois que você solicitar um orçamento.'}
               </p>
             </div>
           )}
