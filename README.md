@@ -57,6 +57,8 @@ src/
   App.tsx        Roteamento e navegação
 api/
   extract-contract.ts   Função serverless de extração de contrato por IA
+database/               Scripts SQL das tabelas e políticas (aplicados no SQL Editor do Supabase)
+docs/                   Notas de produto e prioridades de lançamento
 ```
 
 Tabelas principais no Supabase: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`. Todas com Row Level Security por `owner_id` (cada usuário só acessa os próprios dados).
@@ -69,10 +71,7 @@ Requisitos: Node.js 18+ e uma conta Supabase.
 
 ```bash
 npm install
-
-# variáveis de ambiente necessárias
-# VITE_SUPABASE_URL
-# VITE_SUPABASE_ANON_KEY
+cp .env.example .env   # preencha VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
 
 npm run dev      # ambiente de desenvolvimento
 npm run build    # build de produção
@@ -85,7 +84,7 @@ A função de extração por IA requer `ANTHROPIC_API_KEY` configurada no ambien
 
 ## Deploy
 
-O deploy é automático: cada push na branch `main` dispara um build na Vercel. As migrações de banco (SQL) são aplicadas manualmente no SQL Editor do Supabase.
+O deploy é automático: cada push na branch `main` dispara um build na Vercel. As migrações de banco (scripts em `database/`) são aplicadas manualmente no SQL Editor do Supabase.
 
 ---
 
