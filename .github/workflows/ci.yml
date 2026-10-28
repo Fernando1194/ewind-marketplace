@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # O repositório ainda não versiona package-lock.json, por isso "install" e não "ci".
+      - name: Instalar dependências
+        run: npm install --no-audit --no-fund
+
+      # Pega erros de tipo NOVOS (ex.: chamar função que não existe, como aconteceu com
+      # requestDeletion). Erros antigos ficam registrados em scripts/typecheck-baseline.json.
+      - name: Checagem de tipos (catraca)
+        run: npm run typecheck
+
+      - name: Build de produção
+        run: npm run build
