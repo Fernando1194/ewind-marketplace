@@ -260,7 +260,7 @@ function App() {
 
           <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
-          {!IS_DEMO && <a href={DEMO_URL} data-tour="nav-demo">Demonstração</a>}
+          {!IS_DEMO && <a href={DEMO_URL} style={{ textDecoration: 'none', color: 'inherit' }}>Demonstração</a>}
         </div>
 
         <div className="nav-right">
@@ -324,7 +324,7 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {!IS_DEMO && <a href={DEMO_URL}>🧪 Demonstração</a>}
+        {!IS_DEMO && <a href={DEMO_URL} style={{ textDecoration: 'none', color: 'inherit' }}>🧪 Demonstração</a>}
         {user && userRole !== 'guest' && (
           <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
             {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel

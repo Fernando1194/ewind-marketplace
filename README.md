@@ -4,6 +4,8 @@ A free tool to plan events from start to finish: contracts, payments, deadlines,
 
 **Production:** [ewind.com.br](https://ewind.com.br) (the interface is in Brazilian Portuguese; the product is aimed at the Brazilian market)
 
+**Live demo with a guided tour:** [ewind.com.br/demo](https://ewind.com.br/demo) (fictitious data, no sign-up; click "Tutorial" for a step-by-step walkthrough)
+
 ---
 
 ## Product vision
@@ -62,6 +64,16 @@ sql/
 ```
 
 Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`, `agenda_reminders`. All of them use Row Level Security by `owner_id` (each user can only access their own data). A space's exact address lives in `space_addresses`, readable only by its host and by users who requested a quote.
+
+---
+
+## Demo mode
+
+[ewind.com.br/demo](https://ewind.com.br/demo) runs the same build in demo mode, so anyone can explore the product without creating an account:
+
+- Under `/demo` the app switches at runtime to a **separate Supabase project** with fictitious people, venues and events, keeps its session under its own storage key and adds a disclaimer banner. The real site never loads the demo code (`src/demo/`).
+- Two **guided tours** (`src/demo/tours.ts`) highlight each feature and button, opening tabs and pages as they go: organizing an event (29 steps) and finding venues and suppliers (10 steps). Elements are targeted through `data-tour` attributes.
+- `sql/demo/seed.sql` defines `demo.reset()`, which rebuilds the sample accounts and data with dates relative to today; `pg_cron` runs it every night, so visitors' changes never accumulate.
 
 ---
 
