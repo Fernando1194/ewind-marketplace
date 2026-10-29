@@ -3,6 +3,8 @@ import { supabase } from '../supabase'
 import { CATEGORIES } from '../types'
 import type { Space } from '../types'
 import type { Page } from '../App'
+import { useCopy } from '../i18n'
+import { HOME } from '../i18n/home'
 
 interface Props {
   goToPage: (page: Page, space?: Space) => void
@@ -30,6 +32,7 @@ const HERO_IMAGES = [
 ]
 
 export default function HomePage({ goToPage }: Props) {
+  const c = useCopy(HOME)
   const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
   const [featuredSuppliers, setFeaturedSuppliers] = useState<any[]>([])
   const [heroImages] = useState<string[]>(HERO_IMAGES)
@@ -87,21 +90,21 @@ export default function HomePage({ goToPage }: Props) {
 
         <div style={{ position: 'relative', zIndex: 3, padding: '60px 24px', width: '100%', textAlign: 'center' }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            Gestão de eventos · 100% grátis
+            {c.badge}
           </div>
           <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 820, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
-            Organize seu evento do início ao fim,{' '}
-            <span style={{ color: '#a3e635' }}>sem perder nada</span>
+            {c.h1a}{' '}
+            <span style={{ color: '#a3e635' }}>{c.h1b}</span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 600, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
-            Centralize contratos, pagamentos, prazos e convidados em um só lugar. O Ewind é a ferramenta gratuita para quem está organizando um casamento, aniversário ou qualquer evento — sem planilhas espalhadas.
+            {c.lead}
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
             <button className="btn-primary" onClick={() => goToPage('events')} style={{ fontSize: 16, padding: '15px 36px', fontWeight: 700 }}>
-              Criar meu evento grátis
+              {c.ctaEvent}
             </button>
             <button onClick={() => goToPage('how-it-works')} style={{ fontSize: 16, padding: '15px 28px', fontWeight: 600, background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', color: '#fff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
-              Como funciona
+              {c.how}
             </button>
           </div>
 
@@ -133,12 +136,7 @@ className="hero-arrow hero-arrow-right"
       {/* PROPOSTA DE VALOR — 4 pilares */}
       <section style={{ background: '#f9fafb', padding: '40px 24px', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
-          {[
-            { icon: '📄', title: 'Contratos organizados', desc: 'Fornecedores, valores e cláusulas de risco num só lugar — com o PDF anexado.' },
-            { icon: '💰', title: 'Pagamentos e prazos', desc: 'Acompanhe parcelas, vencimentos e quanto já foi pago, sem perder uma data.' },
-            { icon: '👥', title: 'Lista de convidados', desc: 'Importe do Excel, controle confirmações e estime o custo por convidado.' },
-            { icon: '✅', title: 'Checklist com prazos', desc: 'Saiba o que fazer e quando, do save the date ao grande dia.' },
-          ].map((item, i) => (
+          {c.pillars.map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
               <div>
@@ -152,16 +150,12 @@ className="hero-arrow hero-arrow-right"
 
       {/* COMO FUNCIONA — 3 passos (única seção) */}
       <section className="section">
-        <h2 className="sec-title">Como o Ewind organiza seu evento</h2>
+        <h2 className="sec-title">{c.stepsTitle}</h2>
         <p style={{ textAlign: 'center', fontSize: 15, color: '#6b7280', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.6 }}>
-          Tudo o que você precisa para não perder nenhum prazo, contrato ou pagamento, sem planilha.
+          {c.stepsLead}
         </p>
         <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
-          {[
-            { n: '1', icon: '🗓️', title: 'Crie seu evento', desc: 'Casamento, aniversário, formatura ou corporativo. Defina a data, o orçamento e comece.' },
-            { n: '2', icon: '📄', title: 'Centralize contratos e pagamentos', desc: 'Cadastre cada fornecedor, anexe o contrato, registre parcelas e veja o que já foi pago.' },
-            { n: '3', icon: '✅', title: 'Acompanhe prazos e convidados', desc: 'Linha do tempo, checklist e lista de convidados — tudo num painel só.' },
-          ].map((s, i) => (
+          {c.steps.map((s, i) => (
             <div key={i} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 16, padding: 24, position: 'relative' }}>
               <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 32, fontWeight: 900, color: '#f0fdf4' }}>{s.n}</div>
               <div style={{ fontSize: 34, marginBottom: 14 }}>{s.icon}</div>
@@ -172,7 +166,7 @@ className="hero-arrow hero-arrow-right"
         </div>
         <div style={{ textAlign: 'center', marginTop: 32 }}>
           <button className="btn-primary" onClick={() => goToPage('events')} style={{ fontSize: 16, padding: '14px 36px', fontWeight: 700 }}>
-            Começar agora — é grátis
+            {c.startNow}
           </button>
         </div>
       </section>
@@ -180,29 +174,29 @@ className="hero-arrow hero-arrow-right"
       {/* MARKETPLACE — EARLY ADOPTER (única faixa) */}
       <section className="section" style={{ background: '#f9fafb', borderTop: '1px solid #e8e8e8', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
-          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, color: '#1a2e05', background: '#a3e635', padding: '4px 12px', borderRadius: 100, marginBottom: 14 }}>EARLY ADOPTER · CURITIBA</span>
-          <h2 className="sec-title" style={{ marginBottom: 12 }}>Encontre espaços e fornecedores na plataforma</h2>
+          <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, color: '#1a2e05', background: '#a3e635', padding: '4px 12px', borderRadius: 100, marginBottom: 14 }}>{c.ea}</span>
+          <h2 className="sec-title" style={{ marginBottom: 12 }}>{c.eaTitle}</h2>
           <p style={{ fontSize: 15, color: '#6b7280', maxWidth: 620, margin: '0 auto 8px', lineHeight: 1.7 }}>
-            Compare chácaras, salões, buffets, fotógrafos e muito mais, e solicite orçamentos sem sair do Ewind, já conectado à organização do seu evento. Estamos no período early adopter: tudo gratuito, começando por Curitiba.
+            {c.eaP1}
           </p>
           <p style={{ fontSize: 13, color: '#9ca3af' }}>
-            Para organizadores, a plataforma é gratuita hoje e sempre. Para anunciantes, gratuita durante todo o período early adopter, com no mínimo 6 meses.
+            {c.eaP2}
           </p>
         </div>
       </section>
 
       {/* CATEGORIAS */}
       <section className="section">
-        <h2 className="sec-title">Explore por categoria</h2>
+        <h2 className="sec-title">{c.explore}</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
-          {CATEGORIES.map(c => (
-            <div key={c.name} onClick={() => goToPage('listing')}
+          {CATEGORIES.map(cat => (
+            <div key={cat.name} onClick={() => goToPage('listing')}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 8px', borderRadius: 12, border: '1.5px solid #e8e8e8', cursor: 'pointer', background: '#fff', transition: 'all 0.2s', textAlign: 'center' }}
               onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#a3e635'; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 4px 12px rgba(163,230,53,0.15)' }}
               onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#e8e8e8'; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none' }}
             >
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{c.icon}</div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: '#2d2d2d', lineHeight: 1.3 }}>{c.name}</div>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: cat.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{cat.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#2d2d2d', lineHeight: 1.3 }}>{c.cats[cat.name] || cat.name}</div>
             </div>
           ))}
         </div>
@@ -212,9 +206,9 @@ className="hero-arrow hero-arrow-right"
       {featuredSpaces.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 className="sec-title" style={{ marginBottom: 0 }}>Espaços em destaque</h2>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>{c.featSpaces}</h2>
             <button onClick={() => goToPage('listing')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-              Ver todos →
+              {c.seeAll}
             </button>
           </div>
           <div className="cards-3col">
@@ -228,8 +222,8 @@ className="hero-arrow hero-arrow-right"
                     {s.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
                   </div>
                   <div className="card-foot">
-                    <span className="card-price">{s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}/dia`}</span>
-                    <span className="card-cap">👥 até {s.capacity}</span>
+                    <span className="card-price">{s.price_per_hour ? `R$${s.price_per_hour}/h` : `R$${s.price_per_day}${c.perDay}`}</span>
+                    <span className="card-cap">👥 {c.upTo} {s.capacity}</span>
                   </div>
                 </div>
               </div>
@@ -242,12 +236,12 @@ className="hero-arrow hero-arrow-right"
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '48px 40px', textAlign: 'center', border: '1px solid #d9f99d' }}>
             <div style={{ fontSize: 42, marginBottom: 14 }}>🎪</div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros anunciantes!</h3>
+            <h3 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>{c.firstHostsTitle}</h3>
             <p style={{ fontSize: 14, color: '#365314', marginBottom: 20, lineHeight: 1.6, maxWidth: 460, margin: '0 auto 20px' }}>
-              Anuncie gratuitamente durante o early adopter, gerencie seus contratos e sua agenda na plataforma, e garanta condições exclusivas quando as assinaturas forem ativadas.
+              {c.firstHostsP}
             </p>
             <button className="btn-primary" style={{ padding: '12px 28px', fontSize: 15 }} onClick={() => goToPage('signup')}>
-              Cadastrar meu espaço gratuitamente
+              {c.firstHostsBtn}
             </button>
           </div>
         </section>
@@ -257,9 +251,9 @@ className="hero-arrow hero-arrow-right"
       {featuredSuppliers.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <h2 className="sec-title" style={{ marginBottom: 0 }}>Fornecedores em destaque</h2>
+            <h2 className="sec-title" style={{ marginBottom: 0 }}>{c.featSuppliers}</h2>
             <button onClick={() => goToPage('suppliers')} style={{ fontSize: 13, fontWeight: 600, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-              Ver todos →
+              {c.seeAll}
             </button>
           </div>
           <div className="cards-3col">
@@ -273,7 +267,7 @@ className="hero-arrow hero-arrow-right"
                   <div className="card-name">{s.name}</div>
                   <div className="card-loc">📍 {s.cities?.[0] || s.state} · {s.category}</div>
                   <div className="card-tags">
-                    <span className="tag">🛠️ Fornecedor</span>
+                    <span className="tag">🛠️ {c.supplier}</span>
                     {s.whatsapp && <span className="tag">💬 WhatsApp</span>}
                   </div>
                   <div className="card-foot">
@@ -283,8 +277,8 @@ className="hero-arrow hero-arrow-right"
                           : s.price_info.toLowerCase().includes('r$')
                             ? s.price_info
                             : `R$ ${s.price_info}`)
-                      : 'Consultar valor'}</span>
-                    <span className="card-cap">Ver perfil →</span>
+                      : c.askPrice}</span>
+                    <span className="card-cap">{c.viewProfile}</span>
                   </div>
                 </div>
               </div>
@@ -297,12 +291,12 @@ className="hero-arrow hero-arrow-right"
         <section className="section" style={{ paddingTop: 0 }}>
           <div style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfccb 100%)', borderRadius: 16, padding: '40px 36px', textAlign: 'center', border: '1px solid #d9f99d' }}>
             <div style={{ fontSize: 38, marginBottom: 12 }}>🛠️</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>Seja um dos primeiros fornecedores!</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: '#1a2e05' }}>{c.firstSuppTitle}</h3>
             <p style={{ fontSize: 13, color: '#365314', marginBottom: 18, lineHeight: 1.6, maxWidth: 420, margin: '0 auto 18px' }}>
-              Fotógrafos, DJs, decoradores e confeiteiros: cadastre seu serviço gratuitamente no early adopter, gerencie seus contratos e seja encontrado por quem organiza.
+              {c.firstSuppP}
             </p>
             <button className="btn-primary" style={{ padding: '11px 24px', fontSize: 14 }} onClick={() => goToPage('signup')}>
-              Cadastrar meu serviço gratuitamente
+              {c.firstSuppBtn}
             </button>
           </div>
         </section>
@@ -312,13 +306,13 @@ className="hero-arrow hero-arrow-right"
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="cta-host">
           <div>
-            <div className="cta-title">Tem um espaço para eventos?</div>
+            <div className="cta-title">{c.ctaHostTitle}</div>
             <div className="cta-desc">
-              Anuncie seu espaço gratuitamente durante o período early adopter e gerencie seus contratos, pagamentos e prazos na mesma plataforma. Quem entra agora mantém condições exclusivas quando as assinaturas forem ativadas.
+              {c.ctaHostDesc}
             </div>
           </div>
           <button className="btn-primary" style={{ whiteSpace: 'nowrap' }} onClick={() => goToPage('signup')}>
-            Anunciar meu espaço →
+            {c.ctaHostBtn}
           </button>
         </div>
       </section>
@@ -330,10 +324,10 @@ className="hero-arrow hero-arrow-right"
             <div style={{ fontSize: 48 }}>🛠️</div>
             <div>
               <div style={{ fontSize: 22, fontWeight: 800, color: '#a3e635', marginBottom: 8 }}>
-                É fornecedor de eventos? Anuncie e gerencie seus contratos no mesmo lugar
+                {c.ctaSuppTitle}
               </div>
               <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.75)', maxWidth: 540, lineHeight: 1.7 }}>
-                Exiba seu portfólio no marketplace do Ewind <strong>e</strong> use as mesmas ferramentas de gestão de contratos, pagamentos e prazos que os organizadores já usam, tudo num só painel. Gratuito durante o early adopter, começando por Curitiba.
+                {c.ctaSuppDescA} <strong>{c.ctaSuppAnd}</strong> {c.ctaSuppDescB}
               </div>
             </div>
           </div>
@@ -341,14 +335,14 @@ className="hero-arrow hero-arrow-right"
             style={{ padding: '14px 28px', fontSize: 15, fontWeight: 700, background: '#a3e635', border: 'none', borderRadius: 10, color: '#1a2e05', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
             onClick={() => goToPage('signup')}
           >
-            Sou fornecedor →
+            {c.ctaSuppBtn}
           </button>
         </div>
       </section>
 
       <footer className="footer">
         <img src="/logo.png" alt="Ewind" className="logo-img-sm" />
-        <span>© 2025 Ewind — Organize seu evento do início ao fim. Gestão gratuita para organizadores, marketplace para fornecedores.</span>
+        <span>{c.footer}</span>
       </footer>
     </>
   )

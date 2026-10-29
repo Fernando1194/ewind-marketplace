@@ -1,70 +1,26 @@
 import { useState } from 'react'
 import type { Page } from '../App'
+import { useCopy } from '../i18n'
+import { PRICING } from '../i18n/pricing'
 
 interface Props { goToPage: (page: Page) => void }
 
 export default function PricingPage({ goToPage }: Props) {
+  const c = useCopy(PRICING)
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly')
   const [submitted, setSubmitted] = useState(false)
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const plans = [
-    {
-      id: 'espacos', icon: '🏢', name: 'Espaços',
-      tag: null, monthly: 59, highlight: false,
-      color: '#0ea5e9',
-      desc: 'Para quem anuncia espaços — salões, chácaras, buffets, restaurantes e hotéis.',
-      features: [
-        { text: 'Anúncios de espaços ilimitados', ok: true },
-        { text: 'Fotos e vídeos no perfil', ok: true },
-        { text: 'Orçamentos ilimitados', ok: true },
-        { text: 'Notificação por email e WhatsApp', ok: true },
-        { text: 'Painel de gerenciamento', ok: true },
-        { text: 'Avaliações verificadas', ok: true },
-        { text: 'Badge "Verificado Ewind"', ok: false },
-        { text: 'Destaque nas buscas', ok: false },
-        { text: 'Painel de fornecedor', ok: false },
-      ],
-      cta: 'Começar com Espaços',
-    },
-    {
-      id: 'pro', icon: '⭐', name: 'Pro — Completo',
-      tag: 'MAIS ESCOLHIDO', monthly: 89, highlight: true,
-      color: '#a3e635',
-      desc: 'Espaços + Fornecedor na mesma conta. Para quem atua nas duas frentes.',
-      features: [
-        { text: 'Anúncios de espaços ilimitados', ok: true },
-        { text: 'Perfil de fornecedor de serviços', ok: true },
-        { text: 'Orçamentos ilimitados nos dois painéis', ok: true },
-        { text: 'Notificação por email e WhatsApp', ok: true },
-        { text: 'Painel de gerenciamento completo', ok: true },
-        { text: 'Avaliações verificadas', ok: true },
-        { text: 'Badge "Verificado Ewind"', ok: true },
-        { text: 'Destaque nas buscas', ok: true },
-        { text: 'Economize vs contratar os dois separados', ok: true },
-      ],
-      cta: 'Começar com Pro',
-    },
-    {
-      id: 'fornecedor', icon: '🛠️', name: 'Fornecedor',
-      tag: null, monthly: 49, highlight: false,
-      color: '#8b5cf6',
-      desc: 'Para fotógrafos, DJs, decoradores, confeiteiros e prestadores de serviços.',
-      features: [
-        { text: 'Perfil de fornecedor completo', ok: true },
-        { text: 'Fotos e portfólio', ok: true },
-        { text: 'Orçamentos ilimitados', ok: true },
-        { text: 'Notificação por email e WhatsApp', ok: true },
-        { text: 'Painel de gerenciamento', ok: true },
-        { text: 'Avaliações verificadas', ok: true },
-        { text: 'Badge "Verificado Ewind"', ok: false },
-        { text: 'Destaque nas buscas', ok: false },
-        { text: 'Painel de espaços', ok: false },
-      ],
-      cta: 'Começar com Fornecedor',
-    },
+  const base = [
+    { id: 'espacos', icon: '🏢', monthly: 59, highlight: false, color: '#0ea5e9', oks: [true, true, true, true, true, true, false, false, false] },
+    { id: 'pro', icon: '⭐', monthly: 89, highlight: true, color: '#a3e635', oks: [true, true, true, true, true, true, true, true, true] },
+    { id: 'fornecedor', icon: '🛠️', monthly: 49, highlight: false, color: '#8b5cf6', oks: [true, true, true, true, true, true, false, false, false] },
   ]
+  const plans = base.map((b, k) => {
+    const t = c.plans[k] as { name: string; desc: string; cta: string; tag?: string; features: string[] }
+    return { ...b, name: t.name, desc: t.desc, cta: t.cta, tag: t.tag ?? null, features: t.features.map((text, n) => ({ text, ok: b.oks[n] })) }
+  })
 
   const getPrice = (m: number) => billing === 'annual' ? Math.round(m * 0.80) : m
   const getSaving = (m: number) => Math.round(m * 0.20 * 12)
@@ -77,14 +33,7 @@ export default function PricingPage({ goToPage }: Props) {
     setLoading(false)
   }
 
-  const faqs = [
-    { q: 'A ferramenta de gestão de eventos é paga?', a: 'Não. Criar eventos, gerenciar contratos, pagamentos, prazos, convidados e checklist é totalmente gratuito para quem organiza eventos — e continuará sendo.' },
-    { q: 'Então o que é pago?', a: 'Os planos desta página são para anunciantes (donos de espaços e fornecedores de serviços) e só entram em vigor ao fim do período early adopter. Durante o early adopter, anunciar é totalmente gratuito.' },
-    { q: 'Os valores mostrados são definitivos?', a: 'Não. São valores previstos para o lançamento do marketplace e podem mudar. Quem se cadastrar agora como early adopter terá condições especiais e prioridade.' },
-    { q: 'O que é o período early adopter?', a: 'É a fase de avaliação da plataforma: no mínimo 6 meses, começando por Curitiba, com tudo gratuito para todos os públicos. Serve para avaliarmos e corrigirmos a plataforma com feedback real antes de ativar as assinaturas.' },
-    { q: 'Quem se cadastra como anunciante agora tem benefício?', a: 'Sim. Além de já poder gerenciar seus próprios contratos na plataforma, os primeiros anunciantes terão condições exclusivas quando os planos pagos forem ativados.' },
-    { q: 'O Ewind cobra comissão sobre eventos fechados?', a: 'Não. O modelo é assinatura, não comissão. Anunciantes negociam e fecham diretamente com o cliente, sem taxa sobre cada negócio.' },
-  ]
+  const faqs = c.faqs
 
   return (
     <div style={{ minHeight: '100vh', background: '#fafafa' }}>
@@ -92,22 +41,22 @@ export default function PricingPage({ goToPage }: Props) {
       {/* HERO */}
       <div style={{ background: '#111', padding: '64px 24px 48px', textAlign: 'center' }}>
         <div style={{ display: 'inline-block', background: '#a3e635', color: '#1a2e05', fontSize: 10, fontWeight: 800, letterSpacing: '.14em', textTransform: 'uppercase', padding: '4px 14px', borderRadius: 100, marginBottom: 18 }}>
-          Gestão de eventos: 100% grátis
+          {c.heroBadge}
         </div>
         <h1 style={{ fontSize: 40, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.1, letterSpacing: '-.02em' }}>
-          Organizar é grátis.<br /><span style={{ color: '#a3e635' }}>Sempre.</span>
+          {c.h1a}<br /><span style={{ color: '#a3e635' }}>{c.h1b}</span>
         </h1>
         <p style={{ fontSize: 15, color: '#9ca3af', maxWidth: 520, margin: '0 auto 28px', lineHeight: 1.65 }}>
-          Para quem organiza, o Ewind é gratuito hoje e sempre. Para <strong style={{ color: '#fff' }}>anunciantes</strong>, tudo é gratuito durante o early adopter (mínimo 6 meses, começando por Curitiba); os planos abaixo só entram em vigor depois desse período.
+          {c.heroA} <strong style={{ color: '#fff' }}>{c.advertisers}</strong>{c.heroB}
         </p>
         <button onClick={() => goToPage('events')} style={{ background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 10, padding: '13px 30px', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 28 }}>
-          🗓️ Criar meu evento grátis
+          {c.createEvent}
         </button>
-        <div style={{ fontSize: 12, color: '#666', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 700, marginBottom: 16 }}>Planos para anunciantes · ativam após o early adopter</div>
+        <div style={{ fontSize: 12, color: '#666', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 700, marginBottom: 16 }}>{c.plansFor}</div>
         <div style={{ display: 'inline-flex', background: '#1a1a1a', borderRadius: 100, padding: 4, gap: 4 }}>
           {(['monthly', 'annual'] as const).map(b => (
             <button key={b} onClick={() => setBilling(b)} style={{ padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, transition: 'all .2s', background: billing === b ? (b === 'annual' ? '#a3e635' : '#fff') : 'transparent', color: billing === b ? (b === 'annual' ? '#1a2e05' : '#111') : '#666', display: 'flex', alignItems: 'center', gap: 6 }}>
-              {b === 'monthly' ? 'Mensal' : <><span>Anual</span><span style={{ fontSize: 10, background: billing === 'annual' ? '#1a2e05' : '#333', color: billing === 'annual' ? '#a3e635' : '#aaa', padding: '2px 7px', borderRadius: 100 }}>-20%</span></>}
+              {b === 'monthly' ? c.monthly : <><span>{c.annual}</span><span style={{ fontSize: 10, background: billing === 'annual' ? '#1a2e05' : '#333', color: billing === 'annual' ? '#a3e635' : '#aaa', padding: '2px 7px', borderRadius: 100 }}>-20%</span></>}
             </button>
           ))}
         </div>
@@ -128,13 +77,13 @@ export default function PricingPage({ goToPage }: Props) {
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
                   <span style={{ fontSize: 13, color: '#9ca3af' }}>R$</span>
                   <span style={{ fontSize: 40, fontWeight: 900, color: plan.highlight ? plan.color : '#111', lineHeight: 1 }}>{getPrice(plan.monthly)}</span>
-                  <span style={{ fontSize: 13, color: '#9ca3af' }}>/mês*</span>
+                  <span style={{ fontSize: 13, color: '#9ca3af' }}>{c.perMonth}</span>
                 </div>
-                {billing === 'annual' && <div style={{ fontSize: 11, color: '#16a34a', marginTop: 3, fontWeight: 600 }}>Você economiza R${getSaving(plan.monthly)} por ano</div>}
-                {plan.id === 'pro' && <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>vs R${getPrice(59) + getPrice(49)}/mês comprando separado</div>}
+                {billing === 'annual' && <div style={{ fontSize: 11, color: '#16a34a', marginTop: 3, fontWeight: 600 }}>{c.saveYear} R${getSaving(plan.monthly)} {c.perYear}</div>}
+                {plan.id === 'pro' && <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>{c.vs} R${getPrice(59) + getPrice(49)}{c.perMonth.replace('*', '')} {c.vsSeparate}</div>}
               </div>
               <div style={{ background: '#f9fafb', border: '1px solid #e8e8e8', borderRadius: 8, padding: '7px 12px', marginBottom: 18, fontSize: 11, color: '#6b7280' }}>
-                🟢 <strong>Grátis no early adopter</strong> · valor previsto para depois
+                🟢 <strong>{c.freeEA}</strong> · {c.planned}
               </div>
               <button onClick={() => goToPage('signup')} style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 800, background: plan.highlight ? plan.color : '#111', color: plan.highlight ? '#1a2e05' : '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', marginBottom: 18 }}>
                 {plan.cta} →
@@ -154,26 +103,26 @@ export default function PricingPage({ goToPage }: Props) {
 
       {/* COMPARATIVO */}
       <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 24px 56px' }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 28 }}>Por que o <span style={{ color: '#a3e635' }}>Pro</span> vale a pena?</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 28 }}>{c.whyPro} <span style={{ color: '#a3e635' }}>Pro</span> {c.worth}</h2>
         <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 16, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#111' }}>
-                {['Recurso', 'Espaços', 'Pro ⭐', 'Fornecedor'].map((h, i) => (
+                {[c.feature, plans[0].name, 'Pro ⭐', plans[2].name].map((h, i) => (
                   <th key={i} style={{ padding: '13px 16px', textAlign: i === 0 ? 'left' : 'center', fontSize: 12, fontWeight: 700, color: i === 2 ? '#a3e635' : '#9ca3af' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {[
-                ['Anúncios de espaços', '✓', '✓', '—'],
-                ['Perfil de fornecedor', '—', '✓', '✓'],
-                ['Badge Verificado', '—', '✓', '—'],
-                ['Destaque nas buscas', '—', '✓', '—'],
-                ['Orçamentos ilimitados', '✓', '✓', '✓'],
-                ['Notificações', '✓', '✓', '✓'],
-                ['Avaliações', '✓', '✓', '✓'],
-                ['Preço mensal', `R$${getPrice(59)}`, `R$${getPrice(89)}`, `R$${getPrice(49)}`],
+                [c.cmp[0], '✓', '✓', '—'],
+                [c.cmp[1], '—', '✓', '✓'],
+                [c.cmp[2], '—', '✓', '—'],
+                [c.cmp[3], '—', '✓', '—'],
+                [c.cmp[4], '✓', '✓', '✓'],
+                [c.cmp[5], '✓', '✓', '✓'],
+                [c.cmp[6], '✓', '✓', '✓'],
+                [c.price, `R$${getPrice(59)}`, `R$${getPrice(89)}`, `R$${getPrice(49)}`],
               ].map(([feat, esp, pro, forn], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
                   <td style={{ padding: '12px 16px', fontSize: 13, color: '#2d2d2d', fontWeight: 500 }}>{feat}</td>
@@ -191,31 +140,31 @@ export default function PricingPage({ goToPage }: Props) {
       <div style={{ background: '#111', padding: '48px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <div style={{ fontSize: 30, marginBottom: 10 }}>🚀</div>
-          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 10 }}>Seja um <span style={{ color: '#a3e635' }}>Early Adopter</span></h2>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: '#fff', marginBottom: 10 }}>{c.eaTitleA} <span style={{ color: '#a3e635' }}>{c.eaTitleB}</span></h2>
           <p style={{ fontSize: 14, color: '#9ca3af', lineHeight: 1.65, marginBottom: 22 }}>
-Cadastre seu espaço ou serviço agora, use tudo gratuitamente durante o early adopter e garanta <strong style={{ color: '#fff' }}>condições exclusivas</strong> quando as assinaturas forem ativadas.
+{c.eaP1} <strong style={{ color: '#fff' }}>{c.eaStrong}</strong> {c.eaP2}
           </p>
           {!submitted ? (
             <form onSubmit={handleNotify} style={{ display: 'flex', gap: 8, maxWidth: 400, margin: '0 auto' }}>
-              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com"
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={c.emailPh}
                 style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: 'none', fontSize: 14, fontFamily: 'inherit' }} />
               <button type="submit" disabled={loading}
                 style={{ padding: '12px 18px', background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-                {loading ? '...' : 'Avisar quando abrir →'}
+                {loading ? '...' : c.notify}
               </button>
             </form>
           ) : (
             <div style={{ background: '#1a2e05', border: '1px solid #a3e635', borderRadius: 12, padding: '14px 22px', color: '#a3e635', fontWeight: 700, fontSize: 14 }}>
-              ✅ Anotado! Você será o primeiro a saber quando os planos abrirem.
+              {c.noted}
             </div>
           )}
-          <p style={{ fontSize: 11, color: '#444', marginTop: 10 }}>Sem spam. Apenas o aviso quando os planos pagos forem lançados.</p>
+          <p style={{ fontSize: 11, color: '#444', marginTop: 10 }}>{c.noSpam}</p>
         </div>
       </div>
 
       {/* FAQ */}
       <div style={{ maxWidth: 660, margin: '0 auto', padding: '56px 24px' }}>
-        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 28 }}>Perguntas frequentes</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 800, textAlign: 'center', marginBottom: 28 }}>{c.faqTitle}</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {faqs.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
         </div>

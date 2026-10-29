@@ -1,3 +1,4 @@
+import { useCopy } from '../i18n'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -15,6 +16,21 @@ export interface CookieCategories {
   marketing: boolean
 }
 
+const COOKIE = {
+  pt: {
+    title: 'Usamos cookies', text: 'Utilizamos cookies essenciais para o funcionamento do site e, com seu consentimento, cookies analíticos. Em conformidade com a', lgpd: 'LGPD (Lei 13.709/2018)',
+    policy: 'Política de Privacidade', customize: 'Personalizar', essentialOnly: 'Somente essenciais', acceptAll: 'Aceitar todos', prefs: 'Preferências de cookies',
+    essential: 'Essenciais', essentialDesc: 'Necessários para autenticação e segurança.', analytics: 'Analíticos', analyticsDesc: 'Nos ajudam a melhorar o site. Dados anonimizados.',
+    marketingDesc: 'Comunicações personalizadas.', required: 'Obrigatório', save: 'Salvar preferências', lgpdShort: 'Conforme LGPD (Lei 13.709/2018)',
+  },
+  en: {
+    title: 'We use cookies', text: 'We use essential cookies to run the site and, with your consent, analytics cookies. In compliance with Brazilian law', lgpd: 'LGPD (Law 13.709/2018)',
+    policy: 'Privacy Policy (Portuguese)', customize: 'Customize', essentialOnly: 'Essential only', acceptAll: 'Accept all', prefs: 'Cookie preferences',
+    essential: 'Essential', essentialDesc: 'Required for authentication and security.', analytics: 'Analytics', analyticsDesc: 'Help us improve the site. Anonymized data.',
+    marketingDesc: 'Personalized communications.', required: 'Required', save: 'Save preferences', lgpdShort: 'Under LGPD (Law 13.709/2018)',
+  },
+}
+
 const STORAGE_KEY = 'ewind_cookie_consent'
 
 export function getCookieConsent(): { decided: boolean; categories: CookieCategories } {
@@ -28,6 +44,7 @@ export function getCookieConsent(): { decided: boolean; categories: CookieCatego
 }
 
 export default function CookieBanner({ user, onAccept, goToPage }: Props) {
+  const k = useCopy(COOKIE)
   const [visible, setVisible] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [analytics, setAnalytics] = useState(false)
@@ -86,42 +103,41 @@ export default function CookieBanner({ user, onAccept, goToPage }: Props) {
             <div style={{ flex: 1, minWidth: 280 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                 <span style={{ fontSize: 20 }}>🍪</span>
-                <strong style={{ fontSize: 15 }}>Usamos cookies</strong>
+                <strong style={{ fontSize: 15 }}>{k.title}</strong>
               </div>
               <p style={{ fontSize: 12, color: '#9ca3af', margin: 0, lineHeight: 1.5 }}>
-                Utilizamos cookies essenciais para o funcionamento do site e, com seu consentimento, cookies analíticos.
-                Em conformidade com a <strong style={{ color: '#a3e635' }}>LGPD (Lei 13.709/2018)</strong>.{' '}
-                <TermsLink label="Política de Privacidade" />
+                {k.text} <strong style={{ color: '#a3e635' }}>{k.lgpd}</strong>.{' '}
+                <TermsLink label={k.policy} />
               </p>
             </div>
             <div style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
               <button onClick={() => setShowDetails(true)} style={{ padding: '9px 16px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #4b5563', color: '#9ca3af', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
-                ⚙️ Personalizar
+                ⚙️ {k.customize}
               </button>
               <button onClick={acceptEssential} style={{ padding: '9px 16px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #6b7280', color: '#d1d5db', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
-                Somente essenciais
+                {k.essentialOnly}
               </button>
               <button onClick={acceptAll} style={{ padding: '9px 20px', fontSize: 12, fontWeight: 700, background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>
-                Aceitar todos
+                {k.acceptAll}
               </button>
             </div>
           </div>
         ) : (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <strong style={{ fontSize: 15 }}>⚙️ Preferências de cookies</strong>
+              <strong style={{ fontSize: 15 }}>⚙️ {k.prefs}</strong>
               <button onClick={() => setShowDetails(false)} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 20, lineHeight: 1 }}>×</button>
             </div>
             {([
-              { key: 'essential', label: 'Essenciais', required: true, desc: 'Necessários para autenticação e segurança.', enabled: true, icon: '🔒' },
-              { key: 'analytics', label: 'Analíticos', required: false, desc: 'Nos ajudam a melhorar o site. Dados anonimizados.', enabled: analytics, icon: '📊' },
-              { key: 'marketing', label: 'Marketing', required: false, desc: 'Comunicações personalizadas.', enabled: marketing, icon: '📣' },
+              { key: 'essential', label: k.essential, required: true, desc: k.essentialDesc, enabled: true, icon: '🔒' },
+              { key: 'analytics', label: k.analytics, required: false, desc: k.analyticsDesc, enabled: analytics, icon: '📊' },
+              { key: 'marketing', label: 'Marketing', required: false, desc: k.marketingDesc, enabled: marketing, icon: '📣' },
             ] as const).map(cat => (
               <div key={cat.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '12px 0', borderBottom: '1px solid #1f2937' }}>
                 <div style={{ flex: 1, marginRight: 16 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>
                     {cat.icon} {cat.label}
-                    {cat.required && <span style={{ marginLeft: 6, fontSize: 10, background: '#1f2937', padding: '2px 6px', borderRadius: 4, color: '#6b7280' }}>Obrigatório</span>}
+                    {cat.required && <span style={{ marginLeft: 6, fontSize: 10, background: '#1f2937', padding: '2px 6px', borderRadius: 4, color: '#6b7280' }}>{k.required}</span>}
                   </div>
                   <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.5 }}>{cat.desc}</div>
                 </div>
@@ -140,12 +156,12 @@ export default function CookieBanner({ user, onAccept, goToPage }: Props) {
               </div>
             ))}
             <div style={{ display: 'flex', gap: 10, marginTop: 16, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-              <button onClick={acceptEssential} style={{ padding: '9px 16px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #4b5563', color: '#9ca3af', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>Somente essenciais</button>
-              <button onClick={saveCustom} style={{ padding: '9px 16px', fontSize: 12, fontWeight: 600, background: '#374151', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>Salvar preferências</button>
-              <button onClick={acceptAll} style={{ padding: '9px 20px', fontSize: 12, fontWeight: 700, background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>Aceitar todos</button>
+              <button onClick={acceptEssential} style={{ padding: '9px 16px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #4b5563', color: '#9ca3af', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>{k.essentialOnly}</button>
+              <button onClick={saveCustom} style={{ padding: '9px 16px', fontSize: 12, fontWeight: 600, background: '#374151', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>{k.save}</button>
+              <button onClick={acceptAll} style={{ padding: '9px 20px', fontSize: 12, fontWeight: 700, background: '#a3e635', color: '#1a2e05', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>{k.acceptAll}</button>
             </div>
             <p style={{ fontSize: 10, color: '#4b5563', marginTop: 12, textAlign: 'center' }}>
-              Conforme LGPD (Lei 13.709/2018) · <TermsLink label="Política de Privacidade" />
+              {k.lgpdShort} · <TermsLink label={k.policy} />
             </p>
           </div>
         )}

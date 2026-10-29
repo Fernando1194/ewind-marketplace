@@ -1,3 +1,5 @@
+import { useCopy } from '../i18n'
+import { AUTH } from '../i18n/auth'
 import { useState, useMemo } from 'react'
 import { supabase } from '../supabase'
 import type { Page } from '../App'
@@ -9,12 +11,6 @@ interface Props {
 }
 
 type Role = 'guest' | 'host' | 'supplier'
-
-const ROLES: { value: Role; icon: string; label: string; desc: string }[] = [
-  { value: 'guest', icon: '🎉', label: 'Preciso de um espaço', desc: 'Quero encontrar, comparar e solicitar orçamentos para o meu evento' },
-  { value: 'host', icon: '🏢', label: 'Tenho um espaço para locar', desc: 'Quero anunciar meu espaço e receber solicitações de orçamento qualificadas' },
-  { value: 'supplier', icon: '🛠️', label: 'Ofereço serviços para eventos', desc: 'Sou fotógrafo, DJ, buffet, decorador, cerimonialista ou outro fornecedor' },
-]
 
 const EyeIcon = ({ open }: { open: boolean }) => open ? (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -30,6 +26,8 @@ const EyeIcon = ({ open }: { open: boolean }) => open ? (
 )
 
 export default function SignupPage({ goToPage }: Props) {
+  const a = useCopy(AUTH)
+  const ROLES = a.roles as { value: Role; icon: string; label: string; desc: string }[]
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -57,8 +55,8 @@ export default function SignupPage({ goToPage }: Props) {
     setError(''); setSuccess('')
     setTouchedPass(true)
     setTouchedConfirm(true)
-    if (!allRulesOk) { setError('A senha não atende todos os requisitos'); return }
-    if (password !== confirmPassword) { setError('As senhas não coincidem'); return }
+    if (!allRulesOk) { setError(a.weak); return }
+    if (password !== confirmPassword) { setError(a.mismatch); return }
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -78,11 +76,11 @@ export default function SignupPage({ goToPage }: Props) {
           is_supplier: extraRoles.includes('supplier') || role === 'supplier',
           updated_at: new Date().toISOString()
         })
-        setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
+        setSuccess(a.done)
         setEmail(''); setPassword(''); setConfirmPassword(''); setName('')
       }
     } catch (err: any) {
-      setError(err.message || 'Erro ao cadastrar. Tente novamente.')
+      setError(err.message || a.suErr)
     } finally {
       setLoading(false)
     }
@@ -92,7 +90,7 @@ export default function SignupPage({ goToPage }: Props) {
     <div className="auth-wrap">
       <div className="auth-card" style={{ maxWidth: 500 }}>
         <img src="/logo.png" alt="Ewind" className="logo-img-md" onClick={() => goToPage('home')} style={{ cursor: 'pointer' }} />
-        <h1 className="auth-title">Criar conta</h1>
+        <h1 className="auth-title">{a.createAccount}</h1>
         <DemoAuthNotice goToPage={goToPage} />
       </div>
     </div>
@@ -102,12 +100,12 @@ export default function SignupPage({ goToPage }: Props) {
     <div className="auth-wrap">
       <div className="auth-card" style={{ maxWidth: 500 }}>
         <img src="/logo.png" alt="Ewind" className="logo-img-md" onClick={() => goToPage('home')} style={{ cursor: 'pointer' }} />
-        <h1 className="auth-title">Criar conta gratuita</h1>
-        <p className="auth-sub">Organize seu evento ou cadastre-se como anunciante</p>
+        <h1 className="auth-title">{a.suTitle}</h1>
+        <p className="auth-sub">{a.suSub}</p>
 
         <form onSubmit={handleSignUp}>
           <div className="fg">
-            <label>Como você vai usar o Ewind?</label>
+            <label>{a.howUse}</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {ROLES.map(r => (
                 <button key={r.value} type="button" onClick={() => setRole(r.value)}
@@ -124,17 +122,17 @@ export default function SignupPage({ goToPage }: Props) {
           </div>
 
           <div className="fg">
-            <label>Nome completo</label>
-            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="Como você quer ser chamado" />
+            <label>{a.fullName}</label>
+            <input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder={a.fullNamePh} />
           </div>
 
           <div className="fg">
-            <label>Email</label>
-            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="seu@email.com" />
+            <label>{a.email}</label>
+            <input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={a.emailPh} />
           </div>
 
           <div className="fg">
-            <label>Senha</label>
+            <label>{a.password}</label>
             <div style={{ position: 'relative' }}>
               <input
                 type={showPass ? 'text' : 'password'}
@@ -142,7 +140,7 @@ export default function SignupPage({ goToPage }: Props) {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 onBlur={() => setTouchedPass(true)}
-                placeholder="Crie uma senha segura"
+                placeholder={a.passwordNewPh}
                 style={{ paddingRight: 44 }}
               />
               <button type="button" onClick={() => setShowPass(v => !v)} tabIndex={-1}
@@ -155,9 +153,9 @@ export default function SignupPage({ goToPage }: Props) {
             {(touchedPass || password.length > 0) && (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {[
-                  { ok: rules.length, label: 'Mínimo de 8 caracteres' },
-                  { ok: rules.upper, label: 'Pelo menos uma letra maiúscula' },
-                  { ok: rules.special, label: 'Pelo menos um caractere especial (!@#$%...)' },
+                  { ok: rules.length, label: a.rLen },
+                  { ok: rules.upper, label: a.rUpper },
+                  { ok: rules.special, label: a.rSpecial },
                 ].map((rule, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: rule.ok ? '#16a34a' : '#6b7280', fontWeight: rule.ok ? 600 : 400 }}>
                     <span style={{ width: 16, height: 16, borderRadius: '50%', background: rule.ok ? '#dcfce7' : '#f3f4f6', border: `1.5px solid ${rule.ok ? '#16a34a' : '#d1d5db'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10 }}>
@@ -172,7 +170,7 @@ export default function SignupPage({ goToPage }: Props) {
 
           {/* Confirmar senha */}
           <div className="fg">
-            <label>Confirmar senha</label>
+            <label>{a.confirm}</label>
             <div style={{ position: 'relative' }}>
               <input
                 type={showConfirm ? 'text' : 'password'}
@@ -180,7 +178,7 @@ export default function SignupPage({ goToPage }: Props) {
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 onBlur={() => setTouchedConfirm(true)}
-                placeholder="Repita a senha"
+                placeholder={a.confirmPh}
                 style={{ paddingRight: 44, borderColor: touchedConfirm && confirmPassword && confirmPassword !== password ? '#dc2626' : undefined }}
               />
               <button type="button" onClick={() => setShowConfirm(v => !v)} tabIndex={-1}
@@ -190,12 +188,12 @@ export default function SignupPage({ goToPage }: Props) {
             </div>
             {touchedConfirm && confirmPassword && confirmPassword !== password && (
               <div style={{ marginTop: 6, fontSize: 12, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 5 }}>
-                ⚠️ As senhas não coincidem
+                ⚠️ {a.mismatch}
               </div>
             )}
             {touchedConfirm && confirmPassword && confirmPassword === password && allRulesOk && (
               <div style={{ marginTop: 6, fontSize: 12, color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
-                ✓ Senhas coincidem
+                ✓ {a.match}
               </div>
             )}
           </div>
@@ -206,27 +204,27 @@ export default function SignupPage({ goToPage }: Props) {
               ✅ {success}
               <div style={{ marginTop: 10 }}>
                 <button type="button" className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage('login')}>
-                  Ir para o login →
+                  {a.goLogin}
                 </button>
               </div>
             </div>
           )}
 
           <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8, lineHeight: 1.5 }}>
-            Ao criar uma conta você concorda com nossos{' '}
-            <a onClick={() => goToPage('terms')} style={{ color: '#5aa800', cursor: 'pointer', textDecoration: 'underline' }}>Termos de Uso e Política de Privacidade</a>.
+            {a.agree}{' '}
+            <a onClick={() => goToPage('terms')} style={{ color: '#5aa800', cursor: 'pointer', textDecoration: 'underline' }}>{a.terms}</a>.
           </p>
           <button type="submit" className="btn-primary" style={{ width: '100%', padding: 13, marginTop: 4, fontSize: 15 }} disabled={loading}>
-            {loading ? 'Criando conta...' : 'Criar conta e começar'}
+            {loading ? a.creating : a.createStart}
           </button>
         </form>
 
         <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f3f4f6', textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
-          Já tem conta?{' '}
-          <a onClick={() => goToPage('login')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>Entrar</a>
+          {a.haveAcc}{' '}
+          <a onClick={() => goToPage('login')} style={{ color: '#5aa800', fontWeight: 600, cursor: 'pointer' }}>{a.login}</a>
         </div>
         <div style={{ marginTop: 8, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-          <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>← Voltar para a home</a>
+          <a onClick={() => goToPage('home')} style={{ color: '#9ca3af', cursor: 'pointer' }}>{a.backHome}</a>
         </div>
       </div>
     </div>
