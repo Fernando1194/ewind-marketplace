@@ -10,5 +10,10 @@
       "path": "/api/health",
       "schedule": "0 9 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "api/assistant.ts": {
+      "maxDuration": 25
+    }
+  }
 }

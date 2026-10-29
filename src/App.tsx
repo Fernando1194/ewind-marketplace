@@ -32,6 +32,7 @@ const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
 import { IS_DEMO, BASE_PATH, stripBase, DEMO_URL } from './demo/config'
 const DemoLayer = lazy(() => import('./demo/DemoLayer'))
+const AssistantWidget = lazy(() => import('./components/AssistantWidget'))
 
 const PAGE_TO_URL: Partial<Record<Page, string>> = {
   home: '/',
@@ -240,6 +241,7 @@ function App() {
   return (
     <div className="app">
       {IS_DEMO && <Suspense fallback={null}><DemoLayer user={user} goToPage={goToPage} /></Suspense>}
+      {!IS_DEMO && <Suspense fallback={null}><AssistantWidget /></Suspense>}
       <nav className="nav">
         <button className="nav-hamburger" data-tour="nav-menu" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
           <span style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
