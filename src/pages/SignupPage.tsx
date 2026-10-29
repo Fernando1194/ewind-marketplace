@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react'
 import { supabase } from '../supabase'
 import type { Page } from '../App'
+import { IS_DEMO } from '../demo/config'
+import DemoAuthNotice from '../demo/DemoAuthNotice'
 
 interface Props {
   goToPage: (page: Page) => void
@@ -85,6 +87,16 @@ export default function SignupPage({ goToPage }: Props) {
       setLoading(false)
     }
   }
+
+  if (IS_DEMO) return (
+    <div className="auth-wrap">
+      <div className="auth-card" style={{ maxWidth: 500 }}>
+        <img src="/logo.png" alt="Ewind" className="logo-img-md" onClick={() => goToPage('home')} style={{ cursor: 'pointer' }} />
+        <h1 className="auth-title">Criar conta</h1>
+        <DemoAuthNotice goToPage={goToPage} />
+      </div>
+    </div>
+  )
 
   return (
     <div className="auth-wrap">

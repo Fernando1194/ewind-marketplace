@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../supabase'
-import { BASE_PATH } from '../demo/config'
+import { BASE_PATH, IS_DEMO } from '../demo/config'
+import DemoAuthNotice from '../demo/DemoAuthNotice'
 import type { Page } from '../App'
 
 interface Props {
@@ -64,6 +65,7 @@ export default function LoginPage({ goToPage }: Props) {
           <>
             <h1 className="auth-title">Entrar</h1>
             <p className="auth-sub">Bem-vindo de volta!</p>
+            {IS_DEMO && <DemoAuthNotice goToPage={goToPage} compact />}
 
             <form onSubmit={handleLogin}>
               <div className="fg">
@@ -102,12 +104,12 @@ export default function LoginPage({ goToPage }: Props) {
 
             {/* Links fluidos */}
             <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #f3f4f6', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <button
+              {!IS_DEMO && <button
                 onClick={() => { setMode('forgot'); setError('') }}
                 style={{ background: 'none', border: 'none', fontSize: 13, color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center' }}
               >
                 Esqueci minha senha
-              </button>
+              </button>}
 
               <div style={{ display: 'flex', gap: 8 }}>
                 <button
