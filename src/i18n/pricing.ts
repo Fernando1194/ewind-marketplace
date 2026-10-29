@@ -19,6 +19,7 @@ export const PRICING = {
     eaTitleA: 'Seja um', eaTitleB: 'Early Adopter',
     eaP1: 'Cadastre seu espaço ou serviço agora, use tudo gratuitamente durante o early adopter e garanta', eaStrong: 'condições exclusivas', eaP2: 'quando as assinaturas forem ativadas.',
     emailPh: 'seu@email.com', notify: 'Avisar quando abrir →', noted: '✅ Anotado! Você será o primeiro a saber quando os planos abrirem.', noSpam: 'Sem spam. Apenas o aviso quando os planos pagos forem lançados.',
+    notifyErr: 'Não foi possível registrar seu email agora. Tente novamente em instantes.',
     faqTitle: 'Perguntas frequentes',
     faqs: [
       { q: 'A ferramenta de gestão de eventos é paga?', a: 'Não. Criar eventos, gerenciar contratos, pagamentos, prazos, convidados e checklist é totalmente gratuito para quem organiza eventos, e continuará sendo.' },
@@ -49,6 +50,7 @@ export const PRICING = {
     eaTitleA: 'Become an', eaTitleB: 'Early Adopter',
     eaP1: 'List your venue or service now, use everything for free during the early adopter period and lock in', eaStrong: 'exclusive terms', eaP2: 'when subscriptions start.',
     emailPh: 'you@email.com', notify: 'Notify me when it opens →', noted: '✅ Noted! You will be the first to know when plans open.', noSpam: 'No spam. Only a notice when the paid plans launch.',
+    notifyErr: 'We could not save your email right now. Please try again in a moment.',
     faqTitle: 'Frequently asked questions',
     faqs: [
       { q: 'Is the event management tool paid?', a: 'No. Creating events and managing contracts, payments, deadlines, guests and checklists is completely free for event organizers, and it will stay that way.' },

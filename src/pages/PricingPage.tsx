@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Page } from '../App'
+import { supabase } from '../supabase'
 import { useCopy } from '../i18n'
 import { PRICING } from '../i18n/pricing'
 
@@ -11,6 +12,7 @@ export default function PricingPage({ goToPage }: Props) {
   const [submitted, setSubmitted] = useState(false)
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [notifyError, setNotifyError] = useState('')
 
   const base = [
     { id: 'espacos', icon: '🏢', monthly: 59, highlight: false, color: '#0ea5e9', oks: [true, true, true, true, true, true, false, false, false] },
@@ -27,9 +29,12 @@ export default function PricingPage({ goToPage }: Props) {
 
   const handleNotify = async (e: React.FormEvent) => {
     e.preventDefault()
+    setNotifyError('')
     setLoading(true)
-    await new Promise(r => setTimeout(r, 800))
-    setSubmitted(true)
+    const { error } = await supabase.from('plan_waitlist').insert({ email: email.trim() })
+    // 23505 = email já estava na lista: tratamos como sucesso para não revelar quem já se inscreveu
+    if (error && error.code !== '23505') setNotifyError(c.notifyErr)
+    else setSubmitted(true)
     setLoading(false)
   }
 
@@ -159,6 +164,7 @@ export default function PricingPage({ goToPage }: Props) {
             </div>
           )}
           <p style={{ fontSize: 11, color: '#444', marginTop: 10 }}>{c.noSpam}</p>
+          {notifyError && <p style={{ fontSize: 12, color: '#fca5a5', marginTop: 8 }}>{notifyError}</p>}
         </div>
       </div>
 
