@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -73,7 +74,7 @@ export default function EventGuestsTab({ user, event }: Props) {
   const billableUnits = confirmed.reduce((s, g) => s + (BILLING_META[g.billing]?.factor ?? 1), 0)
   const estimatedCost = costPerGuest ? billableUnits * parseFloat(costPerGuest) : 0
 
-  const money = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const money = (v: number) => v.toLocaleString(loc(), { style: 'currency', currency: 'BRL' })
 
   const saveCost = async () => {
     setSavingCost(true)

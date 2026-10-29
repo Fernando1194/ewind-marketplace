@@ -1,3 +1,4 @@
+import { setAutoTranslate } from './autoTranslate'
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 
 // Idioma do site. Português é o padrão (o lançamento é em Curitiba); a escolha do
@@ -6,6 +7,12 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 
 export type Lang = 'pt' | 'en'
 const KEY = 'ewind-lang'
+
+let current: Lang = 'pt'
+/** Idioma atual fora de componentes (datas, números). */
+export const currentLang = (): Lang => current
+/** Código de locale para toLocaleDateString / toLocaleString. */
+export const loc = (): string => (current === 'en' ? 'en-US' : 'pt-BR')
 
 function readSaved(): Lang {
   try {
@@ -19,8 +26,12 @@ interface Ctx { lang: Lang; setLang: (l: Lang) => void }
 const LangContext = createContext<Ctx>({ lang: 'pt', setLang: () => {} })
 
 export function LangProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Lang>(readSaved)
-  useEffect(() => { document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR' }, [lang])
+  const [lang, setLangState] = useState<Lang>(() => { const l = readSaved(); current = l; return l })
+  useEffect(() => {
+    current = lang
+    document.documentElement.lang = lang === 'en' ? 'en' : 'pt-BR'
+    setAutoTranslate(lang === 'en')
+  }, [lang])
   const setLang = useCallback((l: Lang) => {
     setLangState(l)
     try { localStorage.setItem(KEY, l) } catch { /* ignora */ }

@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -80,7 +81,7 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
     setEditLoading(false)
   }
 
-  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
+  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString(loc()) : '—'
   const fmtTime = (t: string) => t ? t.substring(0, 5) : null
 
   const hoursAgo = (d: string) => {
@@ -208,7 +209,7 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
                       <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.6 }}>{q.host_response}</div>
                       {q.proposed_price && (
                         <div style={{ marginTop: 8, fontSize: 16, fontWeight: 800, color: '#166534' }}>
-                          💰 Proposta: R$ {q.proposed_price.toLocaleString('pt-BR')}
+                          💰 Proposta: R$ {q.proposed_price.toLocaleString(loc())}
                         </div>
                       )}
                       {/* Contatos do espaço após resposta */}
@@ -350,7 +351,7 @@ export default function MyQuotesPage({ user, goToPage }: Props) {
             </p>
             {celebrationQuote.proposed_price && (
               <div style={{ fontSize: 24, fontWeight: 900, color: '#16a34a', margin: '12px 0', padding: '12px', background: '#f0fdf4', borderRadius: 12 }}>
-                R$ {celebrationQuote.proposed_price.toLocaleString('pt-BR')}
+                R$ {celebrationQuote.proposed_price.toLocaleString(loc())}
               </div>
             )}
             <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 28, lineHeight: 1.6 }}>

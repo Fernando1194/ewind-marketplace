@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -166,13 +167,13 @@ export default function HostDashboard({ user, goToPage }: Props) {
                       {q.spaces?.name} <span style={{ color: '#6b7280', fontWeight: 400 }}>· {q.event_type}</span>
                     </div>
                     <div style={{ fontSize: 12, color: '#9ca3af' }}>
-                      {q.event_date && new Date(q.event_date + 'T12:00:00').toLocaleDateString('pt-BR')}
+                      {q.event_date && new Date(q.event_date + 'T12:00:00').toLocaleDateString(loc())}
                       {q.guests_count && ` · ${q.guests_count} convidados`}
                       {q.duration_hours && ` · ${q.duration_hours}h`}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    {q.proposed_price && <div style={{ fontSize: 14, fontWeight: 800, color: '#5aa800' }}>R$ {Number(q.proposed_price).toLocaleString('pt-BR')}</div>}
+                    {q.proposed_price && <div style={{ fontSize: 14, fontWeight: 800, color: '#5aa800' }}>R$ {Number(q.proposed_price).toLocaleString(loc())}</div>}
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100, background: `${SC[q.status] || '#9ca3af'}15`, color: SC[q.status] || '#9ca3af' }}>
                       {SL[q.status] || q.status}
                     </span>
@@ -189,7 +190,7 @@ export default function HostDashboard({ user, goToPage }: Props) {
                     {q.host_response && (
                       <div style={{ background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 14 }}>
                         ✅ <strong>Sua resposta:</strong> {q.host_response}
-                        {q.proposed_price && <span style={{ marginLeft: 8, color: '#5aa800', fontWeight: 700 }}>· R$ {Number(q.proposed_price).toLocaleString('pt-BR')}</span>}
+                        {q.proposed_price && <span style={{ marginLeft: 8, color: '#5aa800', fontWeight: 700 }}>· R$ {Number(q.proposed_price).toLocaleString(loc())}</span>}
                       </div>
                     )}
                     {(q.status === 'pending' || q.status === 'viewed') && (

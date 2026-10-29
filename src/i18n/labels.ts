@@ -2,7 +2,7 @@ import { useLang } from './index'
 
 // Os valores guardados no banco (categorias, tipos de evento, atributos) ficam em português.
 // Aqui só se traduz o que aparece na tela; filtros e gravação continuam usando o valor original.
-const EN: Record<string, string> = {
+export const LABELS_EN: Record<string, string> = {
   // categorias de espaço
   'Chácara': 'Farm / Country venue', 'Salão de Eventos': 'Event hall', 'Restaurante': 'Restaurant', 'Pousada': 'Inn',
   'Espaço Corporativo': 'Corporate space', 'Hotel': 'Hotel', 'Buffet Infantil': "Kids' party venue",
@@ -31,5 +31,5 @@ const EN: Record<string, string> = {
 /** Rótulo de um valor do banco no idioma atual; valores desconhecidos (texto livre) ficam como estão. */
 export function useLabel(): (value: string) => string {
   const { lang } = useLang()
-  return (value: string) => (lang === 'en' ? EN[value] ?? value : value)
+  return (value: string) => (lang === 'en' ? LABELS_EN[value] ?? value : value)
 }

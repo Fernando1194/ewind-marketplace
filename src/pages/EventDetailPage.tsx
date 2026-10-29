@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -55,8 +56,8 @@ export default function EventDetailPage({ user, event, back }: Props) {
     setLoading(false)
   }
 
-  const money = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  const fmtDate = (d: string | null) => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—'
+  const money = (v: number) => v.toLocaleString(loc(), { style: 'currency', currency: 'BRL' })
+  const fmtDate = (d: string | null) => d ? new Date(d + 'T12:00:00').toLocaleDateString(loc()) : '—'
   const daysUntil = (d: string) => Math.ceil((new Date(d + 'T12:00:00').getTime() - Date.now()) / 86400000)
 
   // Totals
@@ -523,7 +524,7 @@ function ContractForm({ user, eventId, categories, existing, onSaved, onCancel, 
                   {aiPayments.map((p, i) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12 }}>
                       <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {p.label || 'Parcela'} · <strong>R$ {p.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong> · {p.due_date ? p.due_date.split('-').reverse().join('/') : <span style={{ color: '#dc2626' }}>sem data (não será criada)</span>}
+                        {p.label || 'Parcela'} · <strong>R$ {p.amount.toLocaleString(loc(), { minimumFractionDigits: 2 })}</strong> · {p.due_date ? p.due_date.split('-').reverse().join('/') : <span style={{ color: '#dc2626' }}>sem data (não será criada)</span>}
                       </span>
                       <button type="button" onClick={() => setAiPayments(aiPayments.filter((_, j) => j !== i))} title="Remover" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, opacity: 0.5, padding: 2 }}>✕</button>
                     </div>

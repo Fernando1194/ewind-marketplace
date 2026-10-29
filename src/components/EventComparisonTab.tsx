@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -59,7 +60,7 @@ export default function EventComparisonTab({ user, event }: Props) {
     setLoading(false)
   }
 
-  const money = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const money = (v: number) => v.toLocaleString(loc(), { style: 'currency', currency: 'BRL' })
 
   const createComparison = async () => {
     if (!newCompTitle.trim()) return
