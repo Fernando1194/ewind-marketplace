@@ -3,6 +3,7 @@ import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { EventItem, EventGuest } from '../types'
 import { useEventFeedback, Toast, ConfirmModal } from './useEventFeedback'
+import { downloadGuestTemplate, readGuestRows, parseGuestRows } from '../lib/guestSpreadsheet'
 
 interface Props {
   user: User
@@ -106,102 +107,15 @@ export default function EventGuestsTab({ user, event }: Props) {
   }
 
   // Gera e baixa um template .xlsx padronizado
-  const downloadTemplate = async () => {
-    const XLSX = await import('xlsx')
-
-    // Linhas de exemplo + cabeçalho
-    const headers = ['Nome', 'Status', 'Categoria', 'Cobrança', 'Telefone', 'Email']
-    const examples = [
-      ['Maria Silva', 'confirmado', 'adulto', 'inteira', '(41) 99999-0001', 'maria@email.com'],
-      ['João Pedro', 'pendente', 'criança', 'meia', '(41) 99999-0002', 'joao@email.com'],
-      ['Bebê Ana', 'confirmado', 'bebê', 'isento', '', ''],
-      ['Carlos Souza', 'recusado', 'adulto', 'inteira', '', ''],
-    ]
-
-    // Aba 1: lista
-    const wsData = [headers, ...examples]
-    const ws = XLSX.utils.aoa_to_sheet(wsData)
-    ws['!cols'] = [{ wch: 26 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 20 }, { wch: 28 }]
-
-    // Aba 2: instruções/legenda
-    const guide = [
-      ['COMO PREENCHER A LISTA DE CONVIDADOS — EWIND'],
-      [''],
-      ['Preencha a aba "Convidados". Apenas a coluna NOME é obrigatória.'],
-      ['As demais colunas são opcionais — se deixar em branco, usamos um padrão inteligente.'],
-      [''],
-      ['COLUNA', 'VALORES ACEITOS', 'OBSERVAÇÃO'],
-      ['Nome', 'texto livre', 'Obrigatório'],
-      ['Status', 'confirmado / pendente / recusado', 'Em branco = pendente. Aceita também: sim, não'],
-      ['Categoria', 'adulto / criança / bebê', 'Em branco = adulto'],
-      ['Cobrança', 'inteira / meia / isento', 'Em branco: bebê vira isento, criança vira meia, adulto inteira'],
-      ['Telefone', 'texto livre', 'Opcional'],
-      ['Email', 'texto livre', 'Opcional'],
-      [''],
-      ['DICA: não renomeie nem reordene as colunas da aba "Convidados".'],
-      ['O cálculo de custo soma inteiras (100%) + meias (50%) e ignora isentos — só dos confirmados.'],
-    ]
-    const wsGuide = XLSX.utils.aoa_to_sheet(guide)
-    wsGuide['!cols'] = [{ wch: 16 }, { wch: 38 }, { wch: 50 }]
-
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Convidados')
-    XLSX.utils.book_append_sheet(wb, wsGuide, 'Instruções')
-    XLSX.writeFile(wb, 'modelo-lista-convidados-ewind.xlsx')
-  }
+  const downloadTemplate = () => downloadGuestTemplate()
 
   // Importação de Excel com mapeamento de categoria/cobrança
   const handleImport = async (file: File | null) => {
     if (!file) return
     setImporting(true); setImportMsg('')
     try {
-      const XLSX = await import('xlsx')
-      const buffer = await file.arrayBuffer()
-      const wb = XLSX.read(buffer, { type: 'array' })
-      const sheet = wb.Sheets[wb.SheetNames[0]]
-      const rows: any[] = XLSX.utils.sheet_to_json(sheet, { header: 1 })
-
-      let startRow = 0
-      const firstRow = (rows[0] || []).map((x: any) => String(x).toLowerCase())
-      const hasHeader = firstRow.some((c: string) => c.includes('nome') || c.includes('name') || c.includes('convidado'))
-      if (hasHeader) startRow = 1
-
-      const parsed: any[] = []
-      for (let i = startRow; i < rows.length; i++) {
-        const row = rows[i]
-        if (!row || !row[0]) continue
-        const name = String(row[0]).trim()
-        if (!name) continue
-
-        // col 1: status
-        let status = 'pending'
-        const rawStatus = String(row[1] || '').toLowerCase().trim()
-        if (rawStatus.includes('confirm') || rawStatus === 'sim' || rawStatus === 'yes') status = 'confirmed'
-        else if (rawStatus.includes('recus') || rawStatus.includes('declin') || rawStatus === 'não' || rawStatus === 'nao' || rawStatus === 'no') status = 'declined'
-
-        // col 2: categoria
-        let category = 'adult'
-        const rawCat = String(row[2] || '').toLowerCase().trim()
-        if (rawCat.includes('crian') || rawCat.includes('child')) category = 'child'
-        else if (rawCat.includes('beb') || rawCat.includes('baby')) category = 'baby'
-
-        // col 3: cobrança
-        let billing = 'full'
-        const rawBill = String(row[3] || '').toLowerCase().trim()
-        if (rawBill.includes('meia') || rawBill.includes('half')) billing = 'half'
-        else if (rawBill.includes('isent') || rawBill.includes('exempt') || rawBill.includes('não paga') || rawBill.includes('nao paga')) billing = 'exempt'
-        // auto: bebê isento, criança meia (se não especificado)
-        else if (rawBill === '') {
-          if (category === 'baby') billing = 'exempt'
-          else if (category === 'child') billing = 'half'
-        }
-
-        // col 4: telefone, col 5: email
-        const phone = row[4] ? String(row[4]).trim() : null
-        const email = row[5] ? String(row[5]).trim() : null
-
-        parsed.push({ event_id: event.id, owner_id: user.id, name, status, category, billing, phone, email })
-      }
+      const rows = await readGuestRows(file)
+      const parsed = parseGuestRows(rows).map(g => ({ ...g, event_id: event.id, owner_id: user.id }))
 
       if (parsed.length === 0) {
         setImportMsg('Nenhum convidado encontrado. Verifique se a 1ª coluna tem os nomes.')
@@ -274,7 +188,7 @@ export default function EventGuestsTab({ user, event }: Props) {
         </button>
         <label style={{ fontSize: 13, fontWeight: 600, color: '#2d2d2d', background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
           📄 Importar Excel
-          <input type="file" accept=".xlsx,.xls" onChange={e => handleImport(e.target.files?.[0] || null)} style={{ display: 'none' }} disabled={importing} />
+          <input type="file" accept=".xlsx" onChange={e => handleImport(e.target.files?.[0] || null)} style={{ display: 'none' }} disabled={importing} />
         </label>
         {importing && <span style={{ fontSize: 13, color: '#9ca3af' }}>Importando...</span>}
         <button className="btn-primary" onClick={() => setShowAdd(!showAdd)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Adicionar convidado</button>
