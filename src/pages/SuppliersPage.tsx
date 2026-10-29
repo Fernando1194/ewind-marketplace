@@ -19,7 +19,7 @@ const CACHE_TTL = 60_000
 const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick: () => void }) => {
   const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
   return (
-    <div className="card" onClick={onClick} style={{ cursor: 'pointer' }}>
+    <div data-tour="supplier-card" className="card" onClick={onClick} style={{ cursor: 'pointer' }}>
       <div style={{ position: 'relative' }}>
         <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={supplier.name}
           loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
@@ -127,7 +127,7 @@ export default function SuppliersPage({ goToPage, user }: Props) {
       </div>
 
       <div className="listing-wrap">
-        <aside className="filters-sidebar">
+        <aside data-tour="suppliers-filters" className="filters-sidebar">
           <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
             <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
             <span>{filtersOpen ? '▲' : '▼'}</span>

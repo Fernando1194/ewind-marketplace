@@ -147,7 +147,7 @@ export default function EventComparisonTab({ user, event }: Props) {
       {/* Seletor de comparações */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap', alignItems: 'center' }}>
         {comparisons.map(comp => (
-          <button key={comp.id} onClick={() => setActiveComp(comp.id)}
+          <button data-tour="comp-tab" key={comp.id} onClick={() => setActiveComp(comp.id)}
             style={{ fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 100, cursor: 'pointer', fontFamily: 'inherit',
               border: `1.5px solid ${activeComp === comp.id ? '#a3e635' : '#e8e8e8'}`,
               background: activeComp === comp.id ? '#f0fdf4' : '#fff',
@@ -163,7 +163,7 @@ export default function EventComparisonTab({ user, event }: Props) {
             <button onClick={() => setShowNewComp(false)} style={{ padding: '7px 10px', fontSize: 13, background: '#f3f4f6', border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit' }}>✕</button>
           </div>
         ) : (
-          <button onClick={() => setShowNewComp(true)} style={{ fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 100, cursor: 'pointer', fontFamily: 'inherit', border: '1.5px dashed #d1d5db', background: '#fff', color: '#6b7280' }}>
+          <button data-tour="comp-new" onClick={() => setShowNewComp(true)} style={{ fontSize: 13, fontWeight: 600, padding: '8px 16px', borderRadius: 100, cursor: 'pointer', fontFamily: 'inherit', border: '1.5px dashed #d1d5db', background: '#fff', color: '#6b7280' }}>
             + Nova comparação
           </button>
         )}
@@ -185,7 +185,7 @@ export default function EventComparisonTab({ user, event }: Props) {
       {activeComp && comparisons.find(c => c.id === activeComp) && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
-            <button className="btn-primary" onClick={() => setShowAddOption(!showAddOption)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Adicionar cotação</button>
+            <button data-tour="comp-add" className="btn-primary" onClick={() => setShowAddOption(!showAddOption)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Adicionar cotação</button>
             <button onClick={() => deleteComparison(activeComp)} style={{ fontSize: 12, color: '#991b1b', background: 'none', border: '1px solid #fecaca', borderRadius: 8, padding: '7px 14px', cursor: 'pointer', fontFamily: 'inherit' }}>🗑️ Excluir comparação</button>
           </div>
 
@@ -227,14 +227,14 @@ export default function EventComparisonTab({ user, event }: Props) {
             </div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, minWidth: currentOptions.length * 180 + 140 }}>
+              <table data-tour="comp-table" style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, minWidth: currentOptions.length * 180 + 140 }}>
                 <thead>
                   <tr>
                     <th style={{ textAlign: 'left', padding: '10px 12px', fontSize: 12, color: '#9ca3af', fontWeight: 700, position: 'sticky', left: 0, background: '#fff', minWidth: 130 }}></th>
                     {currentOptions.map(o => (
                       <th key={o.id} style={{ padding: '12px', minWidth: 170, verticalAlign: 'top', background: o.chosen ? '#f0fdf4' : '#fff', borderTopLeftRadius: 12, borderTopRightRadius: 12, border: o.chosen ? '1.5px solid #a3e635' : '1px solid #f0f0f0', borderBottom: 'none' }}>
                         <div style={{ fontSize: 14, fontWeight: 800, color: '#1a1a1a', marginBottom: 6 }}>{o.name}</div>
-                        <button onClick={() => setChosen(o)} style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100, cursor: 'pointer', fontFamily: 'inherit',
+                        <button data-tour="comp-choose" onClick={() => setChosen(o)} style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 100, cursor: 'pointer', fontFamily: 'inherit',
                           border: `1.5px solid ${o.chosen ? '#16a34a' : '#e8e8e8'}`, background: o.chosen ? '#16a34a' : '#fff', color: o.chosen ? '#fff' : '#9ca3af' }}>
                           {o.chosen ? '✓ Escolhida' : 'Escolher'}
                         </button>

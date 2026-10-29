@@ -138,7 +138,7 @@ export default function EventGuestsTab({ user, event }: Props) {
   return (
     <div>
       {/* Contadores principais */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10, marginBottom: 14 }}>
+      <div data-tour="guests-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 10, marginBottom: 14 }}>
         {[
           { label: 'Total', value: guests.length, color: '#1a1a1a' },
           { label: 'Confirmados', value: confirmed.length, color: '#16a34a' },
@@ -160,7 +160,7 @@ export default function EventGuestsTab({ user, event }: Props) {
       </div>
 
       {/* Custo estimado */}
-      <div style={{ background: '#f0fdf4', border: '1px dashed #a3e635', borderRadius: 12, padding: 16, marginBottom: 20 }}>
+      <div data-tour="guests-cost" style={{ background: '#f0fdf4', border: '1px dashed #a3e635', borderRadius: 12, padding: 16, marginBottom: 20 }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div className="fg" style={{ margin: 0 }}>
             <label style={{ color: '#3f6212', fontWeight: 600 }}>Valor por convidado (R$)</label>
@@ -183,15 +183,15 @@ export default function EventGuestsTab({ user, event }: Props) {
 
       {/* Importar + adicionar */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-        <button onClick={downloadTemplate} style={{ fontSize: 13, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <button data-tour="guests-template" onClick={downloadTemplate} style={{ fontSize: 13, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
           ⬇️ Baixar modelo
         </button>
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#2d2d2d', background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <label data-tour="guests-import" style={{ fontSize: 13, fontWeight: 600, color: '#2d2d2d', background: '#fff', border: '1.5px solid #e8e8e8', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
           📄 Importar Excel
           <input type="file" accept=".xlsx" onChange={e => handleImport(e.target.files?.[0] || null)} style={{ display: 'none' }} disabled={importing} />
         </label>
         {importing && <span style={{ fontSize: 13, color: '#9ca3af' }}>Importando...</span>}
-        <button className="btn-primary" onClick={() => setShowAdd(!showAdd)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Adicionar convidado</button>
+        <button data-tour="guests-add" className="btn-primary" onClick={() => setShowAdd(!showAdd)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Adicionar convidado</button>
       </div>
 
       {importMsg && (
@@ -219,7 +219,7 @@ export default function EventGuestsTab({ user, event }: Props) {
 
       {/* Filtros */}
       {guests.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        <div data-tour="guests-filters" style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
           {([['all', 'Todos'], ['confirmed', 'Confirmados'], ['pending', 'Pendentes'], ['declined', 'Recusados']] as const).map(([k, label]) => (
             <button key={k} onClick={() => setFilterStatus(k)}
               style={{ fontSize: 12, padding: '5px 12px', borderRadius: 100, cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600,
@@ -243,7 +243,7 @@ export default function EventGuestsTab({ user, event }: Props) {
 
       {/* Lista */}
       {filtered.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div data-tour="guests-list" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {filtered.map(g => {
             const sm = STATUS_META[g.status]
             const cm = CATEGORY_META[g.category]

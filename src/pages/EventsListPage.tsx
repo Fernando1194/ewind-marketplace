@@ -113,10 +113,10 @@ export default function EventsListPage({ user, goToPage, openEvent }: Props) {
         </div>
         {!showForm && (
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <button onClick={() => goToPage('agenda')} style={{ padding: '11px 20px', fontSize: 14, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
+            <button data-tour="events-agenda" onClick={() => goToPage('agenda')} style={{ padding: '11px 20px', fontSize: 14, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit' }}>
               📅 Agenda
             </button>
-            <button className="btn-primary" onClick={() => setShowForm(true)} style={{ padding: '11px 22px', fontSize: 14 }}>
+            <button data-tour="events-new" className="btn-primary" onClick={() => setShowForm(true)} style={{ padding: '11px 22px', fontSize: 14 }}>
               + Novo evento
             </button>
           </div>
@@ -186,7 +186,7 @@ export default function EventsListPage({ user, goToPage, openEvent }: Props) {
             const dUntil = daysUntil(ev.event_date)
             const dNext = daysUntil(t.nextDue)
             return (
-              <div key={ev.id} className="card" onClick={() => openEvent(ev)}
+              <div data-tour="event-card" data-event-name={ev.name} key={ev.id} className="card" onClick={() => openEvent(ev)}
                 style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 16, padding: 20, cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'center' }}>
                 <div style={{ width: 52, height: 52, background: '#f0fdf4', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}>
                   {TYPE_ICON[ev.type] || '🎉'}

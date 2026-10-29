@@ -128,7 +128,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
           { key: 'tables', label: '🪑 Mesas' },
           { key: 'agenda', label: '📅 Agenda' },
         ] as const).map(tab => (
-          <button key={tab.key}
+          <button data-tour={`tab-${tab.key}`} key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             style={{ padding: '10px 18px', fontSize: 14, fontWeight: activeTab === tab.key ? 700 : 500, border: 'none', borderBottom: activeTab === tab.key ? '2.5px solid #a3e635' : '2.5px solid transparent', background: 'none', color: activeTab === tab.key ? '#2d2d2d' : '#9ca3af', cursor: 'pointer', fontFamily: 'inherit', marginBottom: -2, transition: 'all .15s' }}>
             {tab.label}
@@ -139,7 +139,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
       {/* ══ ABA: VISÃO GERAL ══ */}
       {activeTab === 'overview' && (<>
       {/* Summary cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
+      <div data-tour="event-summary" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
         <div className="stat-card" style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 14, padding: 16 }}>
           <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 4 }}>Total contratado</div>
           <div style={{ fontSize: 20, fontWeight: 800 }}>{money(totalContracted)}</div>
@@ -162,7 +162,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
 
       {/* Alerts: overdue & upcoming */}
       {overdue.length > 0 && (
-        <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 16px', marginBottom: 12, fontSize: 13, color: '#991b1b' }}>
+        <div data-tour="event-overdue" style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 12, padding: '12px 16px', marginBottom: 12, fontSize: 13, color: '#991b1b' }}>
           ⚠️ <strong>{overdue.length} pagamento(s) em atraso</strong> — totalizando {money(overdue.reduce((s, p) => s + Number(p.amount), 0))}
         </div>
       )}
@@ -177,7 +177,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, marginTop: 8 }}>
         <h2 style={{ fontSize: 18, fontWeight: 700 }}>Contratos e fornecedores</h2>
         {!showContractForm && (
-          <button className="btn-primary" onClick={() => setShowContractForm(true)} style={{ padding: '9px 18px', fontSize: 13 }}>
+          <button data-tour="contract-add" className="btn-primary" onClick={() => setShowContractForm(true)} style={{ padding: '9px 18px', fontSize: 13 }}>
             + Adicionar contrato
           </button>
         )}
@@ -208,8 +208,8 @@ export default function EventDetailPage({ user, event, back }: Props) {
             const paid = c.payments.filter(p => p.paid).reduce((s, p) => s + Number(p.amount), 0)
             const hasRisk = c.penalty_clause || c.cancellation_policy || c.special_clauses
             return (
-              <div key={c.id} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 12, overflow: 'hidden' }}>
-                <div onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
+              <div data-tour="contract-card" key={c.id} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 12, overflow: 'hidden' }}>
+                <div data-tour="contract-header" onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}
                   style={{ padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', gap: 12, flexWrap: 'wrap' }}>
                   <div style={{ flex: 1, minWidth: 160 }}>
                     <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 2 }}>
@@ -259,7 +259,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
 
                     {/* Risk clauses */}
                     {hasRisk && (
-                      <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: 14, marginBottom: 14 }}>
+                      <div data-tour="contract-risk" style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: 10, padding: 14, marginBottom: 14 }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#9a3412', marginBottom: 8 }}>⚠️ Cláusulas de atenção</div>
                         {c.penalty_clause && <div style={{ fontSize: 13, color: '#7c2d12', marginBottom: 6 }}><strong>Multa:</strong> {c.penalty_clause}</div>}
                         {c.cancellation_policy && <div style={{ fontSize: 13, color: '#7c2d12', marginBottom: 6 }}><strong>Cancelamento:</strong> {c.cancellation_policy}</div>}
@@ -272,7 +272,7 @@ export default function EventDetailPage({ user, event, back }: Props) {
                     {c.payments.length === 0 ? (
                       <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 12 }}>Nenhuma parcela cadastrada.</p>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                      <div data-tour="contract-payments" style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                         {c.payments.map(p => {
                           const od = !p.paid && p.due_date < today
                           return (

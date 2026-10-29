@@ -157,11 +157,11 @@ export default function AgendaCalendar({ user, events, contracts, payments, remi
       {/* Cabeçalho */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14, marginBottom: 18 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 6 }}>{title}</h1>
+          <h1 data-tour="agenda-title" style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a', marginBottom: 6 }}>{title}</h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>{subtitle}</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={scrollToToday} style={{ fontSize: 12, fontWeight: 700, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>Hoje</button>
+          <button data-tour="agenda-today" onClick={scrollToToday} style={{ fontSize: 12, fontWeight: 700, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>Hoje</button>
           {headerActions}
         </div>
       </div>

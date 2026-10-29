@@ -98,7 +98,7 @@ export default function EventTablesTab({ user, event }: Props) {
         <div style={{ fontSize: 13, color: '#6b7280' }}>
           <strong style={{ color: '#1a1a1a' }}>{totalSeated}</strong> de <strong style={{ color: '#1a1a1a' }}>{totalConfirmed}</strong> convidados confirmados alocados
         </div>
-        <button className="btn-primary" onClick={() => setShowAddTable(!showAddTable)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Nova mesa</button>
+        <button data-tour="tables-add" className="btn-primary" onClick={() => setShowAddTable(!showAddTable)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Nova mesa</button>
       </div>
 
       {pendingGuest && (
@@ -127,7 +127,7 @@ export default function EventTablesTab({ user, event }: Props) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 20 }}>
         {/* NÃO ALOCADOS */}
-        <div style={{ background: '#f9fafb', borderRadius: 14, padding: 16, border: dragOverTable === 'unassigned' ? '2px dashed #a3e635' : '1px solid #e8e8e8' }}
+        <div data-tour="tables-unassigned" style={{ background: '#f9fafb', borderRadius: 14, padding: 16, border: dragOverTable === 'unassigned' ? '2px dashed #a3e635' : '1px solid #e8e8e8' }}
           onDragOver={e => { e.preventDefault(); setDragOverTable('unassigned') }}
           onDragLeave={() => setDragOverTable(null)}
           onDrop={() => { if (draggingId) assignGuest(draggingId, null); setDraggingId(null); setDragOverTable(null) }}>
@@ -169,7 +169,7 @@ export default function EventTablesTab({ user, event }: Props) {
             <button className="btn-primary" onClick={() => setShowAddTable(true)} style={{ padding: '11px 24px', fontSize: 14 }}>+ Criar primeira mesa</button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
+          <div data-tour="tables-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
             {tables.map(table => {
               const seated = guestsOf(table.id)
               const isFull = seated.length >= table.capacity

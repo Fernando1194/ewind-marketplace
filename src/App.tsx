@@ -30,6 +30,8 @@ const EventsListPage = lazy(() => import('./pages/EventsListPage'))
 const AgendaPage = lazy(() => import('./pages/AgendaPage'))
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
+import { IS_DEMO } from './demo/config'
+const DemoLayer = lazy(() => import('./demo/DemoLayer'))
 
 const PAGE_TO_URL: Partial<Record<Page, string>> = {
   home: '/',
@@ -234,8 +236,9 @@ function App() {
 
   return (
     <div className="app">
+      {IS_DEMO && <Suspense fallback={null}><DemoLayer user={user} goToPage={goToPage} /></Suspense>}
       <nav className="nav">
-        <button className="nav-hamburger" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
+        <button className="nav-hamburger" data-tour="nav-menu" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
           <span style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
           <span style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
           <span style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
@@ -247,8 +250,8 @@ function App() {
         <div className="nav-center">
           <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
           <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
-          <a onClick={() => goToPage('listing')}>Espaços</a>
-          <a onClick={() => goToPage('suppliers')}>Fornecedores</a>
+          <a data-tour="nav-listing" onClick={() => goToPage('listing')}>Espaços</a>
+          <a data-tour="nav-suppliers" onClick={() => goToPage('suppliers')}>Fornecedores</a>
 
           {/* Nav items por role */}
 
@@ -279,7 +282,7 @@ function App() {
           {user ? (
             <>
               {/* Meus eventos — entrada principal (gestor de eventos) */}
-              <button className="btn-link" onClick={() => goToPage('events')} style={{ fontWeight: 600 }}>
+              <button data-tour="nav-events" className="btn-link" onClick={() => goToPage('events')} style={{ fontWeight: 600 }}>
                 🗓️ Meus eventos
               </button>
               {/* Meu painel — todos os perfis */}
@@ -287,7 +290,7 @@ function App() {
                 <button className="btn-primary" onClick={() => goToPage('admin')}>⚙️ Admin</button>
               )}
               {user && user?.id !== '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
-                <button className="btn-primary" onClick={() => {
+                <button data-tour="nav-panel" className="btn-primary" onClick={() => {
                   if (userRole === 'supplier' || isSupplier) goToPage('supplier-dashboard')
                   else if (userRole === 'host' || isHost) goToPage('host-dashboard')
                   else goToPage('guest-dashboard')
@@ -311,6 +314,7 @@ function App() {
       {/* MOBILE MENU */}
       <div className={`nav-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
         <a onClick={() => goToPage('home')}>🏠 Início</a>
+        {user && <a onClick={() => goToPage('events')}>🗓️ Meus eventos</a>}
         <a onClick={() => goToPage('listing')}>🏢 Espaços</a>
         <a onClick={() => goToPage('suppliers')}>🛠️ Fornecedores</a>
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>

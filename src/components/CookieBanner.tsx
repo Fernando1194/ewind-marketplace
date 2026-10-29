@@ -79,7 +79,7 @@ export default function CookieBanner({ user, onAccept, goToPage }: Props) {
   )
 
   return (
-    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, background: '#111', color: '#fff', boxShadow: '0 -4px 24px rgba(0,0,0,0.3)', borderTop: '3px solid #a3e635' }}>
+    <div data-cookie-banner style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 9999, background: '#111', color: '#fff', boxShadow: '0 -4px 24px rgba(0,0,0,0.3)', borderTop: '3px solid #a3e635' }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '20px 24px' }}>
         {!showDetails ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>

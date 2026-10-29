@@ -21,12 +21,12 @@ const CACHE_TTL = 60_000 // 1 minuto
 const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
   space: Space; onClick: () => void; onCompare: (e: React.MouseEvent) => void; isComparing: boolean
 }) => (
-  <div className="card" style={{ position: 'relative' }}>
+  <div data-tour="space-card" className="card" style={{ position: 'relative' }}>
     <div style={{ position: 'relative' }}>
       <img src={space.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={space.name}
         loading="lazy" onClick={onClick}
         style={{ cursor: 'pointer', width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
-      <button onClick={onCompare} style={{
+      <button data-tour="space-compare" onClick={onCompare} style={{
         position: 'absolute', bottom: 8, right: 8, padding: '5px 10px', fontSize: 11, fontWeight: 700,
         background: isComparing ? '#a3e635' : 'rgba(0,0,0,0.6)', color: isComparing ? '#1a2e05' : '#fff',
         border: 'none', borderRadius: 6, cursor: 'pointer', transition: 'all 0.2s'
@@ -34,7 +34,7 @@ const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
         {isComparing ? '✓ Comparando' : '+ Comparar'}
       </button>
     </div>
-    <div className="card-body" onClick={onClick} style={{ cursor: 'pointer' }}>
+    <div data-tour="space-open" className="card-body" onClick={onClick} style={{ cursor: 'pointer' }}>
       <div className="card-name">{space.name}</div>
       <div className="card-loc">📍 {space.city}, {space.state} · {space.category}</div>
       <div className="card-tags">
@@ -162,7 +162,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
       </div>
 
       <div className="listing-wrap">
-        <aside className="filters-sidebar">
+        <aside data-tour="listing-filters" className="filters-sidebar">
           <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
             <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
             <span>{filtersOpen ? '▲' : '▼'}</span>

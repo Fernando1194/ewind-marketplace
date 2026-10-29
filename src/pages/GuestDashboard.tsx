@@ -122,7 +122,7 @@ export default function GuestDashboard({ user, goToPage }: Props) {
         </div>
         <nav style={{ padding: '10px 0', flex: 1 }}>
           {TABS.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)} style={{
+            <button data-tour={`guest-tab-${t.key}`} key={t.key} onClick={() => setTab(t.key)} style={{
               width: '100%', textAlign: 'left', padding: '11px 18px', display: 'flex', alignItems: 'center', gap: 10,
               background: tab === t.key ? 'rgba(163,230,53,0.12)' : 'transparent', border: 'none',
               borderLeft: tab === t.key ? '3px solid #a3e635' : '3px solid transparent',
@@ -151,7 +151,7 @@ export default function GuestDashboard({ user, goToPage }: Props) {
 
           {/* ── ORÇAMENTOS ── */}
           {tab === 'orcamentos' && (
-            <div>
+            <div data-tour="guest-quotes">
               {loadingQ && <p style={{ color: '#9ca3af', fontSize: 14 }}>Carregando...</p>}
               {!loadingQ && quotes.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '60px 24px', background: '#fff', borderRadius: 14, border: '1px solid #e8e8e8' }}>

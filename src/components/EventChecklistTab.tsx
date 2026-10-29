@@ -181,9 +181,9 @@ export default function EventChecklistTab({ user, event }: Props) {
 
       {/* Ações */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 18, flexWrap: 'wrap', alignItems: 'center' }}>
-        <button className="btn-primary" onClick={() => setShowAdd(!showAdd)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Nova tarefa</button>
+        <button data-tour="checklist-add" className="btn-primary" onClick={() => setShowAdd(!showAdd)} style={{ padding: '9px 18px', fontSize: 13 }}>+ Nova tarefa</button>
         {event.type === 'Casamento' && (
-          <button onClick={seedWedding} disabled={seeding} style={{ fontSize: 13, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
+          <button data-tour="checklist-suggest" onClick={seedWedding} disabled={seeding} style={{ fontSize: 13, fontWeight: 600, color: '#3f6212', background: '#f0fdf4', border: '1.5px solid #a3e635', borderRadius: 8, padding: '9px 16px', cursor: 'pointer', fontFamily: 'inherit' }}>
             {seeding ? 'Adicionando...' : '💍 Sugerir tarefas de casamento'}
           </button>
         )}
@@ -245,7 +245,7 @@ export default function EventChecklistTab({ user, event }: Props) {
 
       {/* Grupos por marco */}
       {groupOrder.map(groupLabel => (
-        <div key={groupLabel} style={{ marginBottom: 22 }}>
+        <div data-tour="checklist-group" key={groupLabel} style={{ marginBottom: 22 }}>
           <div style={{ fontSize: 12, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>
             {groupLabel}
           </div>

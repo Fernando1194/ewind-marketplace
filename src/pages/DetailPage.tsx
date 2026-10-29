@@ -108,7 +108,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
           <div className="card-tags" style={{ marginBottom: 10 }}>
             {space.event_types.map(t => <span key={t} className="tag">{t}</span>)}
           </div>
-          <h1 className="det-title">{space.name}</h1>
+          <h1 data-tour="detail-title" className="det-title">{space.name}</h1>
           <div className="det-loc">📍 {space.city}, {space.state} · {space.category}</div>
           <div className="stats-row">
             <div className="stat-item">
@@ -162,7 +162,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
 
           {/* Mapa */}
           {(space.neighborhood || space.city) && (
-            <div style={{ marginTop: 24 }}>
+            <div data-tour="detail-location" style={{ marginTop: 24 }}>
               <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>📍 Localização</h3>
               {space.neighborhood && (
                 <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 10 }}>
@@ -280,7 +280,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
             })()}
 
             {!success && !showForm && (
-              <button
+              <button data-tour="detail-quote"
                 className="btn-primary"
                 style={{ width: '100%', padding: 13 }}
                 onClick={() => user ? setShowForm(true) : goToPage('login')}
