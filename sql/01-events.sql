@@ -1,9 +1,9 @@
 -- ═══════════════════════════════════════════════════════════════
--- EWIND — Gestor de Eventos (Fase 1) — versão idempotente
--- Seguro para rodar múltiplas vezes (faz DROP antes de cada CREATE policy).
+-- EWIND: event manager (Phase 1), idempotent version
+-- Safe to run multiple times (drops each policy before CREATE POLICY).
 -- ═══════════════════════════════════════════════════════════════
 
--- 1. EVENTOS ────────────────────────────────────────────────────
+-- 1. EVENTS ─────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.events (
   id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   owner_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS public.events (
   updated_at   TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. CONTRATOS / FORNECEDORES ────────────────────────────────────
+-- 2. CONTRACTS / SUPPLIERS ──────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.event_contracts (
   id              UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   event_id        UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS public.event_contracts (
   updated_at      TIMESTAMPTZ DEFAULT now()
 );
 
--- 3. PARCELAS DE PAGAMENTO ───────────────────────────────────────
+-- 3. PAYMENT INSTALLMENTS ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.contract_payments (
   id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   contract_id  UUID NOT NULL REFERENCES public.event_contracts(id) ON DELETE CASCADE,
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS public.contract_payments (
   created_at   TIMESTAMPTZ DEFAULT now()
 );
 
--- ── Índices ─────────────────────────────────────────────────────
+-- ── Indexes ─────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_events_owner       ON public.events(owner_id);
 CREATE INDEX IF NOT EXISTS idx_contracts_event    ON public.event_contracts(event_id);
 CREATE INDEX IF NOT EXISTS idx_contracts_owner    ON public.event_contracts(owner_id);
@@ -75,7 +75,7 @@ CREATE POLICY "own_events"    ON public.events            FOR ALL TO authenticat
 CREATE POLICY "own_contracts" ON public.event_contracts   FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
 CREATE POLICY "own_payments"  ON public.contract_payments FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
 
--- ── Storage bucket para PDFs (privado) ──────────────────────────
+-- ── Storage bucket for PDFs (private) ───────────────────────────
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('event-contracts', 'event-contracts', false)
 ON CONFLICT (id) DO NOTHING;

@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════
--- EWIND — Checklist de tarefas do evento (com prazos regressivos)
--- Idempotente: seguro rodar mais de uma vez.
+-- EWIND: event task checklist (with countdown deadlines)
+-- Idempotent: safe to run more than once.
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.event_tasks (
@@ -8,14 +8,14 @@ CREATE TABLE IF NOT EXISTS public.event_tasks (
   event_id     UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
   owner_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   title        TEXT NOT NULL,
-  category     TEXT,                     -- ex: Cerimônia, Buffet, Decoração, Documentos
-  assignee     TEXT,                     -- responsável (texto livre: "Meg", "Eu")
+  category     TEXT,                     -- e.g. Ceremony, Catering, Decoration, Documents
+  assignee     TEXT,                     -- person in charge (free text: "Meg", "Me")
   notes        TEXT,
-  -- Prazo: marco regressivo (dias antes do evento) OU data específica.
-  -- Se due_offset_days != null, a data é calculada a partir do event_date.
-  -- Se due_date != null, é uma data fixa. due_offset_days tem prioridade na exibição.
-  due_offset_days INT,                   -- ex: 90 = "3 meses antes" (90 dias antes do evento)
-  due_date     DATE,                     -- data fixa alternativa
+  -- Deadline: a countdown milestone (days before the event) OR a specific date.
+  -- If due_offset_days != null, the date is calculated from event_date.
+  -- If due_date != null, it is a fixed date. due_offset_days takes precedence when displayed.
+  due_offset_days INT,                   -- e.g. 90 = "3 months before" (90 days before the event)
+  due_date     DATE,                     -- alternative fixed date
   done         BOOLEAN NOT NULL DEFAULT FALSE,
   done_at      TIMESTAMPTZ,
   sort_order   INT NOT NULL DEFAULT 0,

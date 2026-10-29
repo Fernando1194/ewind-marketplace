@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════
--- EWIND — Gestão de Convidados (aba dentro do evento)
--- Idempotente: seguro rodar mais de uma vez.
+-- EWIND: guest management (a tab inside the event)
+-- Idempotent: safe to run more than once.
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.event_guests (
@@ -23,5 +23,5 @@ CREATE POLICY "own_guests" ON public.event_guests
   USING (auth.uid() = owner_id)
   WITH CHECK (auth.uid() = owner_id);
 
--- Campo opcional no evento: valor por convidado (informativo, NÃO entra no total financeiro)
+-- Optional field on the event: cost per guest (informational, NOT included in the financial total)
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS cost_per_guest NUMERIC(10,2);

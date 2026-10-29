@@ -1,14 +1,14 @@
 -- ═══════════════════════════════════════════════════════════════
--- EWIND — Mapa de mesas
--- Idempotente: seguro rodar mais de uma vez.
+-- EWIND: seating chart
+-- Idempotent: safe to run more than once.
 -- ═══════════════════════════════════════════════════════════════
 
--- Mesas do evento (capacidade variável por mesa)
+-- Event tables (variable capacity per table)
 CREATE TABLE IF NOT EXISTS public.event_tables (
   id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   event_id     UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
   owner_id     UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  label        TEXT NOT NULL,            -- ex: "Mesa 1", "Família da noiva"
+  label        TEXT NOT NULL,            -- e.g. "Table 1", "Bride's family"
   capacity     INT NOT NULL DEFAULT 8,
   sort_order   INT NOT NULL DEFAULT 0,
   created_at   TIMESTAMPTZ DEFAULT now()
@@ -23,8 +23,8 @@ DROP POLICY IF EXISTS "own_tables" ON public.event_tables;
 CREATE POLICY "own_tables" ON public.event_tables
   FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
 
--- Liga cada convidado a uma mesa (NULL = não alocado).
--- ON DELETE SET NULL: se a mesa for excluída, os convidados voltam para "não alocados".
+-- Links each guest to a table (NULL = unassigned).
+-- ON DELETE SET NULL: if the table is deleted, its guests go back to "unassigned".
 ALTER TABLE public.event_guests
   ADD COLUMN IF NOT EXISTS table_id UUID REFERENCES public.event_tables(id) ON DELETE SET NULL;
 

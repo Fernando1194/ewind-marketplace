@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════
--- EWIND — Lembretes vinculados a evento (agenda por evento)
--- Idempotente: seguro rodar mais de uma vez.
+-- EWIND: reminders linked to an event (per-event calendar)
+-- Idempotent: safe to run more than once.
 -- ═══════════════════════════════════════════════════════════════
 
 ALTER TABLE public.agenda_reminders

@@ -57,9 +57,11 @@ src/
   App.tsx        Routing and navigation
 api/
   extract-contract.ts   Serverless function for AI contract extraction
+sql/
+  01-events.sql ... 08-event-reminders.sql   Database schema, numbered in the order it is applied
 ```
 
-Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`. All of them use Row Level Security by `owner_id` (each user can only access their own data).
+Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`, `agenda_reminders`. All of them use Row Level Security by `owner_id` (each user can only access their own data).
 
 ---
 
@@ -85,7 +87,7 @@ The AI extraction function requires `ANTHROPIC_API_KEY` set in the Vercel enviro
 
 ## Deploy
 
-Deploys are automatic: every push to the `main` branch triggers a build on Vercel. Database migrations (SQL) are applied manually in the Supabase SQL Editor.
+Deploys are automatic: every push to the `main` branch triggers a build on Vercel. Database changes are applied manually in the Supabase SQL Editor, running the files in `sql/` in numeric order. Every script is idempotent (safe to run more than once). They reference a `public.profiles` table that comes from the original marketplace schema, which is not in this folder.
 
 ---
 

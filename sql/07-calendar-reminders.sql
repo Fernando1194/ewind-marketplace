@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════
--- EWIND — Lembretes da Agenda (compromissos avulsos por data)
--- Idempotente: seguro rodar mais de uma vez.
+-- EWIND: calendar reminders (standalone appointments by date)
+-- Idempotent: safe to run more than once.
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS public.agenda_reminders (
