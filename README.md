@@ -1,94 +1,94 @@
 # Ewind
 
-Ferramenta gratuita para organizar eventos do início ao fim: contratos, pagamentos, prazos, convidados, mapa de mesas e comparação de orçamentos, tudo em um só lugar.
+A free tool to plan events from start to finish: contracts, payments, deadlines, guests, seating chart and quote comparison, all in one place.
 
-**Produção:** [ewind.com.br](https://ewind.com.br)
+**Production:** [ewind.com.br](https://ewind.com.br) (the interface is in Brazilian Portuguese; the product is aimed at the Brazilian market)
 
 ---
 
-## Visão do produto
+## Product vision
 
-O Ewind é dividido em duas fases:
+Ewind is split into two phases:
 
-- **Fase 1 (atual):** SaaS gratuito de gestão de eventos para organizadores (B2C). É o foco de hoje e o que já está no ar.
-- **Fase 2 (em construção):** marketplace de espaços e fornecedores (B2B), onde anunciantes poderão divulgar seus serviços e gerenciar os próprios contratos na mesma plataforma.
+- **Phase 1 (current):** a free event management SaaS for organizers (B2C). It is today's focus and what is already live.
+- **Phase 2 (in progress):** a marketplace for venues and suppliers (B2B), where advertisers will be able to promote their services and manage their own contracts on the same platform.
 
-A estratégia entra pela demanda (organizadores usando a ferramenta grátis) para depois ativar a oferta (marketplace), evitando o problema de cold-start de um marketplace vazio.
+The strategy enters through demand (organizers using the free tool) and then activates supply (the marketplace), avoiding the cold-start problem of an empty marketplace.
 
 ---
 
 ## Stack
 
-| Camada | Tecnologia |
+| Layer | Technology |
 |---|---|
 | Frontend | React 18 + TypeScript + Vite 5 |
-| Estilo | CSS puro (sem framework de UI) |
-| Roteamento | `useState` + History API (sem react-router, para manter o bundle enxuto) |
+| Styling | Plain CSS (no UI framework) |
+| Routing | `useState` + History API (no react-router, to keep the bundle small) |
 | Backend | Supabase (PostgreSQL + Auth + Storage) |
-| Funções serverless | Vercel Functions (`/api`) |
-| IA | API Anthropic (extração de contrato, em standby) |
-| Hospedagem | Vercel (deploy automático no push da branch `main`) |
-| Idioma | PT-BR |
+| Serverless functions | Vercel Functions (`/api`) |
+| AI | Anthropic API (contract extraction, on standby) |
+| Hosting | Vercel (automatic deploy on push to the `main` branch) |
+| UI language | Brazilian Portuguese |
 
 ---
 
-## Funcionalidades (Fase 1, em produção)
+## Features (Phase 1, in production)
 
-O núcleo é o **gestor de eventos**, com um painel de seis abas por evento:
+The core is the **event manager**, with a six-tab dashboard per event:
 
-- **Visão geral** — resumo financeiro, contratos por fornecedor com cláusulas de risco destacadas, parcelas de pagamento com controle de pago/pendente/atrasado.
-- **Linha do tempo** — visualização horizontal cronológica dos marcos (pagamentos, datas de serviço, dia do evento).
-- **Convidados** — categorias (adulto/criança/bebê), regra de cobrança (inteira/meia/isento), importação de Excel com template, contadores e estimativa de custo.
-- **Checklist** — tarefas com prazos regressivos calculados a partir da data do evento; template de casamento sugerido.
-- **Orçamentos** — comparador lado a lado de cotações (espaços, fornecedores) com destaque do menor preço.
-- **Mapa de mesas** — criação de mesas com capacidade variável e alocação de convidados confirmados via drag-and-drop (desktop) ou toque (mobile).
+- **Overview**: financial summary, contracts per supplier with risky clauses highlighted, payment installments tracked as paid/pending/overdue.
+- **Timeline**: horizontal chronological view of the milestones (payments, service dates, the event day).
+- **Guests**: categories (adult/child/baby), pricing rule (full/half/free), Excel import with a template, counters and cost estimate.
+- **Checklist**: tasks with countdown deadlines calculated from the event date; a suggested wedding template.
+- **Quotes**: side-by-side comparison of quotes (venues, suppliers) with the lowest price highlighted.
+- **Seating chart**: tables with variable capacity and confirmed guests assigned by drag-and-drop (desktop) or tap (mobile).
 
-Recursos transversais: contratos com anexo de PDF (bucket privado, URLs assinadas), extração de dados de contrato por IA (em standby por decisão de custo), e feedback centralizado de erros com confirmação por modal.
+Cross-cutting features: contracts with PDF attachments (private bucket, signed URLs), AI extraction of contract data (on standby as a cost decision), and centralized error feedback with modal confirmation.
 
 ---
 
-## Estrutura do projeto
+## Project structure
 
 ```
 src/
-  pages/         Páginas (rotas), incluindo o gestor de eventos e as páginas públicas
-  components/    Componentes reutilizáveis e as abas do painel de evento
-  lib/           Utilitários (ex.: extração de texto de PDF)
-  App.tsx        Roteamento e navegação
+  pages/         Pages (routes), including the event manager and the public pages
+  components/    Reusable components and the event dashboard tabs
+  lib/           Utilities (e.g. PDF text extraction)
+  App.tsx        Routing and navigation
 api/
-  extract-contract.ts   Função serverless de extração de contrato por IA
+  extract-contract.ts   Serverless function for AI contract extraction
 ```
 
-Tabelas principais no Supabase: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`. Todas com Row Level Security por `owner_id` (cada usuário só acessa os próprios dados).
+Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`. All of them use Row Level Security by `owner_id` (each user can only access their own data).
 
 ---
 
-## Rodando localmente
+## Running locally
 
-Requisitos: Node.js 18+ e uma conta Supabase.
+Requirements: Node.js 18+ and a Supabase account.
 
 ```bash
 npm install
 
-# variáveis de ambiente necessárias
+# required environment variables
 # VITE_SUPABASE_URL
 # VITE_SUPABASE_ANON_KEY
 
-npm run dev      # ambiente de desenvolvimento
-npm run build    # build de produção
-npm run preview  # preview do build
+npm run dev      # development server
+npm run build    # production build
+npm run preview  # preview the build
 ```
 
-A função de extração por IA requer `ANTHROPIC_API_KEY` configurada no ambiente da Vercel.
+The AI extraction function requires `ANTHROPIC_API_KEY` set in the Vercel environment.
 
 ---
 
 ## Deploy
 
-O deploy é automático: cada push na branch `main` dispara um build na Vercel. As migrações de banco (SQL) são aplicadas manualmente no SQL Editor do Supabase.
+Deploys are automatic: every push to the `main` branch triggers a build on Vercel. Database migrations (SQL) are applied manually in the Supabase SQL Editor.
 
 ---
 
 ## Status
 
-Plataforma no ar e em ajuste contínuo. A Fase 1 (gestão de eventos) está funcional; a Fase 2 (marketplace) está em construção.
+The platform is live and under continuous improvement. Phase 1 (event management) is working; Phase 2 (marketplace) is in progress.
