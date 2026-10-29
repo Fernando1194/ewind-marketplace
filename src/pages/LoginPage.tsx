@@ -1,3 +1,5 @@
+import { useCopy } from '../i18n'
+import { AUTH } from '../i18n/auth'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import { BASE_PATH, IS_DEMO } from '../demo/config'
@@ -11,6 +13,7 @@ interface Props {
 type Mode = 'login' | 'forgot' | 'forgot-sent'
 
 export default function LoginPage({ goToPage }: Props) {
+  const a = useCopy(AUTH)
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,8 +30,8 @@ export default function LoginPage({ goToPage }: Props) {
       goToPage('home')
     } catch (err: any) {
       setError(err.message === 'Invalid login credentials'
-        ? 'Email ou senha incorretos'
-        : (err.message || 'Erro ao entrar'))
+        ? a.wrongCreds
+        : (err.message || a.loginErr))
     } finally {
       setLoading(false)
     }
@@ -45,7 +48,7 @@ export default function LoginPage({ goToPage }: Props) {
       if (error) throw error
       setMode('forgot-sent')
     } catch (err: any) {
-      setError(err.message || 'Erro ao enviar email')
+      setError(err.message || a.sendErr)
     } finally {
       setLoading(false)
     }
@@ -63,30 +66,30 @@ export default function LoginPage({ goToPage }: Props) {
         {/* ===== LOGIN ===== */}
         {mode === 'login' && (
           <>
-            <h1 className="auth-title">Entrar</h1>
-            <p className="auth-sub">Bem-vindo de volta!</p>
+            <h1 className="auth-title">{a.login}</h1>
+            <p className="auth-sub">{a.welcome}</p>
             {IS_DEMO && <DemoAuthNotice goToPage={goToPage} compact />}
 
             <form onSubmit={handleLogin}>
               <div className="fg">
-                <label>Email</label>
+                <label>{a.email}</label>
                 <input
                   type="email"
                   required
                   autoFocus
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  placeholder={a.emailPh}
                 />
               </div>
               <div className="fg">
-                <label>Senha</label>
+                <label>{a.password}</label>
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  placeholder="Sua senha"
+                  placeholder={a.passwordPh}
                 />
               </div>
 
@@ -98,7 +101,7 @@ export default function LoginPage({ goToPage }: Props) {
                 style={{ width: '100%', padding: 13, marginTop: 8 }}
                 disabled={loading}
               >
-                {loading ? 'Entrando...' : 'Entrar'}
+                {loading ? a.loggingIn : a.login}
               </button>
             </form>
 
@@ -108,7 +111,7 @@ export default function LoginPage({ goToPage }: Props) {
                 onClick={() => { setMode('forgot'); setError('') }}
                 style={{ background: 'none', border: 'none', fontSize: 13, color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center' }}
               >
-                Esqueci minha senha
+                {a.forgot}
               </button>}
 
               <div style={{ display: 'flex', gap: 8 }}>
@@ -120,17 +123,17 @@ export default function LoginPage({ goToPage }: Props) {
                     borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#2d2d2d'
                   }}
                 >
-                  Criar conta
+                  {a.createAccount}
                 </button>
                 <button
-                  onClick={() => goToPage('login')}
+                  onClick={() => goToPage('signup')}
                   style={{
                     flex: 1, padding: '10px 12px', fontSize: 13, fontWeight: 600,
                     background: '#f0fdf4', border: '1.5px solid #a3e635',
                     borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', color: '#1a2e05'
                   }}
                 >
-                  🛠️ Sou fornecedor
+                  {a.imSupplier}
                 </button>
               </div>
             </div>
@@ -140,21 +143,21 @@ export default function LoginPage({ goToPage }: Props) {
         {/* ===== ESQUECI SENHA ===== */}
         {mode === 'forgot' && (
           <>
-            <h1 className="auth-title">Redefinir senha</h1>
+            <h1 className="auth-title">{a.resetTitle}</h1>
             <p className="auth-sub">
-              Digite seu email e enviaremos um link para criar uma nova senha.
+              {a.resetSub}
             </p>
 
             <form onSubmit={handleForgot}>
               <div className="fg">
-                <label>Email cadastrado</label>
+                <label>{a.regEmail}</label>
                 <input
                   type="email"
                   required
                   autoFocus
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
+                  placeholder={a.emailPh}
                 />
               </div>
 
@@ -166,7 +169,7 @@ export default function LoginPage({ goToPage }: Props) {
                 style={{ width: '100%', padding: 13, marginTop: 8 }}
                 disabled={loading}
               >
-                {loading ? 'Enviando...' : 'Enviar link de redefinição'}
+                {loading ? a.sending : a.sendLink}
               </button>
             </form>
 
@@ -175,7 +178,7 @@ export default function LoginPage({ goToPage }: Props) {
                 onClick={() => { setMode('login'); setError('') }}
                 style={{ background: 'none', border: 'none', fontSize: 13, color: '#6b7280', cursor: 'pointer', fontFamily: 'inherit' }}
               >
-                ← Voltar ao login
+                {a.backLogin}
               </button>
             </div>
           </>
@@ -186,12 +189,12 @@ export default function LoginPage({ goToPage }: Props) {
           <>
             <div style={{ textAlign: 'center', padding: '8px 0 24px' }}>
               <div style={{ fontSize: 56, marginBottom: 16 }}>✉️</div>
-              <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>Email enviado!</h1>
+              <h1 style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>{a.sentTitle}</h1>
               <p style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 8 }}>
-                Enviamos um link para <strong>{email}</strong>.
+                {a.sentTo} <strong>{email}</strong>.
               </p>
               <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.6 }}>
-                Verifique sua caixa de entrada e a pasta de spam. O link expira em 1 hora.
+                {a.sentHint}
               </p>
             </div>
 
@@ -200,16 +203,16 @@ export default function LoginPage({ goToPage }: Props) {
               className="btn-primary"
               style={{ width: '100%', padding: 13 }}
             >
-              Voltar ao login
+              {a.backLoginPlain}
             </button>
 
             <div style={{ marginTop: 12, textAlign: 'center', fontSize: 13, color: '#9ca3af' }}>
-              Não recebeu?{' '}
+              {a.notReceived}{' '}
               <button
                 onClick={() => setMode('forgot')}
                 style={{ background: 'none', border: 'none', color: '#5aa800', fontWeight: 600, cursor: 'pointer', fontSize: 13, fontFamily: 'inherit' }}
               >
-                Reenviar
+                {a.resend}
               </button>
             </div>
           </>

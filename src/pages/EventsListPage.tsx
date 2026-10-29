@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -96,8 +97,8 @@ export default function EventsListPage({ user, goToPage, openEvent }: Props) {
     }
   }
 
-  const money = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-  const fmtDate = (d: string | null) => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR') : '—'
+  const money = (v: number) => v.toLocaleString(loc(), { style: 'currency', currency: 'BRL' })
+  const fmtDate = (d: string | null) => d ? new Date(d + 'T12:00:00').toLocaleDateString(loc()) : '—'
   const daysUntil = (d: string | null) => {
     if (!d) return null
     const diff = Math.ceil((new Date(d + 'T12:00:00').getTime() - Date.now()) / 86400000)

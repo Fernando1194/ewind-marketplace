@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -43,7 +44,7 @@ export default function AgendaCalendar({ user, events, contracts, payments, remi
   const [savingReminder, setSavingReminder] = useState(false)
 
   const todayStr = new Date().toISOString().slice(0, 10)
-  const money = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+  const money = (v: number) => v.toLocaleString(loc(), { style: 'currency', currency: 'BRL' })
   const dateKey = (y: number, m: number, d: number) =>
     `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
   const fmtLong = (key: string) => {

@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -92,7 +93,7 @@ export default function EventChecklistTab({ user, event }: Props) {
     return null
   }
 
-  const fmtDate = (d: Date | null) => d ? d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Sem prazo'
+  const fmtDate = (d: Date | null) => d ? d.toLocaleDateString(loc(), { day: '2-digit', month: 'short', year: 'numeric' }) : 'Sem prazo'
 
   const [savingTask, setSavingTask] = useState(false)
   const addTask = async () => {

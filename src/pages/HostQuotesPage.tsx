@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -93,7 +94,7 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
     setRejectConfirm(null)
   }
 
-  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('pt-BR') : '—'
+  const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString(loc()) : '—'
   const fmtTime = (t: string) => t ? t.substring(0, 5) : null
 
   const hoursAgo = (d: string) => {
@@ -239,7 +240,7 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                       <div style={{ fontSize: 13, color: '#1f2937', lineHeight: 1.5 }}>{q.host_response}</div>
                       {q.proposed_price && (
                         <div style={{ marginTop: 6, fontSize: 15, fontWeight: 800, color: '#166534' }}>
-                          💰 Proposta: R$ {q.proposed_price.toLocaleString('pt-BR')}
+                          💰 Proposta: R$ {q.proposed_price.toLocaleString(loc())}
                         </div>
                       )}
                     </div>
@@ -258,7 +259,7 @@ export default function HostQuotesPage({ user, goToPage, onQuoteCountChange, use
                       <div>
                         <div style={{ fontSize: 14, fontWeight: 800, color: '#14532d' }}>Evento confirmado!</div>
                         <div style={{ fontSize: 12, color: '#166534', marginTop: 2 }}>
-                          O cliente aceitou{q.proposed_price ? ` sua proposta de R$ ${q.proposed_price.toLocaleString('pt-BR')}` : ''}. Entre em contato para finalizar.
+                          O cliente aceitou{q.proposed_price ? ` sua proposta de R$ ${q.proposed_price.toLocaleString(loc())}` : ''}. Entre em contato para finalizar.
                         </div>
                       </div>
                     </div>

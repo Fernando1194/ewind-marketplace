@@ -1,6 +1,25 @@
 import { memo } from 'react'
 import type { Space } from '../types'
 import type { Page } from '../App'
+import { useCopy } from '../i18n'
+import { useLabel } from '../i18n/labels'
+
+const COPY = {
+  pt: {
+    title: 'Comparar espaços', selected: (n: number) => `${n} de 3 espaços selecionados`, back: '← Voltar à listagem', none: 'Nenhum espaço selecionado',
+    noneP: 'Volte à listagem e clique em "+ Comparar" nos espaços que deseja comparar.', explore: 'Explorar espaços', noPhoto: 'Sem+foto', details: 'Ver detalhes',
+    space: 'Espaço', add: 'Volte à listagem para adicionar', general: '📋 Informações gerais', category: 'Categoria', city: 'Cidade', eventTypes: 'Tipos de evento',
+    capTime: '👥 Capacidade e tempo', maxCap: 'Capacidade máxima', people: 'pessoas', minHours: 'Mínimo de horas', prices: '💰 Preços orientativos', perHour: 'Preço por hora', perDay: 'Preço por dia',
+    attrs: '✨ Atributos e comodidades', request: 'Solicitar orçamento', locale: 'pt-BR',
+  },
+  en: {
+    title: 'Compare venues', selected: (n: number) => `${n} of 3 venues selected`, back: '← Back to listings', none: 'No venue selected',
+    noneP: 'Go back to the listings and click "+ Compare" on the venues you want to compare.', explore: 'Explore venues', noPhoto: 'No+photo', details: 'View details',
+    space: 'Venue', add: 'Go back to the listings to add one', general: '📋 General information', category: 'Category', city: 'City', eventTypes: 'Event types',
+    capTime: '👥 Capacity and time', maxCap: 'Maximum capacity', people: 'people', minHours: 'Minimum hours', prices: '💰 Indicative prices', perHour: 'Price per hour', perDay: 'Price per day',
+    attrs: '✨ Features and amenities', request: 'Request a quote', locale: 'en-US',
+  },
+}
 
 interface Props {
   spaces: Space[]
@@ -33,6 +52,8 @@ const Row = memo(({ label, values }: { label: string; values: (string | number |
 ))
 
 export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
+  const k = useCopy(COPY)
+  const lab = useLabel()
   const hasAttr = (space: Space, attr: string) => space.attributes.includes(attr)
 
   const allAttrs = Array.from(
@@ -44,9 +65,9 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>Comparar espaços</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>{k.title}</h1>
           <p style={{ fontSize: 14, color: '#6b7280' }}>
-            {spaces.length} de 3 espaços selecionados
+            {k.selected(spaces.length)}
           </p>
         </div>
         <button
@@ -57,19 +78,19 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
             borderRadius: 8, cursor: 'pointer', color: '#2d2d2d'
           }}
         >
-          ← Voltar à listagem
+          {k.back}
         </button>
       </div>
 
       {spaces.length === 0 && (
         <div style={{ textAlign: 'center', padding: 80, background: '#f9fafb', borderRadius: 16 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📊</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Nenhum espaço selecionado</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{k.none}</h3>
           <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 20 }}>
-            Volte à listagem e clique em "+ Comparar" nos espaços que deseja comparar.
+            {k.noneP}
           </p>
           <button className="btn-primary" onClick={() => goToPage('listing')}>
-            Explorar espaços
+            {k.explore}
           </button>
         </div>
       )}
@@ -98,7 +119,7 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
                         }}
                       >×</button>
                       <img
-                        src={s.media_urls[0] || 'https://via.placeholder.com/200x120?text=Sem+foto'}
+                        src={s.media_urls[0] || 'https://via.placeholder.com/200x120?text=' + k.noPhoto}
                         alt={s.name}
                         style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 10, marginBottom: 10 }}
                       />
@@ -111,7 +132,7 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
                         style={{ fontSize: 12, padding: '7px 14px' }}
                         onClick={() => goToPage('detail', s)}
                       >
-                        Ver detalhes
+                        {k.details}
                       </button>
                     </div>
                   </th>
@@ -124,10 +145,10 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       marginBottom: 10, color: '#d1d5db', fontSize: 13
                     }}>
-                      + Espaço {spaces.length + i + 1}
+                      + {k.space} {spaces.length + i + 1}
                     </div>
                     <div style={{ fontSize: 12, color: '#d1d5db' }}>
-                      Volte à listagem para adicionar
+                      {k.add}
                     </div>
                   </th>
                 ))}
@@ -138,52 +159,52 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
               {/* SEÇÃO: INFORMAÇÕES GERAIS */}
               <tr style={{ background: '#f0fdf4' }}>
                 <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  📋 Informações gerais
+                  {k.general}
                 </td>
               </tr>
 
               <Row
-                label="Categoria"
-                values={spaces.map(s => s.category)}
+                label={k.category}
+                values={spaces.map(s => lab(s.category))}
               />
               <Row
-                label="Cidade"
+                label={k.city}
                 values={spaces.map(s => `${s.city}, ${s.state}`)}
               />
               <Row
-                label="Tipos de evento"
-                values={spaces.map(s => s.event_types.join(', '))}
+                label={k.eventTypes}
+                values={spaces.map(s => s.event_types.map(lab).join(', '))}
               />
 
               {/* SEÇÃO: CAPACIDADE */}
               <tr style={{ background: '#f0fdf4' }}>
                 <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  👥 Capacidade e tempo
+                  {k.capTime}
                 </td>
               </tr>
 
               <Row
-                label="Capacidade máxima"
-                values={spaces.map(s => `${s.capacity} pessoas`)}
+                label={k.maxCap}
+                values={spaces.map(s => `${s.capacity} ${k.people}`)}
               />
               <Row
-                label="Mínimo de horas"
+                label={k.minHours}
                 values={spaces.map(s => `${s.min_hours}h`)}
               />
 
               {/* SEÇÃO: PREÇOS */}
               <tr style={{ background: '#f0fdf4' }}>
                 <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                  💰 Preços orientativos
+                  {k.prices}
                 </td>
               </tr>
 
               <Row
-                label="Preço por hora"
+                label={k.perHour}
                 values={spaces.map(s => s.price_per_hour ? `R$ ${s.price_per_hour.toLocaleString('pt-BR')}` : null)}
               />
               <Row
-                label="Preço por dia"
+                label={k.perDay}
                 values={spaces.map(s => s.price_per_day ? `R$ ${s.price_per_day.toLocaleString('pt-BR')}` : null)}
               />
 
@@ -192,13 +213,13 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
                 <>
                   <tr style={{ background: '#f0fdf4' }}>
                     <td colSpan={4} style={{ padding: '8px 16px', fontSize: 11, fontWeight: 800, color: '#5aa800', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      ✨ Atributos e comodidades
+                      {k.attrs}
                     </td>
                   </tr>
                   {allAttrs.map(attr => (
                     <Row
                       key={attr}
-                      label={attr}
+                      label={lab(attr)}
                       values={spaces.map(s => hasAttr(s, attr) ? true : false)}
                     />
                   ))}
@@ -215,7 +236,7 @@ export default function ComparisonPage({ spaces, goToPage, onRemove }: Props) {
                       style={{ width: '100%', padding: 12, fontSize: 14 }}
                       onClick={() => goToPage('detail', s)}
                     >
-                      Solicitar orçamento
+                      {k.request}
                     </button>
                   </td>
                 ))}

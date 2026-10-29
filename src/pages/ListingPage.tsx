@@ -3,6 +3,9 @@ import { supabase } from '../supabase'
 import { CATEGORIES, ATTRIBUTES, EVENT_TYPES } from '../types'
 import type { Space } from '../types'
 import type { Page } from '../App'
+import { useCopy } from '../i18n'
+import { useLabel } from '../i18n/labels'
+import { LISTING } from '../i18n/listing'
 
 interface Props {
   goToPage: (page: Page, space?: Space) => void
@@ -20,10 +23,13 @@ const CACHE_TTL = 60_000 // 1 minuto
 
 const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
   space: Space; onClick: () => void; onCompare: (e: React.MouseEvent) => void; isComparing: boolean
-}) => (
+}) => {
+  const l = useCopy(LISTING)
+  const lab = useLabel()
+  return (
   <div data-tour="space-card" className="card" style={{ position: 'relative' }}>
     <div style={{ position: 'relative' }}>
-      <img src={space.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={space.name}
+      <img src={space.media_urls[0] || 'https://via.placeholder.com/400x200?text=' + l.noPhoto} alt={space.name}
         loading="lazy" onClick={onClick}
         style={{ cursor: 'pointer', width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
       <button data-tour="space-compare" onClick={onCompare} style={{
@@ -31,33 +37,36 @@ const SpaceCard = memo(({ space, onClick, onCompare, isComparing }: {
         background: isComparing ? '#a3e635' : 'rgba(0,0,0,0.6)', color: isComparing ? '#1a2e05' : '#fff',
         border: 'none', borderRadius: 6, cursor: 'pointer', transition: 'all 0.2s'
       }}>
-        {isComparing ? '✓ Comparando' : '+ Comparar'}
+        {isComparing ? l.comparing : l.compare}
       </button>
     </div>
     <div data-tour="space-open" className="card-body" onClick={onClick} style={{ cursor: 'pointer' }}>
       <div className="card-name">{space.name}</div>
-      <div className="card-loc">📍 {space.city}, {space.state} · {space.category}</div>
+      <div className="card-loc">📍 {space.city}, {space.state} · {lab(space.category)}</div>
       <div className="card-tags">
-        {space.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+        {space.event_types.slice(0, 2).map(t => <span key={t} className="tag">{lab(t)}</span>)}
       </div>
       <div className="card-foot">
-        <span className="card-price">{space.price_per_hour ? `R$${space.price_per_hour.toLocaleString('pt-BR')}/h` : `R$${space.price_per_day?.toLocaleString('pt-BR')}/dia`}</span>
-        <span className="card-cap">👥 até {space.capacity}</span>
+        <span className="card-price">{space.price_per_hour ? `R$${space.price_per_hour.toLocaleString('pt-BR')}/h` : `R$${space.price_per_day?.toLocaleString('pt-BR')}${l.perDay}`}</span>
+        <span className="card-cap">👥 {l.upTo} {space.capacity}</span>
       </div>
       {(space as any).avg_response_hours !== undefined && (space as any).avg_response_hours !== null && (
         <div style={{ marginTop: 6 }}>
           {(space as any).avg_response_hours < 6
-            ? <span style={{ fontSize: 10, fontWeight: 700, color: '#16a34a', background: '#f0fdf4', padding: '2px 8px', borderRadius: 100 }}>⚡ Resposta rápida</span>
+            ? <span style={{ fontSize: 10, fontWeight: 700, color: '#16a34a', background: '#f0fdf4', padding: '2px 8px', borderRadius: 100 }}>{l.fast}</span>
             : (space as any).avg_response_hours < 24
-            ? <span style={{ fontSize: 10, fontWeight: 700, color: '#d97706', background: '#fffbeb', padding: '2px 8px', borderRadius: 100 }}>🕐 Responde em até 24h</span>
+            ? <span style={{ fontSize: 10, fontWeight: 700, color: '#d97706', background: '#fffbeb', padding: '2px 8px', borderRadius: 100 }}>{l.within24}</span>
             : null}
         </div>
       )}
     </div>
   </div>
-))
+  )
+})
 
 export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, onClearCompare }: Props) {
+  const l = useCopy(LISTING)
+  const lab = useLabel()
   const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -152,81 +161,81 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
   return (
     <>
       <div className="mini-search">
-        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+        <input placeholder={l.city} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
         <select value={filterState} onChange={e => setFilterState(e.target.value)}
           style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-          <option value="">Estado</option>
+          <option value="">{l.state}</option>
           {STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="btn-primary" onClick={clearFilters}>Buscar</button>
+        <button className="btn-primary" onClick={clearFilters}>{l.search}</button>
       </div>
 
       <div className="listing-wrap">
         <aside data-tour="listing-filters" className="filters-sidebar">
           <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
-            <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
+            <span>{l.filters} {activeFiltersCount > 0 ? `(${activeFiltersCount} ${l.active})` : ''}</span>
             <span>{filtersOpen ? '▲' : '▼'}</span>
           </button>
           <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
           <div className="sf-group">
-            <div className="sf-group-title">Localização</div>
-            <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <div className="sf-group-title">{l.location}</div>
+            <input type="text" placeholder={l.city} value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
             <select value={filterState} onChange={e => setFilterState(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-              <option value="">Todos os estados</option>
+              <option value="">{l.allStates}</option>
               {STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Capacidade (pessoas)</div>
+            <div className="sf-group-title">{l.capacity}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-              <input type="number" placeholder="Mín" value={filterMinCapacity} onChange={e => setFilterMinCapacity(e.target.value)} min={0} />
-              <input type="number" placeholder="Máx" value={filterMaxCapacity} onChange={e => setFilterMaxCapacity(e.target.value)} min={0} />
+              <input type="number" placeholder={l.min} value={filterMinCapacity} onChange={e => setFilterMinCapacity(e.target.value)} min={0} />
+              <input type="number" placeholder={l.max} value={filterMaxCapacity} onChange={e => setFilterMaxCapacity(e.target.value)} min={0} />
             </div>
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Faixa de preço (R$)</div>
+            <div className="sf-group-title">{l.price}</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-              <input type="number" placeholder="Mín" value={filterMinPrice} onChange={e => setFilterMinPrice(e.target.value)} min={0} />
-              <input type="number" placeholder="Máx" value={filterMaxPrice} onChange={e => setFilterMaxPrice(e.target.value)} min={0} />
+              <input type="number" placeholder={l.min} value={filterMinPrice} onChange={e => setFilterMinPrice(e.target.value)} min={0} />
+              <input type="number" placeholder={l.max} value={filterMaxPrice} onChange={e => setFilterMaxPrice(e.target.value)} min={0} />
             </div>
-            <p style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>Aplicado ao preço/hora ou diária</p>
+            <p style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>{l.priceNote}</p>
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Categoria</div>
+            <div className="sf-group-title">{l.category}</div>
             {CATEGORIES.map(c => (
               <label key={c.name} className="chk-row">
                 <input type="checkbox" checked={filterCategory.includes(c.name)} onChange={() => toggleArr(filterCategory, c.name, setFilterCategory)} />
-                <span>{c.icon} {c.name}</span>
+                <span>{c.icon} {lab(c.name)}</span>
               </label>
             ))}
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Tipo de evento</div>
+            <div className="sf-group-title">{l.eventType}</div>
             {EVENT_TYPES.map(t => (
               <label key={t} className="chk-row">
                 <input type="checkbox" checked={filterEventTypes.includes(t)} onChange={() => toggleArr(filterEventTypes, t, setFilterEventTypes)} />
-                <span>{t}</span>
+                <span>{lab(t)}</span>
               </label>
             ))}
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Atributos</div>
+            <div className="sf-group-title">{l.attributes}</div>
             {ATTRIBUTES.map(a => (
               <label key={a} className="chk-row">
                 <input type="checkbox" checked={filterAttrs.includes(a)} onChange={() => toggleArr(filterAttrs, a, setFilterAttrs)} />
-                <span>{a}</span>
+                <span>{lab(a)}</span>
               </label>
             ))}
           </div>
 
           <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
-            Limpar filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            {l.clear} {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </button>
           </div>
         </aside>
@@ -234,16 +243,16 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
         <main className="results-area">
           <div className="results-bar">
             <span>
-              <strong>{filtered.length} espaços</strong> encontrados
+              <strong>{filtered.length} {l.spaces}</strong> {l.found}
               {filtered.length > PAGE_SIZE && (
                 <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>
-                  · página {currentPage} de {totalPages}
+                  · {l.page} {currentPage} {l.of} {totalPages}
                 </span>
               )}
             </span>
             {compareSpaces.length > 0 && (
               <span style={{ fontSize: 12, color: '#5aa800', fontWeight: 600 }}>
-                {compareSpaces.length} selecionado(s) para comparar
+                {compareSpaces.length} {l.selected}
               </span>
             )}
           </div>
@@ -259,12 +268,12 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
           {!loading && filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: 40, background: '#f9fafb', borderRadius: 12 }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>🔍</div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Nenhum espaço encontrado</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{l.none}</h3>
               <p style={{ fontSize: 13, color: '#6b7280' }}>
-                {spaces.length === 0 ? 'Ainda não há espaços cadastrados.' : 'Tente ajustar os filtros.'}
+                {spaces.length === 0 ? l.noneYet : l.adjust}
               </p>
               {activeFiltersCount > 0 && (
-                <button className="btn-primary" style={{ marginTop: 12 }} onClick={clearFilters}>Limpar filtros</button>
+                <button className="btn-primary" style={{ marginTop: 12 }} onClick={clearFilters}>{l.clear}</button>
               )}
             </div>
           )}
@@ -285,7 +294,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
                 onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); scrollToTop() }}
                 disabled={currentPage === 1}
                 style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}>
-                ← Anterior
+                {l.prev}
               </button>
 
               <div style={{ display: 'flex', gap: 4 }}>
@@ -310,7 +319,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
                 onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); scrollToTop() }}
                 disabled={currentPage === totalPages}
                 style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}>
-                Próxima →
+                {l.next}
               </button>
             </div>
           )}
@@ -320,7 +329,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
       {/* Barra flutuante comparação */}
       {compareSpaces.length > 0 && (
         <div style={{ position: 'fixed', bottom: 20, left: '50%', transform: 'translateX(-50%)', background: '#1a1a1a', borderRadius: 16, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, zIndex: 999, boxShadow: '0 8px 32px rgba(0,0,0,0.3)', flexWrap: 'wrap', maxWidth: 'calc(100vw - 40px)' }}>
-          <span style={{ fontSize: 13, color: '#aaa', fontWeight: 600, whiteSpace: 'nowrap' }}>📊 Comparar:</span>
+          <span style={{ fontSize: 13, color: '#aaa', fontWeight: 600, whiteSpace: 'nowrap' }}>{l.compareBar}</span>
           <div style={{ display: 'flex', gap: 8 }}>
             {compareSpaces.map(s => (
               <div key={s.id} style={{ position: 'relative' }}>
@@ -333,8 +342,8 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
             ))}
           </div>
           <div style={{ display: 'flex', gap: 8, marginLeft: 4 }}>
-            <button onClick={() => goToPage('comparison')} className="btn-primary" style={{ padding: '8px 18px', fontSize: 13, whiteSpace: 'nowrap' }}>Ver comparação →</button>
-            <button onClick={onClearCompare} style={{ padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #444', borderRadius: 8, cursor: 'pointer', color: '#aaa' }}>Limpar</button>
+            <button onClick={() => goToPage('comparison')} className="btn-primary" style={{ padding: '8px 18px', fontSize: 13, whiteSpace: 'nowrap' }}>{l.seeCompare}</button>
+            <button onClick={onClearCompare} style={{ padding: '8px 14px', fontSize: 12, fontWeight: 600, background: 'transparent', border: '1px solid #444', borderRadius: 8, cursor: 'pointer', color: '#aaa' }}>{l.clearShort}</button>
           </div>
         </div>
       )}

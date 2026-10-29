@@ -1,3 +1,4 @@
+import { loc } from '../i18n'
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
@@ -171,12 +172,12 @@ export default function GuestDashboard({ user, goToPage }: Props) {
                           {q.suppliers && <span style={{ fontSize: 10, color: '#9ca3af', fontWeight: 400, marginLeft: 6 }}>Fornecedor</span>}
                         </div>
                         <div style={{ fontSize: 12, color: '#6b7280' }}>
-                          🎉 {q.event_type}{q.event_date && ` · ${new Date(q.event_date+'T12:00:00').toLocaleDateString('pt-BR')}`}{q.guests_count && ` · ${q.guests_count} convidados`}
+                          🎉 {q.event_type}{q.event_date && ` · ${new Date(q.event_date+'T12:00:00').toLocaleDateString(loc())}`}{q.guests_count && ` · ${q.guests_count} convidados`}
                         </div>
-                        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{new Date(q.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'2-digit'})}</div>
+                        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{new Date(q.created_at).toLocaleDateString(loc(),{day:'2-digit',month:'short',year:'2-digit'})}</div>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {q.proposed_price && <div style={{ textAlign: 'right' }}><div style={{ fontSize: 10, color: '#9ca3af' }}>Valor proposto</div><div style={{ fontSize: 15, fontWeight: 800, color: '#5aa800' }}>R$ {Number(q.proposed_price).toLocaleString('pt-BR')}</div></div>}
+                        {q.proposed_price && <div style={{ textAlign: 'right' }}><div style={{ fontSize: 10, color: '#9ca3af' }}>Valor proposto</div><div style={{ fontSize: 15, fontWeight: 800, color: '#5aa800' }}>R$ {Number(q.proposed_price).toLocaleString(loc())}</div></div>}
                         <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 100, background: `${SC[q.status]||'#9ca3af'}18`, color: SC[q.status]||'#9ca3af' }}>{SL[q.status]||q.status}</span>
                       </div>
                     </div>

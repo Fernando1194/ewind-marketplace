@@ -32,6 +32,8 @@ const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
 import { IS_DEMO, BASE_PATH, stripBase, DEMO_URL } from './demo/config'
 const DemoLayer = lazy(() => import('./demo/DemoLayer'))
+import { useCopy, LangToggle } from './i18n'
+import { NAV } from './i18n/nav'
 const AssistantWidget = lazy(() => import('./components/AssistantWidget'))
 
 const PAGE_TO_URL: Partial<Record<Page, string>> = {
@@ -104,6 +106,7 @@ function App() {
   const [isHost, setIsHost] = useState(false)
   const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
+  const nv = useCopy(NAV)
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
   const [, setPageKey] = useState(0)
   const [, setCookieCategories] = useState<CookieCategories>(() => getCookieConsent().categories)
@@ -231,7 +234,7 @@ function App() {
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <div>Carregando...</div>
+        <div>{nv.loading}</div>
       </div>
     )
   }
@@ -243,7 +246,7 @@ function App() {
       {IS_DEMO && <Suspense fallback={null}><DemoLayer user={user} goToPage={goToPage} /></Suspense>}
       {!IS_DEMO && <Suspense fallback={null}><AssistantWidget /></Suspense>}
       <nav className="nav">
-        <button className="nav-hamburger" data-tour="nav-menu" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Menu">
+        <button className="nav-hamburger" data-tour="nav-menu" onClick={() => setMobileMenuOpen(v => !v)} aria-label={nv.menu}>
           <span style={{ transform: mobileMenuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
           <span style={{ opacity: mobileMenuOpen ? 0 : 1 }} />
           <span style={{ transform: mobileMenuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
@@ -253,16 +256,16 @@ function App() {
         </div>
 
         <div className="nav-center">
-          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>Início</a>
-          <a onClick={() => goToPage('how-it-works')}>Como funciona</a>
-          <a data-tour="nav-listing" onClick={() => goToPage('listing')}>Espaços</a>
-          <a data-tour="nav-suppliers" onClick={() => goToPage('suppliers')}>Fornecedores</a>
+          <a onClick={() => goToPage('home')} style={{ fontWeight: 600 }}>{nv.home}</a>
+          <a onClick={() => goToPage('how-it-works')}>{nv.how}</a>
+          <a data-tour="nav-listing" onClick={() => goToPage('listing')}>{nv.spaces}</a>
+          <a data-tour="nav-suppliers" onClick={() => goToPage('suppliers')}>{nv.suppliers}</a>
 
           {/* Nav items por role */}
 
-          <a onClick={() => goToPage('pricing')}>Planos</a>
-          <a onClick={() => goToPage('about')}>Quem somos</a>
-          {!IS_DEMO && <a href={DEMO_URL} style={{ textDecoration: 'none', color: 'inherit' }}>Demonstração</a>}
+          <a onClick={() => goToPage('pricing')}>{nv.plans}</a>
+          <a onClick={() => goToPage('about')}>{nv.about}</a>
+          {!IS_DEMO && <a href={DEMO_URL} style={{ textDecoration: 'none', color: 'inherit' }}>{nv.demo}</a>}
         </div>
 
         <div className="nav-right">
@@ -278,7 +281,7 @@ function App() {
                 display: 'flex', alignItems: 'center', gap: 6
               }}
             >
-              📊 Comparar
+              📊 {nv.compare}
               <span className="badge-count" style={{ background: '#a3e635', color: '#1a2e05' }}>
                 {compareSpaces.length}
               </span>
@@ -289,7 +292,7 @@ function App() {
             <>
               {/* Meus eventos — entrada principal (gestor de eventos) */}
               <button data-tour="nav-events" className="btn-link" onClick={() => goToPage('events')} style={{ fontWeight: 600 }}>
-                🗓️ Meus eventos
+                🗓️ {nv.myEvents}
               </button>
               {/* Meu painel — todos os perfis */}
               {user?.id === '8b8b94b2-cbee-4fe7-b1b6-1bcb5af2081b' && (
@@ -301,46 +304,48 @@ function App() {
                   else if (userRole === 'host' || isHost) goToPage('host-dashboard')
                   else goToPage('guest-dashboard')
                 }}>
-                  {userRole === 'supplier' || isSupplier ? '🛠️' : userRole === 'host' || isHost ? '🏢' : '👤'} Meu painel{pendingQuotesCount > 0 && <span style={{marginLeft:6,background:'#dc2626',color:'#fff',borderRadius:'50%',padding:'0 6px',fontSize:11,fontWeight:800,lineHeight:'18px',display:'inline-block'}}>{pendingQuotesCount}</span>}
+                  {userRole === 'supplier' || isSupplier ? '🛠️' : userRole === 'host' || isHost ? '🏢' : '👤'} {nv.myPanel}{pendingQuotesCount > 0 && <span style={{marginLeft:6,background:'#dc2626',color:'#fff',borderRadius:'50%',padding:'0 6px',fontSize:11,fontWeight:800,lineHeight:'18px',display:'inline-block'}}>{pendingQuotesCount}</span>}
                 </button>
               )}
 
-              <span className="user-greeting">Olá, {userName}</span>
-              <button className="btn-link" onClick={handleLogout}>Sair</button>
+              <span className="user-greeting">{nv.hello}, {userName}</span>
+              <button className="btn-link" onClick={handleLogout}>{nv.logout}</button>
             </>
           ) : (
             <>
-              <button className="btn-link" onClick={() => goToPage('login')}>Entrar</button>
-              <button className="btn-primary" onClick={() => goToPage('signup')}>Cadastrar</button>
+              <button className="btn-link" onClick={() => goToPage('login')}>{nv.login}</button>
+              <button className="btn-primary" onClick={() => goToPage('signup')}>{nv.signup}</button>
             </>
           )}
+          <LangToggle />
         </div>
       </nav>
 
       {/* MOBILE MENU */}
       <div className={`nav-mobile-menu ${mobileMenuOpen ? 'open' : ''}`}>
-        <a onClick={() => goToPage('home')}>🏠 Início</a>
-        {user && <a onClick={() => goToPage('events')}>🗓️ Meus eventos</a>}
-        <a onClick={() => goToPage('listing')}>🏢 Espaços</a>
-        <a onClick={() => goToPage('suppliers')}>🛠️ Fornecedores</a>
-        <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
-        <a onClick={() => goToPage('pricing')}>💎 Planos</a>
-        <a onClick={() => goToPage('about')}>👥 Quem somos</a>
-        {!IS_DEMO && <a href={DEMO_URL} style={{ textDecoration: 'none', color: 'inherit' }}>🧪 Demonstração</a>}
+        <a onClick={() => goToPage('home')}>🏠 {nv.home}</a>
+        {user && <a onClick={() => goToPage('events')}>🗓️ {nv.myEvents}</a>}
+        <a onClick={() => goToPage('listing')}>🏢 {nv.spaces}</a>
+        <a onClick={() => goToPage('suppliers')}>🛠️ {nv.suppliers}</a>
+        <a onClick={() => goToPage('how-it-works')}>📖 {nv.how}</a>
+        <a onClick={() => goToPage('pricing')}>💎 {nv.plans}</a>
+        <a onClick={() => goToPage('about')}>👥 {nv.about}</a>
+        {!IS_DEMO && <a href={DEMO_URL} style={{ textDecoration: 'none', color: 'inherit' }}>🧪 {nv.demo}</a>}
         {user && userRole !== 'guest' && (
           <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
-            {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel
+            {userRole === 'supplier' ? '🛠️' : '🏢'} {nv.myPanel}
           </a>
         )}
+        <div style={{ padding: '8px 16px' }}><LangToggle /></div>
         <div className="mobile-auth">
           {!user ? (
             <>
-              <button className="btn-link" onClick={() => goToPage('login')}>Entrar</button>
-              <button className="btn-primary" onClick={() => goToPage('signup')}>Cadastrar</button>
+              <button className="btn-link" onClick={() => goToPage('login')}>{nv.login}</button>
+              <button className="btn-primary" onClick={() => goToPage('signup')}>{nv.signup}</button>
             </>
           ) : (
             <button className="btn-link" onClick={async () => { await supabase.auth.signOut(); setMobileMenuOpen(false) }}>
-              Sair da conta
+              {nv.logoutAccount}
             </button>
           )}
         </div>
