@@ -27,6 +27,8 @@ export interface Space {
   media_urls: string[]
   neighborhood: string | null
   cep: string | null
+  available_dates: string[] | null
+  availability_note: string | null
   area_covered: number | null
   area_uncovered: number | null
   whatsapp: string | null

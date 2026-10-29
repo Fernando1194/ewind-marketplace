@@ -92,7 +92,7 @@ export default function ListingPage({ goToPage, compareSpaces, onCompareToggle, 
 
       const { data } = await supabase
         .from('spaces')
-        .select('id, host_id, name, city, state, category, event_types, media_urls, price_per_hour, price_per_day, capacity, attributes, available_dates, availability_note, min_hours, address, description, neighborhood, area_covered, area_uncovered, whatsapp, instagram, facebook, website, cardapio_url, status, created_at, updated_at')
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
 

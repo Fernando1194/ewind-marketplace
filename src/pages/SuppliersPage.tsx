@@ -74,7 +74,7 @@ export default function SuppliersPage({ goToPage, user }: Props) {
 
       const { data } = await supabase
         .from('suppliers')
-        .select('id, owner_id, name, description, category, subcategory, cities, state, neighborhood, price_info, media_urls, event_types, attributes, whatsapp, instagram, email, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
 

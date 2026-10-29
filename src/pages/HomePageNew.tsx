@@ -42,13 +42,13 @@ export default function HomePage({ goToPage }: Props) {
     const [{ data: spacesData }, { data: suppData }] = await Promise.all([
       supabase
         .from('spaces')
-        .select('id, name, city, state, category, media_urls, price_per_hour, price_per_day, capacity, event_types, host_id, min_hours, address, description, attributes, status, created_at, updated_at')
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(6),
       supabase
         .from('suppliers')
-        .select('id, owner_id, name, category, subcategory, state, cities, neighborhood, media_urls, price_info, description, attributes, event_types, whatsapp, email, instagram, website, facebook, youtube, tiktok, portfolio_url, status, created_at, updated_at')
+        .select('*')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(6)
