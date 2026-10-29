@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Page } from '../App'
+import { useLang } from '../i18n'
 
 interface Props {
   goToPage: (page: Page) => void
@@ -7,6 +8,7 @@ interface Props {
 
 export default function TermsPage({ goToPage }: Props) {
   const [activeTab, setActiveTab] = useState<'terms' | 'privacy'>('terms')
+  const { lang } = useLang()
 
   return (
     <div style={{ background: '#f9fafb', minHeight: 'calc(100vh - 64px)' }}>
@@ -23,9 +25,15 @@ export default function TermsPage({ goToPage }: Props) {
           Documentos que regem o uso da plataforma Ewind. Leia com atenção antes de utilizar nossos serviços.
         </p>
         <div style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
-          Última atualização: Maio de 2025
+          Última atualização: Outubro de 2026
         </div>
       </div>
+
+      {lang === 'en' && (
+        <div role="note" style={{ background: '#fffbeb', borderBottom: '1px solid #fde68a', padding: '12px 24px', textAlign: 'center', fontSize: 13, color: '#92400e' }}>
+          The Terms of Use and Privacy Policy are available only in Portuguese, which is the legally binding version. For questions in English, write to privacidade@ewind.com.br.
+        </div>
+      )}
 
       {/* TABS */}
       <div style={{ background: '#fff', borderBottom: '1px solid #e8e8e8', padding: '0 24px' }}>

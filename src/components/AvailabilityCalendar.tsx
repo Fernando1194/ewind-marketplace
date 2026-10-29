@@ -1,3 +1,4 @@
+import { useCopy } from '../i18n'
 // Seletor de dias da semana disponíveis
 
 interface Props {
@@ -7,17 +8,25 @@ interface Props {
   availabilityNote?: string
 }
 
-const DAYS = [
-  { key: 'monday',    label: 'Segunda' },
-  { key: 'tuesday',   label: 'Terça' },
-  { key: 'wednesday', label: 'Quarta' },
-  { key: 'thursday',  label: 'Quinta' },
-  { key: 'friday',    label: 'Sexta' },
-  { key: 'saturday',  label: 'Sábado' },
-  { key: 'sunday',    label: 'Domingo' },
-]
+const COPY = {
+  pt: {
+    days: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'],
+    help: 'Selecione os dias da semana em que você está disponível para receber eventos. Clientes só poderão solicitar orçamentos nesses dias.',
+    none: 'Desmarcar todos', all: 'Marcar todos os dias', noneSel: '⚠️ Nenhum dia selecionado, clientes podem solicitar qualquer dia',
+    sel: (n: number) => `✓ ${n} dia${n > 1 ? 's' : ''} selecionado${n > 1 ? 's' : ''}`, avail: 'Disponível', ask: 'Consulte a disponibilidade enviando um orçamento', note: 'Observação',
+  },
+  en: {
+    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+    help: 'Select the days of the week when you are available to host events. Clients will only be able to request quotes on those days.',
+    none: 'Clear all', all: 'Select all days', noneSel: '⚠️ No day selected, clients can request any day',
+    sel: (n: number) => `✓ ${n} day${n > 1 ? 's' : ''} selected`, avail: 'Available', ask: 'Check availability by sending a quote request', note: 'Note',
+  },
+}
+const KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 export default function AvailabilityCalendar({ availableDates, onChange, readOnly = false, availabilityNote }: Props) {
+  const k = useCopy(COPY)
+  const DAYS = KEYS.map((key, i) => ({ key, label: k.days[i] }))
   const toggle = (key: string) => {
     if (!onChange) return
     const next = availableDates.includes(key)
@@ -37,8 +46,7 @@ export default function AvailabilityCalendar({ availableDates, onChange, readOnl
     <div>
       {!readOnly && (
         <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 16, lineHeight: 1.5 }}>
-          Selecione os dias da semana em que você está disponível para receber eventos.
-          Clientes só poderão solicitar orçamentos nesses dias.
+          {k.help}
         </p>
       )}
 
@@ -75,30 +83,30 @@ export default function AvailabilityCalendar({ availableDates, onChange, readOnl
         <div style={{ marginTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button type="button" onClick={toggleAll}
             style={{ fontSize: 12, color: '#5aa800', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, padding: 0 }}>
-            {selectedAll ? 'Desmarcar todos' : 'Marcar todos os dias'}
+            {selectedAll ? k.none : k.all}
           </button>
           <span style={{ fontSize: 12, color: '#9ca3af' }}>
             {availableDates.length === 0
-              ? '⚠️ Nenhum dia selecionado — clientes podem solicitar qualquer dia'
-              : `✓ ${availableDates.length} dia${availableDates.length > 1 ? 's' : ''} selecionado${availableDates.length > 1 ? 's' : ''}`}
+              ? k.noneSel
+              : k.sel(availableDates.length)}
           </span>
         </div>
       )}
 
       {readOnly && availableDates.length > 0 && (
         <div style={{ marginTop: 10, fontSize: 12, color: '#6b7280' }}>
-          Disponível: {DAYS.filter(d => availableDates.includes(d.key)).map(d => d.label).join(', ')}
+          {k.avail}: {DAYS.filter(d => availableDates.includes(d.key)).map(d => d.label).join(', ')}
         </div>
       )}
       {readOnly && availableDates.length === 0 && (
         <div style={{ fontSize: 12, color: '#6b7280', marginTop: 8 }}>
-          Consulte a disponibilidade enviando um orçamento
+          {k.ask}
         </div>
       )}
 
       {readOnly && availabilityNote && (
         <div style={{ marginTop: 12, padding: '10px 14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
-          📌 <strong>Observação:</strong> {availabilityNote}
+          📌 <strong>{k.note}:</strong> {availabilityNote}
         </div>
       )}
     </div>

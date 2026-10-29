@@ -1,3 +1,6 @@
+import { useCopy } from '../i18n'
+import { useLabel } from '../i18n/labels'
+import { SUPPLIERS } from '../i18n/suppliers'
 import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react'
 import { supabase } from '../supabase'
 import { SUPPLIER_CATEGORIES, EVENT_TYPES } from '../types'
@@ -18,13 +21,15 @@ const CACHE_TTL = 60_000
 
 const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick: () => void }) => {
   const cat = SUPPLIER_CATEGORIES.find(c => c.name === supplier.category)
+  const l = useCopy(SUPPLIERS)
+  const lab = useLabel()
   return (
     <div data-tour="supplier-card" className="card" onClick={onClick} style={{ cursor: 'pointer' }}>
       <div style={{ position: 'relative' }}>
-        <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=Sem+foto'} alt={supplier.name}
+        <img src={supplier.media_urls[0] || 'https://via.placeholder.com/400x200?text=' + l.noPhoto} alt={supplier.name}
           loading="lazy" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
         <div style={{ position: 'absolute', top: 10, left: 10, background: cat?.bg || '#f0fdf4', borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-          {cat?.icon} {supplier.category}
+          {cat?.icon} {lab(supplier.category)}
         </div>
       </div>
       <div className="card-body">
@@ -39,7 +44,7 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
           <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>💰 {supplier.price_info}</div>
         )}
         <div className="card-tags" style={{ marginTop: 8 }}>
-          {supplier.event_types.slice(0, 2).map(t => <span key={t} className="tag">{t}</span>)}
+          {supplier.event_types.slice(0, 2).map(t => <span key={t} className="tag">{lab(t)}</span>)}
         </div>
       </div>
     </div>
@@ -47,6 +52,8 @@ const SupplierCard = memo(({ supplier, onClick }: { supplier: Supplier; onClick:
 })
 
 export default function SuppliersPage({ goToPage, user }: Props) {
+  const l = useCopy(SUPPLIERS)
+  const lab = useLabel()
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
@@ -117,26 +124,26 @@ export default function SuppliersPage({ goToPage, user }: Props) {
   return (
     <>
       <div className="mini-search">
-        <input placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} />
+        <input placeholder={l.city} value={filterCity} onChange={e => setFilterCity(e.target.value)} />
         <select value={filterState} onChange={e => setFilterState(e.target.value)}
           style={{ padding: '10px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-          <option value="">Estado</option>
+          <option value="">{l.state}</option>
           {STATES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="btn-primary" onClick={clearFilters}>Buscar</button>
+        <button className="btn-primary" onClick={clearFilters}>{l.search}</button>
       </div>
 
       <div className="listing-wrap">
         <aside data-tour="suppliers-filters" className="filters-sidebar">
           <button className="filters-toggle-btn" onClick={() => setFiltersOpen(v => !v)}>
-            <span>🔍 Filtros {activeFiltersCount > 0 ? `(${activeFiltersCount} ativos)` : ''}</span>
+            <span>{l.filters} {activeFiltersCount > 0 ? `(${activeFiltersCount} ${l.active})` : ''}</span>
             <span>{filtersOpen ? '▲' : '▼'}</span>
           </button>
           <div className={`filters-sidebar-content ${filtersOpen ? 'open' : ''}`}>
           <div className="sf-group">
-            <div className="sf-group-title">Localização</div>
-            <input type="text" placeholder="Cidade" value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.06em', display: 'block', marginBottom: 4 }}>📅 Data do evento</label>
+            <div className="sf-group-title">{l.location}</div>
+            <input type="text" placeholder={l.city} value={filterCity} onChange={e => setFilterCity(e.target.value)} style={{ marginBottom: 8 }} />
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.06em', display: 'block', marginBottom: 4 }}>{l.eventDate}</label>
             <input
               type="date"
               value={filterDate}
@@ -144,16 +151,16 @@ export default function SuppliersPage({ goToPage, user }: Props) {
               min={new Date().toISOString().split('T')[0]}
               style={{ width: '100%', padding: '8px 10px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', marginBottom: 4 }}
             />
-            {filterDate && <p style={{ fontSize: 11, color: '#5aa800', marginBottom: 8 }}>✓ Mostrando disponíveis em {new Date(filterDate + 'T12:00:00').toLocaleDateString('pt-BR')}</p>}
+            {filterDate && <p style={{ fontSize: 11, color: '#5aa800', marginBottom: 8 }}>{l.showing} {new Date(filterDate + 'T12:00:00').toLocaleDateString(l.locale)}</p>}
             <select value={filterState} onChange={e => setFilterState(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', border: '1.5px solid #e8e8e8', borderRadius: 8, fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-              <option value="">Todos os estados</option>
+              <option value="">{l.allStates}</option>
               {STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Categoria</div>
+            <div className="sf-group-title">{l.category}</div>
             {SUPPLIER_CATEGORIES.map(c => (
               <label key={c.name} style={{
                 display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, cursor: 'pointer',
@@ -168,39 +175,39 @@ export default function SuppliersPage({ goToPage, user }: Props) {
                   onChange={() => toggleArr(filterCategories, c.name, setFilterCategories)}
                   style={{ accentColor: '#a3e635', width: 14, height: 14, flexShrink: 0 }} />
                 <span style={{ fontSize: 15, flexShrink: 0 }}>{c.icon}</span>
-                <span style={{ lineHeight: 1.3 }}>{c.name}</span>
+                <span style={{ lineHeight: 1.3 }}>{lab(c.name)}</span>
               </label>
             ))}
           </div>
 
           <div className="sf-group">
-            <div className="sf-group-title">Tipo de evento</div>
+            <div className="sf-group-title">{l.eventType}</div>
             {EVENT_TYPES.map(t => (
               <label key={t} className="chk-row">
                 <input type="checkbox" checked={filterEventTypes.includes(t)}
                   onChange={() => toggleArr(filterEventTypes, t, setFilterEventTypes)} />
-                <span>{t}</span>
+                <span>{lab(t)}</span>
               </label>
             ))}
           </div>
 
           {activeFiltersCount > 0 && (
             <div className="sf-group">
-              <div className="sf-group-title">Filtros ativos</div>
+              <div className="sf-group-title">{l.activeTitle}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
                 {filterCategories.map(cat => {
                   const c = SUPPLIER_CATEGORIES.find(x => x.name === cat)
                   return (
                     <button key={cat} onClick={() => toggleArr(filterCategories, cat, setFilterCategories)}
                       style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', background: '#a3e635', border: 'none', borderRadius: 100, cursor: 'pointer', color: '#1a2e05', fontFamily: 'inherit' }}>
-                      {c?.icon} {cat} ×
+                      {c?.icon} {lab(cat)} ×
                     </button>
                   )
                 })}
                 {filterEventTypes.map(t => (
                   <button key={t} onClick={() => toggleArr(filterEventTypes, t, setFilterEventTypes)}
                     style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', background: '#f0fdf4', border: '1px solid #a3e635', borderRadius: 100, cursor: 'pointer', color: '#1a2e05', fontFamily: 'inherit' }}>
-                    🎉 {t} ×
+                    🎉 {lab(t)} ×
                   </button>
                 ))}
               </div>
@@ -208,7 +215,7 @@ export default function SuppliersPage({ goToPage, user }: Props) {
           )}
 
           <button className="btn-primary" style={{ width: '100%' }} onClick={clearFilters}>
-            Limpar filtros {activeFiltersCount > 0 && `(${activeFiltersCount})`}
+            {l.clear} {activeFiltersCount > 0 && `(${activeFiltersCount})`}
           </button>
           </div>
         </aside>
@@ -216,15 +223,15 @@ export default function SuppliersPage({ goToPage, user }: Props) {
         <main className="results-area">
           <div className="results-bar">
             <span>
-              <strong>{filtered.length} fornecedores</strong> encontrados
+              <strong>{filtered.length} {l.suppliers}</strong> {l.found}
               {filtered.length > PAGE_SIZE && (
                 <span style={{ color: '#9ca3af', fontSize: 12, marginLeft: 6 }}>
-                  · página {currentPage} de {totalPages}
+                  · {l.page} {currentPage} {l.of} {totalPages}
                 </span>
               )}
             </span>
             <button className="btn-primary" style={{ fontSize: 13, padding: '8px 16px' }} onClick={() => goToPage(user ? 'new-supplier' : 'signup')}>
-              + Anunciar serviço
+              {l.list}
             </button>
           </div>
 
@@ -240,14 +247,14 @@ export default function SuppliersPage({ goToPage, user }: Props) {
             <div style={{ textAlign: 'center', padding: 48, background: '#f9fafb', borderRadius: 14 }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
               <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>
-                {activeFiltersCount > 0 ? 'Nenhum fornecedor encontrado' : 'Seja o primeiro a anunciar!'}
+                {activeFiltersCount > 0 ? l.none : l.first}
               </h3>
               <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 20 }}>
-                {activeFiltersCount > 0 ? 'Tente ajustar os filtros.' : 'Cadastre seus serviços e apareça para quem organiza eventos.'}
+                {activeFiltersCount > 0 ? l.adjust : l.firstP}
               </p>
               {activeFiltersCount > 0
-                ? <button className="btn-primary" onClick={clearFilters}>Limpar filtros</button>
-                : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'signup')}>+ Anunciar meu serviço</button>
+                ? <button className="btn-primary" onClick={clearFilters}>{l.clear}</button>
+                : <button className="btn-primary" onClick={() => goToPage(user ? 'new-supplier' : 'signup')}>{l.listMine}</button>
               }
             </div>
           )}
@@ -264,7 +271,7 @@ export default function SuppliersPage({ goToPage, user }: Props) {
               <button onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); scrollToTop() }}
                 disabled={currentPage === 1}
                 style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.4 : 1 }}>
-                ← Anterior
+                {l.prev}
               </button>
 
               <div style={{ display: 'flex', gap: 4 }}>
@@ -288,7 +295,7 @@ export default function SuppliersPage({ goToPage, user }: Props) {
               <button onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); scrollToTop() }}
                 disabled={currentPage === totalPages}
                 style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, border: '1.5px solid #e8e8e8', borderRadius: 8, background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.4 : 1 }}>
-                Próxima →
+                {l.next}
               </button>
             </div>
           )}
