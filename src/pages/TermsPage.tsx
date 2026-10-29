@@ -165,6 +165,7 @@ export default function TermsPage({ goToPage }: Props) {
                 <ul style={{ marginLeft: 20, marginTop: 8 }}>
                   <li>Com o anunciante do espaço quando você solicita um orçamento (nome, email e mensagem);</li>
                   <li>Com provedores de serviços técnicos (ex: Supabase para banco de dados);</li>
+                  <li>Com a Anthropic, provedora da inteligência artificial do assistente virtual do site, que recebe apenas as mensagens que você digita nesse chat para gerar a resposta. O Ewind não grava o conteúdo dessa conversa; para o limite diário de uso guardamos apenas um código irreversível (hash) derivado do seu endereço de IP. Não informe dados pessoais no chat;</li>
                   <li>Quando exigido por lei ou autoridade competente.</li>
                 </ul>
                 <br />
