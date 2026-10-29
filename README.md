@@ -1,5 +1,7 @@
 # Ewind
 
+[![CI](https://github.com/Fernando1194/ewind-marketplace/actions/workflows/ci.yml/badge.svg)](https://github.com/Fernando1194/ewind-marketplace/actions/workflows/ci.yml)
+
 A free tool to plan events from start to finish: contracts, payments, deadlines, guests, seating chart and quote comparison, all in one place.
 
 **Production:** [ewind.com.br](https://ewind.com.br) (the interface is in Brazilian Portuguese; the product is aimed at the Brazilian market)
@@ -93,13 +95,13 @@ npm run build    # production build
 npm run preview  # preview the build
 ```
 
-The AI extraction function requires `ANTHROPIC_API_KEY` set in the Vercel environment.
+Copy `.env.example` to `.env` for the variables. The AI extraction function requires `ANTHROPIC_API_KEY` set in the Vercel environment.
 
 ---
 
 ## Deploy
 
-Deploys are automatic: every push to the `main` branch triggers a build on Vercel. Database changes are applied manually in the Supabase SQL Editor, running the files in `sql/` in numeric order. Every script is idempotent (safe to run more than once). They reference a `public.profiles` table that comes from the original marketplace schema, which is not in this folder.
+Deploys are automatic: every push to the `main` branch triggers a build on Vercel, and GitHub Actions runs the type check and build on every push and pull request. A daily Vercel cron calls `/api/health`, which reads one row from the production and demo databases so the free Supabase plan does not pause them. Database changes are applied manually in the Supabase SQL Editor, running the files in `sql/` in numeric order. Every script is idempotent (safe to run more than once). They reference a `public.profiles` table that comes from the original marketplace schema, which is not in this folder.
 
 ---
 
