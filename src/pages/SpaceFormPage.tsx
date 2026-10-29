@@ -1,5 +1,5 @@
 import AvailabilityCalendar from '../components/AvailabilityCalendar'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import { CATEGORIES, EVENT_TYPES, ATTRIBUTES } from '../types'
@@ -77,10 +77,13 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   // Etapa 2 — Localização
   const [city, setCity] = useState(editingSpace?.city || '')
   const [state, setState] = useState(editingSpace?.state || 'PR')
-  const [address, setAddress] = useState(editingSpace?.address || '')
+  // Endereço exato vive em space_addresses (RLS restrita ao host + quem já pediu orçamento),
+  // por isso não vem em editingSpace — é carregado à parte no efeito abaixo.
+  const [address, setAddress] = useState('')
   const [neighborhood, setNeighborhood] = useState(editingSpace?.neighborhood || '')
-  const [cep, setCep] = useState(editingSpace?.cep || '')
+  const [cep, setCep] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
+  const [loadingAddress, setLoadingAddress] = useState(!!editingSpace)
   const [areaCovered, setAreaCovered] = useState(editingSpace?.area_covered?.toString() || '')
   const [areaUncovered, setAreaUncovered] = useState(editingSpace?.area_uncovered?.toString() || '')
 
@@ -107,6 +110,20 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   // Etapa 6 — Fotos
   const [files, setFiles] = useState<File[]>([])
   const [existingUrls, setExistingUrls] = useState<string[]>(editingSpace?.media_urls || [])
+
+  // Carrega o endereço exato (tabela separada) só quando o próprio host está editando.
+  useEffect(() => {
+    if (!editingSpace) { setLoadingAddress(false); return }
+    let cancelled = false
+    supabase.from('space_addresses').select('address, cep').eq('space_id', editingSpace.id).maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return
+        setAddress(data?.address || '')
+        setCep(data?.cep || '')
+        setLoadingAddress(false)
+      })
+    return () => { cancelled = true }
+  }, [editingSpace])
 
   const toggleArr = (arr: string[], val: string, set: (v: string[]) => void) => {
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
@@ -173,10 +190,19 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
       }
 
       const result = isEditing && editingSpace
-        ? await supabase.from('spaces').update(spaceData).eq('id', editingSpace.id)
-        : await supabase.from('spaces').insert(spaceData)
+        ? await supabase.from('spaces').update(spaceData).eq('id', editingSpace.id).select('id').single()
+        : await supabase.from('spaces').insert(spaceData).select('id').single()
 
       if (result.error) throw result.error
+      const spaceId = result.data.id
+
+      // Endereço exato vai para a tabela restrita (host + quem já pediu orçamento).
+      if (address.trim() || cep.trim()) {
+        const { error: addrError } = await supabase.from('space_addresses')
+          .upsert({ space_id: spaceId, address: address.trim() || null, cep: cep.trim() || null, updated_at: new Date().toISOString() })
+        if (addrError) throw addrError
+      }
+
       alert(isEditing ? '✅ Espaço atualizado com sucesso!' : '✅ Espaço cadastrado com sucesso!')
       goToPage('host-dashboard')
     } catch (err: any) {
@@ -300,8 +326,8 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
             </div>
             <div className="fg">
               <label>Endereço completo (opcional)</label>
-              <input type="text" value={address} onChange={e => setAddress(capitalizeFirst(e.target.value))} placeholder="Rua, número" />
-              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>💡 Compartilhado apenas com clientes que fecharem negócio.</p>
+              <input type="text" value={address} onChange={e => setAddress(capitalizeFirst(e.target.value))} placeholder="Rua, número" disabled={loadingAddress} />
+              <p style={{ fontSize: 11, color: '#6b7280', marginTop: 4 }}>💡 Só aparece para você e para quem já solicitou orçamento deste espaço. Visitantes veem só o bairro.</p>
             </div>
           </>
         )}

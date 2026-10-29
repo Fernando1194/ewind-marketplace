@@ -58,10 +58,10 @@ src/
 api/
   extract-contract.ts   Serverless function for AI contract extraction
 sql/
-  01-events.sql ... 08-event-reminders.sql   Database schema, numbered in the order it is applied
+  01-events.sql ... 10-space-addresses.sql   Database schema, numbered in the order it is applied
 ```
 
-Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`, `agenda_reminders`. All of them use Row Level Security by `owner_id` (each user can only access their own data).
+Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`, `agenda_reminders`. All of them use Row Level Security by `owner_id` (each user can only access their own data). A space's exact address lives in `space_addresses`, readable only by its host and by users who requested a quote.
 
 ---
 

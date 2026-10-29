@@ -18,7 +18,6 @@ export interface Space {
   event_types: string[]
   city: string
   state: string
-  address: string | null
   capacity: number
   min_hours: number
   price_per_hour: number | null
@@ -26,7 +25,6 @@ export interface Space {
   attributes: string[]
   media_urls: string[]
   neighborhood: string | null
-  cep: string | null
   available_dates: string[] | null
   availability_note: string | null
   area_covered: number | null
@@ -39,6 +37,15 @@ export interface Space {
   status: 'pending' | 'active' | 'paused' | 'rejected'
   created_at: string
   updated_at: string
+}
+
+// Endereço exato do espaço. Fica numa tabela própria (space_addresses) porque o RLS só
+// libera a leitura para o host ou para quem já solicitou orçamento naquele espaço.
+// Antes de ter uma dessas duas condições, address/cep vêm como null.
+export interface SpaceAddress {
+  space_id: string
+  address: string | null
+  cep: string | null
 }
 
 export interface Quote {

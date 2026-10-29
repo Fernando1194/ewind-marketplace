@@ -3,6 +3,7 @@ import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Supplier } from '../types'
 import type { Page } from '../App'
+import LgpdRightsPanel from '../components/LgpdRightsPanel'
 
 interface Props {
   user: User
@@ -14,7 +15,7 @@ export default function SupplierDashboard({ user, goToPage }: Props) {
   const [loading, setLoading] = useState(true)
 
   // Feedback states
-  const [activeSection, setActiveSection] = useState<'servicos' | 'orcamentos'>('servicos')
+  const [activeSection, setActiveSection] = useState<'servicos' | 'orcamentos' | 'privacidade'>('servicos')
   const [showFeedback, setShowFeedback] = useState(false)
   const [quotes, setQuotes] = useState<any[]>([])
   const [loadingQ, setLoadingQ] = useState(false)
@@ -241,7 +242,8 @@ export default function SupplierDashboard({ user, goToPage }: Props) {
       <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid #f0f0f0', marginBottom: 24 }}>
         {([
           { key: 'servicos',   label: '🛠️ Meus serviços' },
-          { key: 'orcamentos', label: `📋 Orçamentos${quotes.filter(q => q.status === 'pending').length > 0 ? ` (${quotes.filter(q => q.status === 'pending').length})` : ''}` }
+          { key: 'orcamentos', label: `📋 Orçamentos${quotes.filter(q => q.status === 'pending').length > 0 ? ` (${quotes.filter(q => q.status === 'pending').length})` : ''}` },
+          { key: 'privacidade', label: '🔒 Privacidade (LGPD)' }
         ] as const).map(tab => (
           <button key={tab.key}
             onClick={() => { setActiveSection(tab.key); if (tab.key === 'orcamentos' && quotes.length === 0) loadQuotes() }}
@@ -250,6 +252,11 @@ export default function SupplierDashboard({ user, goToPage }: Props) {
           </button>
         ))}
       </div>
+
+      {/* ── Privacidade / LGPD ── */}
+      {activeSection === 'privacidade' && (
+        <LgpdRightsPanel user={user} extraExportTables={[{ table: 'suppliers', column: 'owner_id', label: 'Serviços cadastrados' }]} />
+      )}
 
       {/* ── Orçamentos tab ── */}
       {activeSection === 'orcamentos' && (

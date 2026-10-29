@@ -3,6 +3,7 @@ import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Space } from '../types'
 import type { Page } from '../App'
+import LgpdRightsPanel from '../components/LgpdRightsPanel'
 
 interface Props {
   user: User
@@ -12,7 +13,7 @@ interface Props {
 export default function HostDashboard({ user, goToPage }: Props) {
   const [spaces, setSpaces] = useState<Space[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeSection, setActiveSection] = useState<'espacos' | 'orcamentos'>('espacos')
+  const [activeSection, setActiveSection] = useState<'espacos' | 'orcamentos' | 'privacidade'>('espacos')
   const [quotes, setQuotes] = useState<any[]>([])
   const [loadingQ, setLoadingQ] = useState(false)
   const [expandedQuote, setExpandedQuote] = useState<string | null>(null)
@@ -128,7 +129,8 @@ export default function HostDashboard({ user, goToPage }: Props) {
       <div style={{ display: 'flex', gap: 0, borderBottom: '2px solid #f0f0f0', marginBottom: 24 }}>
         {([
           { key: 'espacos',    label: '🏢 Meus espaços' },
-          { key: 'orcamentos', label: `📋 Orçamentos${quotes.filter(q => q.status === 'pending').length > 0 ? ` (${quotes.filter(q => q.status === 'pending').length})` : ''}` }
+          { key: 'orcamentos', label: `📋 Orçamentos${quotes.filter(q => q.status === 'pending').length > 0 ? ` (${quotes.filter(q => q.status === 'pending').length})` : ''}` },
+          { key: 'privacidade', label: '🔒 Privacidade (LGPD)' }
         ] as const).map(tab => (
           <button key={tab.key}
             onClick={() => { setActiveSection(tab.key); if (tab.key === 'orcamentos' && quotes.length === 0) loadQuotes() }}
@@ -137,6 +139,11 @@ export default function HostDashboard({ user, goToPage }: Props) {
           </button>
         ))}
       </div>
+
+      {/* ── Privacidade / LGPD ── */}
+      {activeSection === 'privacidade' && (
+        <LgpdRightsPanel user={user} extraExportTables={[{ table: 'spaces', column: 'host_id', label: 'Espaços cadastrados' }]} />
+      )}
 
       {/* ── Orçamentos tab content ── */}
       {activeSection === 'orcamentos' && (

@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { createClient } from '@supabase/supabase-js'
 
 // Extrai dados e cláusulas de risco de um contrato de evento.
 // NUNCA inventa valores: se não encontrar algo, retorna null naquele campo.
@@ -6,6 +7,23 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  // Exige um usuário Ewind autenticado. Sem isso, qualquer pessoa na internet podia
+  // chamar este endpoint direto e gastar a chave da Anthropic sem passar pelo site.
+  const authHeader = req.headers.authorization || ''
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  if (!token) return res.status(401).json({ error: 'nao_autenticado', detail: 'Faça login para usar a extração automática de contratos' })
+
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return res.status(500).json({ error: 'supabase_nao_configurado', detail: 'VITE_SUPABASE_URL/VITE_SUPABASE_ANON_KEY ausentes no ambiente do servidor' })
+  }
+  const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey)
+  const { data: userData, error: userError } = await supabaseAuth.auth.getUser(token)
+  if (userError || !userData?.user) {
+    return res.status(401).json({ error: 'token_invalido', detail: 'Sessão inválida ou expirada, faça login novamente' })
+  }
 
   // req.body pode vir como objeto (Vercel parseia) ou string (dependendo do content-type)
   let body: any = req.body
