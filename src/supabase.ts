@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import { IS_DEMO } from './demo/config'
+import { IS_DEMO, DEMO_SUPABASE } from './demo/config'
 
-// The demo build talks to its own Supabase project (VITE_DEMO_* in .env.demo),
-// never to the production database.
-const supabaseUrl = IS_DEMO ? import.meta.env.VITE_DEMO_SUPABASE_URL : import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = IS_DEMO ? import.meta.env.VITE_DEMO_SUPABASE_KEY : import.meta.env.VITE_SUPABASE_ANON_KEY
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Under /demo the app talks to the separate demo project, never to the production
+// database, and keeps its session under a different key.
+export const supabase = IS_DEMO
+  ? createClient(DEMO_SUPABASE.url, DEMO_SUPABASE.key, { auth: { storageKey: DEMO_SUPABASE.storageKey } })
+  : createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)

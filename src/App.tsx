@@ -30,7 +30,7 @@ const EventsListPage = lazy(() => import('./pages/EventsListPage'))
 const AgendaPage = lazy(() => import('./pages/AgendaPage'))
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
-import { IS_DEMO } from './demo/config'
+import { IS_DEMO, BASE_PATH, stripBase, DEMO_URL } from './demo/config'
 const DemoLayer = lazy(() => import('./demo/DemoLayer'))
 
 const PAGE_TO_URL: Partial<Record<Page, string>> = {
@@ -68,8 +68,11 @@ function slugify(text: string) {
 function getSpaceUrl(space: Space) { return '/espacos/' + slugify(space.name) + '-' + space.id.slice(0,8) }
 function getSupplierUrl(supplier: Supplier) { return '/fornecedores/' + slugify(supplier.name) + '-' + supplier.id.slice(0,8) }
 
+// Under /demo every URL carries the prefix; the router works on the path without it.
+const withBase = (url: string) => (BASE_PATH ? (url === '/' ? BASE_PATH : BASE_PATH + url) : url)
+
 function getInitialPage(): Page {
-  const path = window.location.pathname
+  const path = stripBase(window.location.pathname)
   if (URL_TO_PAGE[path]) return URL_TO_PAGE[path]
   if (path.match(/^\/espacos\/.+-[0-9a-f]{8}$/)) return 'detail'
   if (path.startsWith('/espacos')) return 'listing'
@@ -185,7 +188,7 @@ function App() {
     let url = PAGE_TO_URL[p]
     if (p === 'detail' && data && 'city' in data) url = getSpaceUrl(data)
     if (p === 'supplier-detail' && data && 'cities' in data) url = getSupplierUrl(data)
-    if (url && window.location.pathname !== url) window.history.pushState({ page: p }, '', url)
+    if (url && window.location.pathname !== withBase(url)) window.history.pushState({ page: p }, '', withBase(url))
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (data) {
       if (p === 'edit-space') setEditingSpace(data as Space)
@@ -213,7 +216,7 @@ function App() {
 
   useEffect(() => {
     const handlePop = () => {
-      const path = window.location.pathname
+      const path = stripBase(window.location.pathname)
       const p = (URL_TO_PAGE[path] || 'home') as Page
       setPage(p); window.scrollTo(0, 0)
     }
@@ -257,6 +260,7 @@ function App() {
 
           <a onClick={() => goToPage('pricing')}>Planos</a>
           <a onClick={() => goToPage('about')}>Quem somos</a>
+          {!IS_DEMO && <a href={DEMO_URL} data-tour="nav-demo">Demonstração</a>}
         </div>
 
         <div className="nav-right">
@@ -320,6 +324,7 @@ function App() {
         <a onClick={() => goToPage('how-it-works')}>📖 Como funciona</a>
         <a onClick={() => goToPage('pricing')}>💎 Planos</a>
         <a onClick={() => goToPage('about')}>👥 Quem somos</a>
+        {!IS_DEMO && <a href={DEMO_URL}>🧪 Demonstração</a>}
         {user && userRole !== 'guest' && (
           <a onClick={() => goToPage(userRole === 'supplier' ? 'supplier-dashboard' : 'host-dashboard')}>
             {userRole === 'supplier' ? '🛠️' : '🏢'} Meu painel

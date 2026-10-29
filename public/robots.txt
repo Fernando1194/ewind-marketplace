@@ -3,5 +3,6 @@ Allow: /
 Disallow: /eventos
 Disallow: /agenda
 Disallow: /admin
+Disallow: /demo
 
 Sitemap: https://ewind.com.br/sitemap.xml

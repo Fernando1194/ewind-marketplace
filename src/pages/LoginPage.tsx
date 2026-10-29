@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../supabase'
+import { BASE_PATH } from '../demo/config'
 import type { Page } from '../App'
 
 interface Props {
@@ -38,7 +39,7 @@ export default function LoginPage({ goToPage }: Props) {
     setLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin
+        redirectTo: window.location.origin + BASE_PATH
       })
       if (error) throw error
       setMode('forgot-sent')
