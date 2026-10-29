@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import type { User } from '@supabase/supabase-js'
+import type { Page } from '../types'
 
 interface Props {
   user: User | null
   onAccept: (categories: CookieCategories) => void
-  goToPage?: (page: string) => void
+  goToPage?: (page: Page) => void
 }
 
 export interface CookieCategories {

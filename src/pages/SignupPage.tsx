@@ -37,7 +37,7 @@ export default function SignupPage({ goToPage }: Props) {
   const [loading, setLoading] = useState(false)
   const [showPass, setShowPass] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [extraRoles, setExtraRoles] = useState<string[]>([])
+  const [extraRoles] = useState<string[]>([])
   const [confirmPassword, setConfirmPassword] = useState('')
   const [touchedPass, setTouchedPass] = useState(false)
   const [touchedConfirm, setTouchedConfirm] = useState(false)

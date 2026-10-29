@@ -15,8 +15,6 @@ interface Props {
 export default function SupplierFormPage({ user, goToPage, editingSupplier }: Props) {
   const isEditing = !!editingSupplier
 
-  const capitalizeWords = (v: string) => v.replace(/\b\w/g, c => c.toUpperCase())
-  const capitalizeFirst = (v: string) => v.charAt(0).toUpperCase() + v.slice(1)
   const maskPhone = (v: string) => {
     const d = v.replace(/\D/g, '').slice(0, 11)
     if (d.length <= 2) return d

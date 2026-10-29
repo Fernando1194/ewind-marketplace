@@ -20,7 +20,7 @@ export default function DetailPage({ space, user, goToPage }: Props) {
   const [eventDate, setEventDate] = useState('')
   const [guestsCount, setGuestsCount] = useState('')
   const [duration, setDuration] = useState('4')
-  const [eventTime, setEventTime] = useState('')
+  const [eventTime] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

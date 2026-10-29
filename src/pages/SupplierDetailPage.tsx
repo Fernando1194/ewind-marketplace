@@ -39,21 +39,6 @@ export default function SupplierDetailPage({ supplier, goToPage, user }: Props) 
     window.open(`https://wa.me/55${num}?text=${msg}`, '_blank')
   }
 
-  const handleQuickWhatsApp = () => {
-    if (!supplier.whatsapp) return
-    const num = supplier.whatsapp.replace(/\D/g, '')
-    const msg = encodeURIComponent(
-      `Olá! Acabei de solicitar um orçamento pelo *Ewind* para o serviço *${supplier.name}*. 🎉\n\n` +
-      `📌 *Serviço:* ${supplier.category}\n` +
-      (eventType ? `🎉 *Evento:* ${eventType}\n` : '') +
-      (eventDate ? `📅 *Data:* ${new Date(eventDate + 'T12:00:00').toLocaleDateString('pt-BR')}\n` : '') +
-      (guestsCount ? `👥 *Convidados:* ${guestsCount} pessoas\n` : '') +
-      (message ? `\n💬 *Obs:* ${message}\n` : '') +
-      `\nMeu orçamento já foi enviado pela plataforma. Aguardo seu retorno! 😊`
-    )
-    window.open(`https://wa.me/55${num}?text=${msg}`, '_blank')
-  }
-
   const submitQuote = async () => {
     if (!user) { goToPage('login'); return }
     if (!eventType || !eventDate) { setQuoteError('Preencha o tipo de evento e a data'); return }

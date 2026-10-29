@@ -29,7 +29,7 @@ export function useEventFeedback() {
 
   // Envolve uma operação async de banco: se falhar, mostra erro e retorna false.
   const run = useCallback(async (
-    op: () => Promise<{ error: any } | void>,
+    op: () => PromiseLike<{ error: any } | void>,
     errMsg = 'Não foi possível salvar. Verifique sua conexão e tente novamente.'
   ): Promise<boolean> => {
     try {

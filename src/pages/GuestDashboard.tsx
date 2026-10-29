@@ -89,6 +89,19 @@ export default function GuestDashboard({ user, goToPage }: Props) {
     setFbSending(false)
   }
 
+  // Pedido de exclusão (LGPD): fica registrado em feedbacks, que o painel admin já lista
+  const requestDeletion = async () => {
+    setDeletionSending(true)
+    const { error } = await supabase.from('feedbacks').insert({
+      user_id: user.id, user_email: user.email,
+      category: 'Exclusão de conta (LGPD)', page: 'lgpd',
+      message: `Pedido de exclusão da conta. Motivo: ${deletionReason || 'não informado'}`,
+    })
+    setDeletionSending(false)
+    if (error) { alert('Não foi possível enviar a solicitação. Tente novamente ou use a aba Suporte.'); return }
+    setDeletionRequested(true)
+  }
+
   const TABS: { key: Tab; icon: string; label: string }[] = [
     { key: 'orcamentos', icon: '📋', label: 'Meus orçamentos' },
     { key: 'dados',      icon: '👤', label: 'Meus dados' },

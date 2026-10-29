@@ -1,3 +1,14 @@
+// Every page the app can route to.
+export type Page =
+  | 'home' | 'listing' | 'detail'
+  | 'login' | 'signup'
+  | 'host-dashboard' | 'new-space' | 'edit-space'
+  | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
+  | 'how-it-works' | 'about' | 'comparison'
+  | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
+  | 'reset-password' | 'terms' | 'pricing' | 'admin'
+  | 'events' | 'event-detail' | 'agenda'
+
 export interface Space {
   id: string
   host_id: string

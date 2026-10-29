@@ -30,9 +30,6 @@ const HERO_IMAGES = [
 ]
 
 export default function HomePage({ goToPage }: Props) {
-  const [filterCity, setFilterCity] = useState('')
-  const [filterGuests, setFilterGuests] = useState('')
-  const [filterDate, setFilterDate] = useState('')
   const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
   const [featuredSuppliers, setFeaturedSuppliers] = useState<any[]>([])
   const [heroImages] = useState<string[]>(HERO_IMAGES)

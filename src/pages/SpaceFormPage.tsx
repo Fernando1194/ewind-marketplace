@@ -46,9 +46,6 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
     return d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d
   }
 
-  // Máscara preço: R$ formatado
-  const maskPrice = (v: string) => v.replace(/[^0-9.]/g, '')
-
 
   // Capitalizar primeira letra de cada palavra
   const capitalizeWords = (v: string) =>
@@ -64,18 +61,6 @@ export default function SpaceFormPage({ user, goToPage, editingSpace }: Props) {
   // Apenas números com decimal
   const onlyDecimal = (v: string) => v.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')
 
-  // UF — sempre maiúsculo, só letras
-  const onlyUF = (v: string) => v.replace(/[^a-zA-Z]/g, '').toUpperCase().slice(0, 2)
-
-  // Extrair @handle do Instagram colado com URL completa
-  const cleanInstagram = (v: string) => {
-    const match = v.match(/instagram\.com\/([^/?]+)/)
-    if (match) return '@' + match[1]
-    return v.startsWith('@') ? v : v ? '@' + v.replace('@', '') : ''
-  }
-
-  // Extrair número limpo do WhatsApp
-  const cleanWhatsapp = (v: string) => maskPhone(v)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')

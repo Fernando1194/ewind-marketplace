@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { supabase } from './supabase'
 import type { User } from '@supabase/supabase-js'
-import type { Space, Supplier, EventItem } from './types'
+import type { Space, Supplier, EventItem, Page } from './types'
+export type { Page } from './types'
 import './App.css'
 
 const HomePage = lazy(() => import('./pages/HomePageNew'))
@@ -59,11 +60,11 @@ const URL_TO_PAGE: Record<string, Page> = Object.fromEntries(
 )
 
 
-function slugify(text) {
+function slugify(text: string) {
   return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)
 }
-function getSpaceUrl(space) { return '/espacos/' + slugify(space.name) + '-' + space.id.slice(0,8) }
-function getSupplierUrl(supplier) { return '/fornecedores/' + slugify(supplier.name) + '-' + supplier.id.slice(0,8) }
+function getSpaceUrl(space: Space) { return '/espacos/' + slugify(space.name) + '-' + space.id.slice(0,8) }
+function getSupplierUrl(supplier: Supplier) { return '/fornecedores/' + slugify(supplier.name) + '-' + supplier.id.slice(0,8) }
 
 function getInitialPage(): Page {
   const path = window.location.pathname
@@ -76,16 +77,6 @@ function getInitialPage(): Page {
   return 'home'
 }
 
-export type Page =
-  | 'home' | 'listing' | 'detail'
-  | 'login' | 'signup'
-  | 'host-dashboard' | 'new-space' | 'edit-space'
-  | 'my-quotes' | 'host-quotes' | 'guest-dashboard'
-  | 'how-it-works' | 'about' | 'comparison'
-  | 'suppliers' | 'supplier-detail' | 'new-supplier' | 'edit-supplier' | 'supplier-dashboard'
- 
-  | 'reset-password' | 'terms' | 'pricing' | 'admin'
-  | 'events' | 'event-detail' | 'agenda'
 
 const PageLoader = () => (
   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -108,8 +99,8 @@ function App() {
   const [isSupplier, setIsSupplier] = useState(false)
   const [loading, setLoading] = useState(true)
   const [pendingQuotesCount, setPendingQuotesCount] = useState(0)
-  const [pageKey, setPageKey] = useState(0)
-  const [cookieCategories, setCookieCategories] = useState<CookieCategories>(() => getCookieConsent().categories)
+  const [, setPageKey] = useState(0)
+  const [, setCookieCategories] = useState<CookieCategories>(() => getCookieConsent().categories)
 
   const loadUserRole = useCallback(async (userId: string) => {
     // Tentar buscar perfil
@@ -190,8 +181,8 @@ function App() {
     setPage(p)
     setPageKey(k => k + 1)
     let url = PAGE_TO_URL[p]
-    if (p === 'detail' && data && data.city) url = '/espacos/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
-    if (p === 'supplier-detail' && data && data.cities) url = '/fornecedores/' + data.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,60) + '-' + data.id.slice(0,8)
+    if (p === 'detail' && data && 'city' in data) url = getSpaceUrl(data)
+    if (p === 'supplier-detail' && data && 'cities' in data) url = getSupplierUrl(data)
     if (url && window.location.pathname !== url) window.history.pushState({ page: p }, '', url)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (data) {
@@ -204,10 +195,6 @@ function App() {
     if (p === 'new-supplier') setEditingSupplier(null)
     window.scrollTo(0, 0)
   }, [])
-
-  const refreshQuoteCount = useCallback(() => {
-    if (user) loadUserRole(user.id)
-  }, [user, loadUserRole])
 
   const handleCompareToggle = useCallback((space: Space) => {
     setCompareSpaces(prev => {
@@ -382,7 +369,7 @@ function App() {
 
         {/* Área do Host */}
         {page === 'host-dashboard' && user && (
-          <HostDashboard user={user} goToPage={goToPage} onSpaceChange={refreshQuoteCount} />
+          <HostDashboard user={user} goToPage={goToPage} />
         )}
         {page === 'new-space' && user && userRole !== 'supplier' && (
           <SpaceFormPage user={user} goToPage={goToPage} editingSpace={null} />
