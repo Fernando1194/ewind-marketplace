@@ -29,6 +29,7 @@ const GuestDashboard = lazy(() => import('./pages/GuestDashboard'))
 const EventsListPage = lazy(() => import('./pages/EventsListPage'))
 const AgendaPage = lazy(() => import('./pages/AgendaPage'))
 const EventDetailPage = lazy(() => import('./pages/EventDetailPage'))
+import LangNotice from './components/LangNotice'
 import CookieBanner, { getCookieConsent, type CookieCategories } from './components/CookieBanner'
 import { IS_DEMO, BASE_PATH, stripBase, DEMO_URL } from './demo/config'
 const DemoLayer = lazy(() => import('./demo/DemoLayer'))
@@ -439,6 +440,7 @@ function App() {
           <SupplierFormPage user={user} goToPage={goToPage} editingSupplier={editingSupplier} />
         )}
       </Suspense>
+      <LangNotice />
       <CookieBanner user={user} onAccept={setCookieCategories} goToPage={goToPage} />
     </div>
   )
