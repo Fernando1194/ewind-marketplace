@@ -8,24 +8,20 @@ interface Props { goToPage: (page: Page) => void }
 
 export default function PricingPage({ goToPage }: Props) {
   const c = useCopy(PRICING)
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly')
   const [submitted, setSubmitted] = useState(false)
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [notifyError, setNotifyError] = useState('')
 
   const base = [
-    { id: 'espacos', icon: '🏢', monthly: 59, highlight: false, color: '#0ea5e9', oks: [true, true, true, true, true, true, false, false, false] },
-    { id: 'pro', icon: '⭐', monthly: 89, highlight: true, color: '#a3e635', oks: [true, true, true, true, true, true, true, true, true] },
-    { id: 'fornecedor', icon: '🛠️', monthly: 49, highlight: false, color: '#8b5cf6', oks: [true, true, true, true, true, true, false, false, false] },
+    { id: 'espacos', icon: '🏢', highlight: false, color: '#0ea5e9', oks: [true, true, true, true, true, true, false, false, false] },
+    { id: 'pro', icon: '⭐', highlight: true, color: '#a3e635', oks: [true, true, true, true, true, true, true, true, true] },
+    { id: 'fornecedor', icon: '🛠️', highlight: false, color: '#8b5cf6', oks: [true, true, true, true, true, true, false, false, false] },
   ]
   const plans = base.map((b, k) => {
     const t = c.plans[k] as { name: string; desc: string; cta: string; tag?: string; features: string[] }
     return { ...b, name: t.name, desc: t.desc, cta: t.cta, tag: t.tag ?? null, features: t.features.map((text, n) => ({ text, ok: b.oks[n] })) }
   })
-
-  const getPrice = (m: number) => billing === 'annual' ? Math.round(m * 0.80) : m
-  const getSaving = (m: number) => Math.round(m * 0.20 * 12)
 
   const handleNotify = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,17 +54,21 @@ export default function PricingPage({ goToPage }: Props) {
           {c.createEvent}
         </button>
         <div style={{ fontSize: 12, color: '#666', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 700, marginBottom: 16 }}>{c.plansFor}</div>
-        <div style={{ display: 'inline-flex', background: '#1a1a1a', borderRadius: 100, padding: 4, gap: 4 }}>
-          {(['monthly', 'annual'] as const).map(b => (
-            <button key={b} onClick={() => setBilling(b)} style={{ padding: '8px 20px', borderRadius: 100, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, transition: 'all .2s', background: billing === b ? (b === 'annual' ? '#a3e635' : '#fff') : 'transparent', color: billing === b ? (b === 'annual' ? '#1a2e05' : '#111') : '#666', display: 'flex', alignItems: 'center', gap: 6 }}>
-              {b === 'monthly' ? c.monthly : <><span>{c.annual}</span><span style={{ fontSize: 10, background: billing === 'annual' ? '#1a2e05' : '#333', color: billing === 'annual' ? '#a3e635' : '#aaa', padding: '2px 7px', borderRadius: 100 }}>-20%</span></>}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* CARDS */}
-      <div style={{ maxWidth: 980, margin: '-28px auto 0', padding: '0 20px 56px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
+      {/* AVISO FASE DE TESTES */}
+      <div style={{ maxWidth: 980, margin: '24px auto 0', padding: '0 20px', position: 'relative', zIndex: 2 }}>
+        <div role="note" style={{ background: '#f7fee7', border: '1px solid #bef264', borderRadius: 12, padding: '14px 18px', display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          <span style={{ fontSize: 20 }} aria-hidden>🧪</span>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 800, color: '#1a2e05', marginBottom: 2 }}>{c.noteTitle}</div>
+            <div style={{ fontSize: 13, color: '#3f6212', lineHeight: 1.55 }}>{c.noteText}</div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 980, margin: '24px auto 0', padding: '0 20px 56px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
         {plans.map(plan => (
           <div key={plan.id} style={{ background: '#fff', borderRadius: 16, border: plan.highlight ? `2px solid ${plan.color}` : '1px solid #e8e8e8', overflow: 'hidden', boxShadow: plan.highlight ? `0 8px 28px ${plan.color}22` : '0 2px 8px rgba(0,0,0,0.05)', position: 'relative', transform: plan.highlight ? 'translateY(-8px)' : 'none' }}>
             {plan.tag && (
@@ -78,14 +78,13 @@ export default function PricingPage({ goToPage }: Props) {
               <div style={{ fontSize: 26, marginBottom: 6 }}>{plan.icon}</div>
               <div style={{ fontSize: 19, fontWeight: 800, color: '#111', marginBottom: 4 }}>{plan.name}</div>
               <div style={{ fontSize: 12, color: '#9ca3af', lineHeight: 1.5, marginBottom: 18 }}>{plan.desc}</div>
-              <div style={{ marginBottom: 6 }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                  <span style={{ fontSize: 13, color: '#9ca3af' }}>R$</span>
-                  <span style={{ fontSize: 40, fontWeight: 900, color: plan.highlight ? plan.color : '#111', lineHeight: 1 }}>{getPrice(plan.monthly)}</span>
-                  <span style={{ fontSize: 13, color: '#9ca3af' }}>{c.perMonth}</span>
+              <div style={{ marginBottom: 6 }} title={c.priceSoon}>
+                {/* valor real não vai para a página: o blur é sobre um número de enfeite */}
+                <div aria-label={c.priceSoon} style={{ display: 'flex', alignItems: 'baseline', gap: 3, filter: 'blur(9px)', userSelect: 'none' }}>
+                  <span aria-hidden style={{ fontSize: 13, color: '#9ca3af' }}>R$</span>
+                  <span aria-hidden style={{ fontSize: 40, fontWeight: 900, color: plan.highlight ? plan.color : '#111', lineHeight: 1 }}>00</span>
+                  <span aria-hidden style={{ fontSize: 13, color: '#9ca3af' }}>{c.perMonth}</span>
                 </div>
-                {billing === 'annual' && <div style={{ fontSize: 11, color: '#16a34a', marginTop: 3, fontWeight: 600 }}>{c.saveYear} R${getSaving(plan.monthly)} {c.perYear}</div>}
-                {plan.id === 'pro' && <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>{c.vs} R${getPrice(59) + getPrice(49)}{c.perMonth.replace('*', '')} {c.vsSeparate}</div>}
               </div>
               <div style={{ background: '#f9fafb', border: '1px solid #e8e8e8', borderRadius: 8, padding: '7px 12px', marginBottom: 18, fontSize: 11, color: '#6b7280' }}>
                 🟢 <strong>{c.freeEA}</strong> · {c.planned}
@@ -127,12 +126,12 @@ export default function PricingPage({ goToPage }: Props) {
                 [c.cmp[4], '✓', '✓', '✓'],
                 [c.cmp[5], '✓', '✓', '✓'],
                 [c.cmp[6], '✓', '✓', '✓'],
-                [c.price, `R$${getPrice(59)}`, `R$${getPrice(89)}`, `R$${getPrice(49)}`],
+                [c.price, 'R$ 00', 'R$ 00', 'R$ 00'],
               ].map(([feat, esp, pro, forn], i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #f3f4f6', background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
                   <td style={{ padding: '12px 16px', fontSize: 13, color: '#2d2d2d', fontWeight: 500 }}>{feat}</td>
                   {[esp, pro, forn].map((v, j) => (
-                    <td key={j} style={{ padding: '12px 16px', textAlign: 'center', fontSize: 13, fontWeight: j === 1 ? 800 : v === '—' ? 400 : 700, color: j === 1 ? '#a3e635' : v === '—' ? '#d1d5db' : '#16a34a', background: j === 1 ? '#f0fdf4' : 'transparent' }}>{v}</td>
+                    <td key={j} style={{ padding: '12px 16px', textAlign: 'center', fontSize: 13, fontWeight: j === 1 ? 800 : v === '—' ? 400 : 700, color: j === 1 ? '#a3e635' : v === '—' ? '#d1d5db' : '#16a34a', background: j === 1 ? '#f0fdf4' : 'transparent' }}>{v === 'R$ 00' ? <span aria-label={c.priceSoon} style={{ filter: 'blur(6px)', userSelect: 'none' }}>{v}</span> : v}</td>
                   ))}
                 </tr>
               ))}
