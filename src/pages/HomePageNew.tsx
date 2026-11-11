@@ -31,6 +31,17 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=800&fit=crop&q=85&auto=format',
 ]
 
+// Título do hero: cada palavra sobe de uma máscara, em sequência (uma única entrada orquestrada).
+function HeroWords({ text, start = 0 }: { text: string; start?: number }) {
+  return (
+    <>
+      {text.split(' ').map((w, i) => (
+        <span key={i}><span className="hw"><span className="hw-in" style={{ ['--w' as any]: start + i }}>{w}</span></span>{' '}</span>
+      ))}
+    </>
+  )
+}
+
 export default function HomePage({ goToPage }: Props) {
   const c = useCopy(HOME)
   const [featuredSpaces, setFeaturedSpaces] = useState<Space[]>([])
@@ -79,7 +90,7 @@ export default function HomePage({ goToPage }: Props) {
       {/* HERO */}
       <section style={{ position: 'relative', minHeight: 520, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', maxWidth: '100vw' }}>
         {heroImages.map((img, i) => (
-          <div key={img} style={{
+          <div key={img} className={i === currentHero ? 'hero-slide hero-slide-on' : 'hero-slide'} style={{
             position: 'absolute', inset: 0,
             backgroundImage: `url(${img})`, backgroundSize: 'cover', backgroundPosition: 'center',
             opacity: i === currentHero ? (fadeIn ? 1 : 0) : 0,
@@ -92,9 +103,9 @@ export default function HomePage({ goToPage }: Props) {
           <div style={{ fontSize: 13, fontWeight: 700, color: '#a3e635', marginBottom: 12, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
             {c.badge}
           </div>
-          <h1 style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 820, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
-            {c.h1a}{' '}
-            <span style={{ color: '#a3e635' }}>{c.h1b}</span>
+          <h1 className="hero-h1" style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1.1, marginBottom: 16, maxWidth: 820, margin: '0 auto 16px', textShadow: '0 2px 20px rgba(0,0,0,0.4)' }}>
+            <HeroWords text={c.h1a} />{' '}
+            <span style={{ color: '#a3e635' }}><HeroWords text={c.h1b} start={c.h1a.split(' ').length} /></span>
           </h1>
           <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.9)', maxWidth: 600, margin: '0 auto 36px', lineHeight: 1.7, textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
             {c.lead}
@@ -134,8 +145,8 @@ className="hero-arrow hero-arrow-right"
       </section>
 
       {/* PROPOSTA DE VALOR — 4 pilares */}
-      <section style={{ background: '#f9fafb', padding: '40px 24px', borderBottom: '1px solid #e8e8e8' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
+      <section className="band" style={{ background: '#f9fafb', borderBottom: '1px solid #e8e8e8' }}>
+        <div style={{ maxWidth: 1224, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24 }}>
           {c.pillars.map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
               <div style={{ fontSize: 28, flexShrink: 0 }}>{item.icon}</div>
@@ -150,14 +161,14 @@ className="hero-arrow hero-arrow-right"
 
       {/* COMO FUNCIONA — 3 passos (única seção) */}
       <section className="section">
-        <h2 className="sec-title">{c.stepsTitle}</h2>
+        <h2 className="sec-title sec-title--center">{c.stepsTitle}</h2>
         <p style={{ textAlign: 'center', fontSize: 15, color: '#6b7280', maxWidth: 560, margin: '0 auto 36px', lineHeight: 1.6 }}>
           {c.stepsLead}
         </p>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
+        <div className="steps-grid">
           {c.steps.map((s, i) => (
-            <div key={i} style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 16, padding: 24, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 20, right: 20, fontSize: 32, fontWeight: 900, color: '#f0fdf4' }}>{s.n}</div>
+            <div key={i} className="step-card fx-glow" style={{ ['--i' as any]: i }}>
+              <div className="step-n">{s.n}</div>
               <div style={{ fontSize: 34, marginBottom: 14 }}>{s.icon}</div>
               <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{s.title}</div>
               <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.6 }}>{s.desc}</div>
@@ -172,7 +183,7 @@ className="hero-arrow hero-arrow-right"
       </section>
 
       {/* MARKETPLACE — EARLY ADOPTER (única faixa) */}
-      <section className="section" style={{ background: '#f9fafb', borderTop: '1px solid #e8e8e8', borderBottom: '1px solid #e8e8e8' }}>
+      <section className="band" style={{ background: '#f9fafb', borderTop: '1px solid #e8e8e8', borderBottom: '1px solid #e8e8e8' }}>
         <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 800, letterSpacing: 0.5, color: '#1a2e05', background: '#a3e635', padding: '4px 12px', borderRadius: 100, marginBottom: 14 }}>{c.ea}</span>
           <h2 className="sec-title" style={{ marginBottom: 12 }}>{c.eaTitle}</h2>
@@ -187,10 +198,10 @@ className="hero-arrow hero-arrow-right"
 
       {/* CATEGORIAS */}
       <section className="section">
-        <h2 className="sec-title">{c.explore}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 10, overflowX: 'hidden' }}>
+        <h2 className="sec-title sec-title--center">{c.explore}</h2>
+        <div className="cat-row">
           {CATEGORIES.map(cat => (
-            <div key={cat.name} onClick={() => goToPage('listing')}
+            <div key={cat.name} onClick={() => goToPage('listing')} className="fx-glow"
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, padding: '16px 8px', borderRadius: 12, border: '1.5px solid #e8e8e8', cursor: 'pointer', background: '#fff', transition: 'all 0.2s', textAlign: 'center' }}
               onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#a3e635'; el.style.transform = 'translateY(-2px)'; el.style.boxShadow = '0 4px 12px rgba(163,230,53,0.15)' }}
               onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = '#e8e8e8'; el.style.transform = 'translateY(0)'; el.style.boxShadow = 'none' }}
@@ -304,7 +315,7 @@ className="hero-arrow hero-arrow-right"
 
       {/* CTA HOST */}
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className="cta-host">
+        <div className="cta-host fx-aurora">
           <div>
             <div className="cta-title">{c.ctaHostTitle}</div>
             <div className="cta-desc">
@@ -319,7 +330,7 @@ className="hero-arrow hero-arrow-right"
 
       {/* CTA FORNECEDOR */}
       <section className="section" style={{ paddingTop: 0 }}>
-        <div style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', borderRadius: 16, padding: '36px 40px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+        <div className="cta-host fx-aurora">
           <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div style={{ fontSize: 48 }}>🛠️</div>
             <div>
@@ -342,7 +353,7 @@ className="hero-arrow hero-arrow-right"
 
       <footer className="footer">
         <img src="/logo.png" alt="Ewind" className="logo-img-sm" />
-        <span>{c.footer}</span>
+        <span>{c.footer.replace('2025', String(new Date().getFullYear()))}</span>
       </footer>
     </>
   )

@@ -1202,3 +1202,143 @@ a[href*="wa.me"]:hover { transform: translateY(-2px) scale(1.02) !important; }
   from { opacity: 0; transform: translate(-50%, 12px); }
   to   { opacity: 1; transform: translate(-50%, 0); }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   VISUAL 2026: alinhamento + movimento
+   Regras: nada de movimento decorativo permanente; entradas só com
+   propósito (hero, sequência de passos); tudo respeita reduced-motion.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Alinhamento ─────────────────────────────────────────────── */
+/* faixa de fundo em largura total, com o conteúdo no mesmo eixo de .section (1280 - 2x28) */
+.band { padding: 44px max(24px, calc((100% - 1224px) / 2)); }
+.sec-title--center { text-align: center; }
+.sec-title { letter-spacing: -0.01em; }
+/* a barra de busca da listagem acompanha o eixo da grade abaixo */
+.mini-search { padding-inline: max(28px, calc((100% - 1280px) / 2 + 20px)); }
+/* cabeçalho dos cartões de login/cadastro centralizado (logo, título e subtítulo no mesmo eixo) */
+.auth-card .logo-img-md { margin: 0 auto 14px; }
+.auth-card .auth-title, .auth-card .auth-sub { text-align: center; }
+.cta-host { padding: 36px 40px; }
+.cta-desc { max-width: 520px; }
+
+/* ── Foco visível (teclado) ──────────────────────────────────── */
+a:focus-visible, button:focus-visible, [role="button"]:focus-visible, summary:focus-visible {
+  outline: 2px solid #5aa800; outline-offset: 3px; border-radius: 6px;
+}
+
+/* ── Menu: vidro e sombra só depois que a página rola ───────── */
+.nav {
+  background: rgba(255,255,255,0.86);
+  -webkit-backdrop-filter: saturate(1.5) blur(14px);
+  backdrop-filter: saturate(1.5) blur(14px);
+  transition: box-shadow 260ms var(--ease-smooth), border-color 260ms var(--ease-smooth);
+}
+html[data-scrolled] .nav { box-shadow: 0 6px 24px rgba(26,46,5,0.08); border-bottom-color: transparent; }
+
+/* ── Passos (a sequência é real, então a numeração faz sentido) ─ */
+.steps-grid {
+  max-width: 1224px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;
+}
+.step-card {
+  position: relative; overflow: hidden;
+  background: #fff; border: 1px solid #e8e8e8; border-radius: 16px; padding: 28px 24px 24px;
+  transition: border-color 250ms var(--ease-smooth), box-shadow 250ms var(--ease-smooth);
+}
+.step-card:hover { border-color: #bef264; box-shadow: 0 10px 30px rgba(90,168,0,0.10); }
+.step-n {
+  position: absolute; top: 14px; right: 20px;
+  font-size: 64px; font-weight: 900; line-height: 1; letter-spacing: -0.04em;
+  color: transparent; -webkit-text-stroke: 1.5px #bef264;
+}
+
+/* ── Brilho que acompanha o cursor (posição vem de fx.ts) ───── */
+.fx-glow { position: relative; overflow: hidden; }
+.fx-glow::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(163,230,53,0.24), transparent 70%);
+  opacity: 0; transition: opacity 300ms var(--ease-smooth);
+}
+.fx-glow:hover::before { opacity: 1; }
+.fx-glow > * { position: relative; z-index: 1; }
+.step-card > .step-n { position: absolute; }
+
+/* ── Botão principal: faixa de luz ao passar o mouse ────────── */
+.btn-primary::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: -80%; width: 50%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.5), transparent);
+  transform: skewX(-18deg); pointer-events: none;
+}
+.btn-primary:hover::before { left: 130%; transition: left 650ms var(--ease-out-quart); }
+
+/* ── Faixas escuras: luz lenta ao fundo ─────────────────────── */
+.fx-aurora { position: relative; overflow: hidden; isolation: isolate; background: #161a12; }
+.fx-aurora::before {
+  content: ''; position: absolute; z-index: -1; inset: -40% -20%;
+  background:
+    radial-gradient(40% 50% at 18% 30%, rgba(163,230,53,0.20), transparent 70%),
+    radial-gradient(35% 45% at 82% 75%, rgba(90,168,0,0.22), transparent 70%);
+  animation: aurora-drift 22s ease-in-out infinite alternate;
+}
+@keyframes aurora-drift {
+  from { transform: translate3d(-4%, -2%, 0) scale(1); }
+  to   { transform: translate3d(5%, 4%, 0) scale(1.12); }
+}
+
+/* ── Hero: título entra palavra por palavra, foto respira ───── */
+.hw { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.14em; margin-bottom: -0.14em; }
+.hw-in { display: inline-block; animation: hw-up 800ms var(--ease-out-expo) both; animation-delay: calc(var(--w, 0) * 70ms + 120ms); }
+@keyframes hw-up { from { transform: translateY(108%) rotate(2.5deg); } to { transform: translateY(0) rotate(0); } }
+.hero-slide-on { animation: hero-breathe 9s ease-out both; }
+@keyframes hero-breathe { from { transform: scale(1); } to { transform: scale(1.07); } }
+
+/* o pulso infinito em todo link de WhatsApp distraía; fica só o movimento ao passar o mouse */
+a[href*="wa.me"] { animation: none; }
+
+/* ── Entrada ligada à rolagem (só onde o navegador suporta) ──── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .step-card {
+      animation: step-wipe linear both; animation-timeline: view();
+      animation-range: entry calc(4% + var(--i, 0) * 7%) entry calc(52% + var(--i, 0) * 7%);
+    }
+    .step-n {
+      animation: step-fill linear both; animation-timeline: view();
+      animation-range: entry 25% cover 30%;
+    }
+    .sec-title--center::after {
+      content: ''; display: block; width: 44px; height: 4px; border-radius: 4px; margin: 12px auto 0; background: #a3e635;
+      transform-origin: center; animation: bar-grow linear both; animation-timeline: view(); animation-range: entry 10% entry 70%;
+    }
+  }
+}
+@keyframes step-wipe { from { clip-path: inset(0 0 100% 0 round 16px); transform: translateY(14px); } to { clip-path: inset(0 0 0 0 round 16px); transform: none; } }
+@keyframes step-fill { from { color: transparent; } to { color: #a3e635; -webkit-text-stroke-color: #a3e635; } }
+@keyframes bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (max-width: 768px) {
+  .band { padding: 32px 20px; }
+  .mini-search { padding-inline: 16px; }
+  .cta-host { padding: 28px 22px; }
+  .step-n { font-size: 52px; }
+}
+
+/* categorias da home: 7 colunas no desktop, quebra em linhas no celular (antes o texto era cortado) */
+.cat-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 768px) { .cat-row { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 380px) { .cat-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* a sombra do título é aplicada ao conjunto: text-shadow seria cortado pela máscara de cada palavra */
+.hero-h1 { text-shadow: none !important; filter: drop-shadow(0 2px 14px rgba(0,0,0,0.45)); }
+
+/* movimento reduzido: sem atraso nem deslocamento, o conteúdo já aparece no lugar final */
+@media (prefers-reduced-motion: reduce) {
+  .hw-in, .hero-slide-on, .fx-aurora::before { animation: none !important; }
+  .btn-primary::before { display: none; }
+}
+
+/* logo do cartão de login/cadastro centralizado com o título */
+.auth-card > div:first-child { display: block !important; text-align: center; }
+.auth-card > div:first-child .logo-img { margin-inline: auto; }
