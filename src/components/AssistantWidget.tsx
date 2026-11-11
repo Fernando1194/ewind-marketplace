@@ -76,9 +76,9 @@ export default function AssistantWidget() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} aria-label={k.open}
+      <button className="ast-fab" onClick={() => setOpen(true)} aria-label={k.open}
         style={{ position: 'fixed', right: 20, bottom: 20, zIndex: 900, background: '#1a2e05', color: '#a3e635', border: '2px solid #a3e635', borderRadius: 100, padding: '12px 18px', fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 6px 20px rgba(0,0,0,.25)' }}>
-        {k.button}
+        <span aria-hidden>{k.button.slice(0, 2)}</span><span className="ast-fab-lbl">{k.button.slice(2)}</span>
       </button>
     )
   }

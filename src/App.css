@@ -1342,3 +1342,9 @@ a[href*="wa.me"] { animation: none; }
 /* logo do cartão de login/cadastro centralizado com o título */
 .auth-card > div:first-child { display: block !important; text-align: center; }
 .auth-card > div:first-child .logo-img { margin-inline: auto; }
+
+/* assistente: no mobile vira botão redondo só com o ícone, para não cobrir conteúdo */
+@media (max-width: 640px) {
+  .ast-fab { padding: 0 !important; width: 48px; height: 48px; right: 14px !important; bottom: 14px !important; font-size: 20px !important; }
+  .ast-fab-lbl { display: none; }
+}
