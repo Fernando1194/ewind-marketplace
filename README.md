@@ -30,7 +30,7 @@ The strategy enters through demand (organizers using the free tool) and then act
 | Routing | `useState` + History API (no react-router, to keep the bundle small) |
 | Backend | Supabase (PostgreSQL + Auth + Storage) |
 | Serverless functions | Vercel Functions (`/api`) |
-| AI | Anthropic API (contract extraction, on standby) |
+| AI | Anthropic API (site assistant; contract extraction, on standby) |
 | Hosting | Vercel (automatic deploy on push to the `main` branch) |
 | UI language | Brazilian Portuguese |
 
@@ -57,12 +57,18 @@ Cross-cutting features: contracts with PDF attachments (private bucket, signed U
 src/
   pages/         Pages (routes), including the event manager and the public pages
   components/    Reusable components and the event dashboard tabs
-  lib/           Utilities (e.g. PDF text extraction)
+  lib/           Utilities (PDF text extraction, guest spreadsheet import)
+  i18n/          Interface copy per page
+  demo/          Demo mode: runtime switch, banner and guided tours
   App.tsx        Routing and navigation
 api/
-  extract-contract.ts   Serverless function for AI contract extraction
+  assistant.ts          Public site assistant (no tools, no database access, rate limited)
+  extract-contract.ts   AI contract extraction (signed-in users only)
+  health.ts             Daily keepalive for the production and demo databases
 sql/
-  01-events.sql ... 10-space-addresses.sql   Database schema, numbered in the order it is applied
+  01-events.sql ... 12-plan-waitlist.sql   Database schema, numbered in the order it is applied
+  demo/                                    Seed and nightly reset of the demo database
+tests/           Unit tests (Node's built-in test runner)
 ```
 
 Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_guests`, `event_tasks`, `event_comparisons`, `comparison_options`, `event_tables`, `agenda_reminders`. All of them use Row Level Security by `owner_id` (each user can only access their own data). A space's exact address lives in `space_addresses`, readable only by its host and by users who requested a quote.
@@ -81,7 +87,7 @@ Main Supabase tables: `events`, `event_contracts`, `contract_payments`, `event_g
 
 ## Running locally
 
-Requirements: Node.js 18+ and a Supabase account.
+Requirements: Node.js 22.18+ and a Supabase account.
 
 ```bash
 npm install
@@ -93,15 +99,18 @@ npm install
 npm run dev      # development server
 npm run build    # production build
 npm run preview  # preview the build
+
+npm run typecheck  # type check the app, the Vite config and the functions in /api
+npm test           # unit tests
 ```
 
-Copy `.env.example` to `.env` for the variables. The AI extraction function requires `ANTHROPIC_API_KEY` set in the Vercel environment.
+Copy `.env.example` to `.env` for the variables. The functions in `/api` need `ANTHROPIC_API_KEY` set in the Vercel environment; the optional variables that tune the site assistant are listed in `.env.example`.
 
 ---
 
 ## Deploy
 
-Deploys are automatic: every push to the `main` branch triggers a build on Vercel, and GitHub Actions runs the type check and build on every push and pull request. A daily Vercel cron calls `/api/health`, which reads one row from the production and demo databases so the free Supabase plan does not pause them. Database changes are applied manually in the Supabase SQL Editor, running the files in `sql/` in numeric order. Every script is idempotent (safe to run more than once). They reference a `public.profiles` table that comes from the original marketplace schema, which is not in this folder.
+Deploys are automatic: every push to the `main` branch triggers a build on Vercel, and GitHub Actions runs the type check, the unit tests and the build on every push and pull request. A daily Vercel cron calls `/api/health`, which reads one row from the production and demo databases so the free Supabase plan does not pause them. Database changes are applied manually in the Supabase SQL Editor, running the files in `sql/` in numeric order. Every script is idempotent (safe to run more than once). They reference a `public.profiles` table that comes from the original marketplace schema, which is not in this folder.
 
 ---
 

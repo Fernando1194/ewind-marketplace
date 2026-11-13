@@ -83,7 +83,10 @@ export function parseGuestRows(rows: Cell[][]): ParsedGuest[] {
     // col 1: status
     let status: ParsedGuest['status'] = 'pending'
     const rawStatus = String(row[1] || '').toLowerCase().trim()
-    if (rawStatus.includes('confirm') || rawStatus === 'sim' || rawStatus === 'yes') status = 'confirmed'
+    // "não confirmado" / "not confirmed" contain "confirm" but mean the opposite of confirmed
+    const negated = /^(n[ãa]o|not|un)\b|^unconfirm/.test(rawStatus) && rawStatus.includes('confirm')
+    if (negated) status = 'pending'
+    else if (rawStatus.includes('confirm') || rawStatus === 'sim' || rawStatus === 'yes') status = 'confirmed'
     else if (rawStatus.includes('recus') || rawStatus.includes('declin') || rawStatus === 'não' || rawStatus === 'nao' || rawStatus === 'no') status = 'declined'
 
     // col 2: category
