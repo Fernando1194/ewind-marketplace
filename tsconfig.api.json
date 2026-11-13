@@ -1,0 +1,15 @@
+{
+  // Type check for the code that runs on Node: the Vercel functions in /api and the tests.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["api", "types", "tests"]
+}

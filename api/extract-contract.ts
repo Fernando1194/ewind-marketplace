@@ -5,7 +5,10 @@ import { createClient } from '@supabase/supabase-js'
 // NUNCA inventa valores: se não encontrar algo, retorna null naquele campo.
 // O frontend exige revisão humana antes de salvar.
 
+const MODEL_TIMEOUT_MS = 20000
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader('Cache-Control', 'no-store')
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   // Exige um usuário Ewind autenticado. Sem isso, qualquer pessoa na internet podia
@@ -87,11 +90,17 @@ Sobre "key_dates": são marcos de execução do contrato que exigem ação, como
           system,
           messages: [{ role: 'user', content: `Contrato:\n\n${text}` }],
         }),
+        // sem isso, um modelo que não responde segura a função até o limite da Vercel
+        signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
       })
 
       if (!response.ok) {
         const errText = await response.text()
-        lastError = `modelo ${model}: HTTP ${response.status} — ${errText.slice(0, 200)}`
+        lastError = `modelo ${model}: HTTP ${response.status}`
+        // o corpo do erro fica só no log do servidor, nunca vai para o navegador
+        console.error(`[extract-contract] ${lastError}: ${errText.slice(0, 300)}`)
+        // chave inválida ou sem permissão: nenhum outro modelo vai funcionar
+        if (response.status === 401 || response.status === 403) break
         // 404 = modelo inexistente: tenta o próximo. Outros erros: também tenta próximo.
         continue
       }
@@ -139,11 +148,12 @@ Sobre "key_dates": são marcos de execução do contrato que exigem ação, como
 
       return res.status(200).json({ fields: clean, model_used: model })
     } catch (err: any) {
-      lastError = `modelo ${model}: ${err?.message || 'erro desconhecido'}`
+      lastError = `modelo ${model}: ${err?.name === 'TimeoutError' ? 'tempo esgotado' : 'falha na chamada'}`
+      console.error(`[extract-contract] ${lastError}`, err)
       continue
     }
   }
 
-  // Se chegou aqui, todos os modelos falharam — devolve o motivo real
-  return res.status(500).json({ error: 'falha_extracao', detail: lastError })
+  // Se chegou aqui, todos os modelos falharam. O motivo detalhado já está no log.
+  return res.status(502).json({ error: 'falha_extracao', detail: lastError })
 }
